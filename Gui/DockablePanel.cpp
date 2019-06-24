@@ -27,7 +27,6 @@
 #include <stdexcept>
 
 #include <QApplication> // qApp
-#include <QColorDialog>
 #include <QtCore/QSize>
 #include <QtCore/QTimer>
 GCC_DIAG_UNUSED_PRIVATE_FIELD_OFF
@@ -57,6 +56,7 @@ GCC_DIAG_UNUSED_PRIVATE_FIELD_ON
 #include "Engine/WriteNode.h"
 
 #include "Gui/Button.h"
+#include "Gui/ColorDialog.h"
 #include "Gui/CurveGui.h"
 #include "Gui/DockablePanelPrivate.h"
 #include "Gui/DockablePanelTabWidget.h"
@@ -1348,9 +1348,8 @@ DockablePanel::onOverlayColorDialogColorChanged(const QColor& color)
 void
 DockablePanel::onColorButtonClicked()
 {
-    QColorDialog dialog(this);
+    ColorDialog dialog(this);
 
-    dialog.setOption(QColorDialog::DontUseNativeDialog);
     QColor oldColor;
     {
         oldColor = getCurrentColor();
@@ -1378,8 +1377,7 @@ DockablePanel::onOverlayButtonClicked()
     if (!node) {
         return;
     }
-    QColorDialog dialog(this);
-    dialog.setOption(QColorDialog::DontUseNativeDialog);
+    ColorDialog dialog(this);
     dialog.setOption(QColorDialog::ShowAlphaChannel);
     QColor oldColor;
     bool hadOverlayColor;

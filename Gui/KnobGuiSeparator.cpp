@@ -33,7 +33,6 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QStyle>
-#include <QColorDialog>
 #include <QToolTip>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>

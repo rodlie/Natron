@@ -26,12 +26,6 @@
 
 #include <stdexcept>
 
-CLANG_DIAG_OFF(deprecated)
-CLANG_DIAG_OFF(uninitialized)
-#include <QColorDialog>
-CLANG_DIAG_ON(deprecated)
-CLANG_DIAG_ON(uninitialized)
-
 #include "Engine/Node.h"
 #include "Engine/NodeGroup.h"
 #include "Engine/PyNodeGroup.h"
@@ -43,6 +37,7 @@ CLANG_DIAG_ON(uninitialized)
 #include "Engine/ViewerInstance.h"
 
 #include "Gui/Gui.h"
+#include "Gui/ColorDialog.h"
 #include "Gui/NodeGraph.h"
 #include "Gui/NodeGui.h"
 #include "Gui/PythonPanels.h"
@@ -262,7 +257,7 @@ ColorTuple
 GuiApp::getRGBColorDialog() const
 {
     ColorTuple ret;
-    QColorDialog dialog;
+    ColorDialog dialog;
 
     if ( dialog.exec() ) {
         QColor color = dialog.currentColor();

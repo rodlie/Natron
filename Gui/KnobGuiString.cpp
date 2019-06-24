@@ -33,7 +33,6 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QStyle>
-#include <QColorDialog>
 #include <QToolTip>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -60,6 +59,7 @@ CLANG_DIAG_ON(uninitialized)
 
 #include "Gui/Button.h"
 #include "Gui/ClickableLabel.h"
+#include "Gui/ColorDialog.h"
 #include "Gui/ComboBox.h"
 #include "Gui/CurveGui.h"
 #include "Gui/DockablePanel.h"
@@ -953,8 +953,7 @@ KnobGuiString::colorFontButtonClicked()
 {
     assert(_textEdit);
     KnobStringPtr knob = _knob.lock();
-    QColorDialog dialog(_textEdit);
-    dialog.setOption(QColorDialog::DontUseNativeDialog);
+    ColorDialog dialog(_textEdit);
     QObject::connect( &dialog, SIGNAL(currentColorChanged(QColor)), this, SLOT(updateFontColorIcon(QColor)) );
     dialog.setCurrentColor(_fontColor);
     if ( dialog.exec() ) {

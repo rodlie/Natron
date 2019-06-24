@@ -78,6 +78,7 @@ SOURCES += \
     Button.cpp \
     ChannelsComboBox.cpp \
     ClickableLabel.cpp \
+    ColorDialog.cpp \
     ColoredFrame.cpp \
     ComboBox.cpp \
     CurveEditor.cpp \
@@ -182,6 +183,7 @@ SOURCES += \
     PropertiesBinWrapper.cpp \
     PyGuiApp.cpp \
     PythonPanels.cpp \
+    QtColorTriangle.cpp \
     QtEnumConvert.cpp \
     RenderStatsDialog.cpp \
     ResizableMessageBox.cpp \
@@ -233,6 +235,7 @@ HEADERS += \
     Button.h \
     ChannelsComboBox.h \
     ClickableLabel.h \
+    ColorDialog.h \
     ColoredFrame.h \
     ComboBox.h \
     CurveEditor.h \
@@ -323,6 +326,7 @@ HEADERS += \
     PyGuiApp.h \
     Pyside_Gui_Python.h \
     PythonPanels.h \
+    QtColorTriangle.h \
     QtEnumConvert.h \
     RegisteredTabs.h \
     RenderStatsDialog.h \
