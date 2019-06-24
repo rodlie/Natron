@@ -4,23 +4,26 @@
 /*%10 = altered text colour, %11 = mouse over selection color*/
 /*You have to fill the arguments with  stylesheet-representable colours.*/
 
-QWidget {
+/**********************************  app background  ***************************************/
+QWidget
+{
     color: %5;
     background-color: %2;
 }
 
-QFrame {
+/**********************************  widgets border  ***************************************/
+QFrame
+{
    color: black;
 }
 
 /*QLabel inherits QFrame so we put it afterwards, otherwise the label text will be black too.*/
-QLabel {
+QLabel
+{
     color: %5;
+    /*margin : 2px*/
+    margin-left: 2px;
 }
-
-
-
-
 
 
 Label[altered="true"] { color: %10; }
@@ -29,27 +32,34 @@ Label[altered="false"] { color: %5; }
 
 
 NodeSettingsPanel[_selected="true"] {
-    border:1px solid white;
-    border-radius : 2px;
+    background-color: %3;
+    border: 0px solid white;
+    border-radius : 0px;
+    padding: 2px;
 }
+
 NodeSettingsPanel[_selected="false"] {
-    border:1px solid black;
-    border-radius : 2px;
+    background-color: %3;
+    border: 0px solid black;
+    border-radius: 0px;
+    padding: 2px;
 }
 
 QToolTip {
    color: %5;
    background-color: black;
    border: 2px solid black;
-   border-radius: 5px;
+   border-radius: 0px; /*5px;*/
    opacity: 200;
 }
 
-QToolBar {
+QToolBar
+{
     color: %2;
     spacing: 3px; /* spacing between items in the tool bar */
     border: 0px solid black;
 }
+
 /* QToolBar::handle {
 image: url(handle.png);
 }TODO*/
@@ -77,9 +87,9 @@ QGroupBox::indicator:checked {
 }
 
 QScrollBar:vertical {
-    border: 1px solid %1 ;
+    border: 1px solid black ;
     background: %3;
-    width: 15px;
+    width: 14px;
     margin : 23px 0px 23px 0px;
 }
 QScrollBar::handle:vertical {
@@ -101,7 +111,7 @@ QScrollBar::sub-page:vertical {
     background: %2;
 }
 QScrollBar::add-line:vertical {
-    border: 1px solid %1;
+    border: 0px solid %1;
     background: %3;
     height: 20px;
     subcontrol-position: bottom;
@@ -109,14 +119,14 @@ QScrollBar::add-line:vertical {
 }
 
 QScrollBar::sub-line:vertical {
-    border: 1px solid %1;
+    border: 1px solid black;
     background: %3;
     height: 20px;
     subcontrol-position: top;
     subcontrol-origin: margin;
 }
 QScrollBar:horizontal {
-    border: 1px solid %1 ;
+    border: 1px solid black ;
     background: %3;
     height: 15px;
     margin : 0px 23px 0px 23px;
@@ -140,7 +150,7 @@ QScrollBar::sub-page:horizontal {
     background: %2;
 }
 QScrollBar::add-line:horizontal {
-    border: 1px solid %1;
+    border: 0px solid %1;
     background: %3;
     width: 20px;
     subcontrol-position: left;
@@ -148,7 +158,7 @@ QScrollBar::add-line:horizontal {
 }
 
 QScrollBar::sub-line:horizontal {
-    border: 1px solid %1;
+    border: 1px solid black;
     background: %3;
     width: 20px;
     subcontrol-position: right;
@@ -160,7 +170,7 @@ QTreeView,QListView,QHeaderView {
     color: %5;
     background-color: %3;
     selection-color: %8;
-    selection-background-color: %1;
+    /*selection-background-color: %1;*/
 }
 
 QTreeWidget::item:selected {
@@ -192,8 +202,8 @@ QTreeWidget::branch:open:has-children:has-siblings  {
 QHeaderView:section {
     color: %5;
     background-color: %2;
-    selection-color: %1;
-    selection-background-color : %1; /* same as selection-color??? */
+    /*selection-color: %1;*/
+    /*selection-background-color : %1; /* same as selection-color??? */
 }
 
 ComboBox {
@@ -265,25 +275,34 @@ ClickableLabel[readOnly="true"][dirty="true"] {
 TabWidget{background-color: %4;}
 
 NodeSettingsPanel{
-    background-color : %2;
+    background-color : %3;
     color: %5;
 }
+
 QPushButton{
-    background-color: %3;
+    background: qlineargradient(x1: 0, y1: 1, x2: 0, y2: 0, stop: 0 #464646, stop: 0.5 #4e4e4e);
+    /*background-color: %3;*/
     color: %5;
     border: 0.5px solid black;
-    border-radius : 3px;
-    padding : 3px;
+    border-radius : 2px;
+    padding : 4px;
+    padding-left: 8px;
+    padding-right: 8px;
 }
+
 QPushButton:pressed{
     background-color : %4;
+    border: 1px solid black;
 }
+
 QPushButton:hover {
-    border: 1px solid gray;
+    border: 1px solid black;
 }
+
 QPushButton:focus {
-    border: 2px solid %1;
+    border: 1px solid black;
 }
+
 QPushButton:!enabled {
     color: %8;
 }
@@ -291,7 +310,7 @@ QPushButton:!enabled {
 QHeaderView:section {
     color: %5;
     background-color: %2;
-    selection-color: %1;
+    /*selection-color: %1;*/
     selection-background-color : %1; /* same as selection-color ??? */
 }
 
@@ -303,7 +322,7 @@ QDialog {
 NodeCreationDialog {
     background-color: %2;
     border: 5px black;
-    border-radius:2px;
+    border-radius: 0px;
 }
 
 QToolButton {
@@ -314,10 +333,17 @@ QToolButton:pressed {
     border: 1px solid %1;
 }
 
+/***************************************************************************************/ 
+/****************************                             ******************************/ 
+/****************************   Icônes barre d'outils     ******************************/
+/****************************                             ******************************/ 
+/***************************************************************************************/ 
 
 QToolButton:focus {
-    border: 1px solid %1;
+    border: 0px solid %1;
 }
+
+/**************************************************************************************/
 
 ViewerToolButton[isSelected="true"]
 {
@@ -332,10 +358,10 @@ ViewerToolButton
 ViewerToolButton[isSelected="false"]:pressed {
     border: 0px;
 }
+
 ViewerToolButton[isSelected="true"]:pressed {
     border: 1px solid %1;
 }
-
 
 ViewerToolButton:focus {
     border: 0px;
@@ -382,13 +408,14 @@ QScrollArea {
 
 QComboBox {
     color: %5;
+    /*margin: 20px;*/
     background-color: %3;
     selection-color: %1;
     selection-background-color: %3;
 }
 QComboBox QAbstractItemView  {
     border-radius:0px;
-    border:0px;
+    border:1px;
     /*background: %3; ??? */ 
     color: %5;
     background-color: %3;
@@ -406,13 +433,18 @@ QDockWidget {
 }
 
 QTabWidget::pane {
-    border:1px solid black;
+    border: 1px solid black;
 }
 
+/***************************************************************************************/ 
+/****************************                             ******************************/ 
+/****************************       cases paramètres      ******************************/
+/****************************                             ******************************/ 
+/***************************************************************************************/
 
 QLineEdit {
     border: 1px solid;
-    border-radius: 1px;
+    border-radius: 2px;
     padding: 1px;
     color: %5;
     background-color : %3;
@@ -421,14 +453,16 @@ QLineEdit {
 }
 
 QLineEdit:focus {
-    border: 2px groove %1;
+    border: 1px groove black;
     border-radius: 2px;
     /*padding: 2px 4px;*/
 }
+
 QLineEdit:!enabled {
     color: %8;
     background-color : %3;
 }
+
 QLineEdit:read-only {
     color: %8;
     background-color: %3;
@@ -444,70 +478,100 @@ QSplitter::handle:vertical {
 }
 
 QSplitter::handle::horizontal {
-    width: 3px;
+    width: 1px;
 }
 QSplitter::handle::vertical {
-    height: 3px;
+    height: 1px;
 }
 
+
+
 /* http://doc.qt.io/qt-4.8/stylesheet-examples.html#customizing-qtabwidget-and-qtabbar */
-QTabBar {
-    tabbar-prefer-no-arrows: false; /* allow arrows when there are many tabs */
+
+/***************************************************************************************/ 
+/****************************                             ******************************/ 
+/****************************  Réglage des onglets(TABS)  ******************************/
+/****************************                             ******************************/ 
+/***************************************************************************************/ 
+
+
+QTabBar
+{
+    tabbar-prefer-no-arrows: true; /* allow arrows when there are many tabs */
     background-color: %4; /* color of the background over non-selected tabs, and to the sides of the tab when there is only one */
 }
 
-QTabBar::tab {
+QTabBar::tab
+{
     background-color: %4; /* the background of non-selected tabs */
+
     border: 1px solid ;
-    border-bottom-color: %2; /* color of the thin line put at the bottom of non-selected tabs */
-    min-width: 8ex;
-    padding: 2px;
-    border-top-right-radius: 5px;
-    border-top-left-radius: 5px;
+    border-top-right-radius: 2px;
+    border-top-left-radius: 2px;
+
+    border-bottom-color: %4; /* color of the thin line put at the bottom of non-selected tabs */
+
+    min-width: 12ex;
+    padding: 3px;
+    width:100;
+
+    margin-left: 0px;
+    margin-right: 0px;
 }
 
-QTabBar::tab#DockablePanelTabWidget {
-    min-width: 5ex;
+QTabBar::tab#DockablePanelTabWidget
+{
+    min-width: 1ex;
 }
 
-QTabBar::tab:hover {
+QTabBar::tab:hover
+{
     background: %1;
 }
-QTabBar::tab:selected {
-    background: %2; /* the background of the selected tab */
-    border-bottom-style:none;
+
+QTabBar::tab:selected
+{
+    background: solid %2;
+    border-bottom-style: none;
     /*border-color: %1;*/
 }
 
-
-QTabBar::tab:!selected {
-    color: %5;  color of the text on deselected tabs
-    margin-top: 2px; /* make non-selected tabs look smaller */
+QTabBar::tab:!selected
+{
+    color: %5;  /*color of the text on deselected tabs*/
+    background: %4;
+    margin-top: 1px; /* make non-selected tabs look smaller */
 }
 
 /* make use of negative margins for overlapping tabs */
 QTabBar::tab:selected {
     /* expand/overlap to the left and right by 4px */
-    margin-left: -2px;
-    margin-right: -2px;
+    /*margin-left: 0px;*/
+    /*margin-right: 0px;*/
 }
+
 QTabBar::tab:first:selected {
-    margin-left: 0; /* the first selected tab has nothing to overlap with on the left */
+    margin-left: 0px; /* the first selected tab has nothing to overlap with on the left */
 }
+
 QTabBar::tab:last:selected {
-    margin-right: 0; /* the last selected tab has nothing to overlap with on the right */
+    margin-right: 0px; /* the last selected tab has nothing to overlap with on the right */
 }
+
 QTabBar::tab:only-one {
-    margin: 0; /* if there is only one tab, we don't want overlapping margins */
+    margin: 0px; /* if there is only one tab, we don't want overlapping margins */
 }
+
 QTabBar::close-button {
     image: url(:/Resources/Images/closeTab.png);
-    subcontrol-position:right;
+    subcontrol-origin: padding;
+    subcontrol-position: right;
 }
 
 QTabBar::close-button:hover {
     image: url(:/Resources/Images/closeTab_hovered.png);
-    subcontrol-position:right;
+    subcontrol-origin: padding;
+    subcontrol-position: right;
 }
 
 TabBar[mouseOverFocus="true"][clickFocus="false"] {
@@ -526,20 +590,31 @@ QTabWidget::tab-bar {
     alignment: left;
 }
 
+/***************************************************************************************/ 
+/****************************                             ******************************/ 
+/****************************       Menus déroulants      ******************************/
+/****************************                             ******************************/ 
+/***************************************************************************************/ 
+
 QMenu {
     background-color: %2; /* sets background of the menu */
-    border: 0px;
+    border: 1px solid black;
     padding: 1px 0px 0px 1px; /* [top+bottom] [ignored] [ignored] [left+right] (QMenu box model is buggy) top must be > 1px or the first item is selected when clicking */
     margin: 0px;
     color : %5;
     menu-scrollable: 1;
 }
+
 QMenu::item:selected { /* when user selects item using mouse or keyboard */
     background-color: %1;
+
 }
+
 QMenu::item:!enabled { /* when user selects item using mouse or keyboard */
     color : rgb(120,120,120);
 }
+
+/***************************************************************************************/
 
 QToolButton {
     background-color:%2;
@@ -549,9 +624,11 @@ QToolButton {
 SpinBox[animation="0"] {
     background-color: %3;
 }
+
 SpinBox[animation="1"] {
     background-color: %6;
 }
+
 SpinBox[animation="2"] {
     background-color: %7;
 }
@@ -560,6 +637,7 @@ SpinBox[animation="3"] {
     background-color: %9;
     color: black;
 }
+
 SpinBox[dirty="true"] {
     background-color: black;
     color: %5;
@@ -604,9 +682,9 @@ QTextEdit:read-only{
     color: %8;
 }
 QTextEdit:focus {
-    border: 2px groove %1;
-    border-radius: 4px;
-    padding: 2px 4px;
+    border: 0px groove %1;
+    border-radius: 0px;
+    padding: 4px 4px;
 }
 
 AnimatingTextEdit[animation="0"] {
@@ -697,6 +775,13 @@ AnimatedCheckBox[dirty="true"]::indicator:unchecked{
     image: url(:/Resources/Images/checkbox_dirty_unchecked.png);
 }*/
 
+
+/***************************************************************************************/ 
+/****************************                             ******************************/ 
+/****************************        barre de menus       ******************************/
+/****************************                             ******************************/ 
+/***************************************************************************************/ 
+
 QMenuBar
 {
     color: %5;
@@ -728,4 +813,3 @@ OutputScriptTextEdit {
     selection-color: %8;
     selection-background-color: %1;
 }
-
