@@ -17,13 +17,20 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include "ColorDialog.h"
+
+CLANG_DIAG_OFF(deprecated)
+CLANG_DIAG_OFF(uninitialized)
 #include <QVBoxLayout>
 #include <QTabWidget>
+CLANG_DIAG_ON(deprecated)
+CLANG_DIAG_ON(uninitialized)
+
+NATRON_NAMESPACE_ENTER
 
 ColorDialog::ColorDialog(QWidget *parent)
     : QColorDialog(parent)
     , triangle(NULL)
-    , block(false)
+    , blockTriangle(false)
 {
     init();
 }
@@ -31,7 +38,7 @@ ColorDialog::ColorDialog(QWidget *parent)
 ColorDialog::ColorDialog(const QColor &initial, QWidget *parent)
     : QColorDialog(initial, parent)
     , triangle(NULL)
-    , block(false)
+    , blockTriangle(false)
 {
     init();
 }
@@ -44,10 +51,10 @@ ColorDialog::~ColorDialog()
 // setup dialog
 void ColorDialog::init()
 {
-    // never use native dialog
+    // never use native dialog!
     setOption(QColorDialog::DontUseNativeDialog);
 
-    // get qcolordialog layout
+    // get native qcolordialog layout
     QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>( layout() );
     if (!mainLayout) { return; }
     QHBoxLayout* topLayout = qobject_cast<QHBoxLayout*>( mainLayout->itemAt(0)->layout() );
@@ -58,7 +65,7 @@ void ColorDialog::init()
     // create a container for left layout (basic)
     QWidget *basic = new QWidget(this);
     leftLayout->setParent(NULL); // remove from existing layout
-    basic->setLayout(leftLayout);
+    basic->setLayout(leftLayout); // add left layout to basic
 
     // add qtcolortriangle
     triangle = new QtColorTriangle(this);
@@ -71,30 +78,36 @@ void ColorDialog::init()
     tab->addTab( basic, QObject::tr("Colors") );
     topLayout->insertWidget(0, tab); // add tab to existing layout
 
-    // connect qcolordialog and widget(s)
+    // connect to triangle color changed
     QObject::connect( triangle, SIGNAL( colorChanged(QColor) ),
-                      this, SLOT( updateCurrentColor(QColor) ) );
+                      this, SLOT( handleTriangleColorChanged(QColor) ) );
+
+    // connect to current color changed (set color on other widgets)
     QObject::connect( this, SIGNAL( currentColorChanged(QColor) ),
                       this, SLOT( handleCurrentColorChanged(QColor) ) );
 }
 
-// set qcolordialog color from widget(s)
-void ColorDialog::updateCurrentColor(const QColor &color)
+// set current color from triangle
+void ColorDialog::handleTriangleColorChanged(const QColor &color)
 {
-    block = true; // block handleCurrentColorChanged
+    blockTriangle = true; // block triangle color update
     setCurrentColor(color);
 }
 
-// set widget(s) color from qcolordialog
+// set widget(s) color when current color changes (if needed)
 void ColorDialog::handleCurrentColorChanged(const QColor &color)
 {
-    if (block) { // ignore color
-        block = false;
-        return;
+    // triangle
+    if (blockTriangle) { // ignore color since triangle triggered this
+        blockTriangle = false;
+    } else { // set triangle color
+        triangle->blockSignals(true); // always block
+        triangle->setColor(color);
+        triangle->blockSignals(false);
     }
-
-    // qtcolortriangle
-    triangle->blockSignals(true);
-    triangle->setColor(color);
-    triangle->blockSignals(false);
 }
+
+NATRON_NAMESPACE_EXIT
+
+NATRON_NAMESPACE_USING
+#include "moc_ColorDialog.cpp"

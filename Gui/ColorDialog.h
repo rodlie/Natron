@@ -16,18 +16,26 @@
  * along with Natron.  If not, see <http://www.gnu.org/licenses/gpl-2.0.html>
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef COLORDIALOG_H
-#define COLORDIALOG_H
+#ifndef Gui_ColorDialog_h
+#define Gui_ColorDialog_h
 
-#include <QObject>
+#include "Global/Macros.h"
+
+CLANG_DIAG_OFF(deprecated)
+CLANG_DIAG_OFF(uninitialized)
+#include <QtCore/QObject>
 #include <QColorDialog>
-
-// qtcolortriangle from Nokia Qt Solutions (LGPL2.1+/GPL2+/COMMERCIAL)
 #include "QtColorTriangle.h"
+CLANG_DIAG_ON(deprecated)
+CLANG_DIAG_ON(uninitialized)
+
+NATRON_NAMESPACE_ENTER
 
 class ColorDialog : public QColorDialog
 {
+GCC_DIAG_SUGGEST_OVERRIDE_OFF
     Q_OBJECT
+GCC_DIAG_SUGGEST_OVERRIDE_ON
 
 public:
     explicit ColorDialog(QWidget* parent = NULL);
@@ -36,12 +44,14 @@ public:
 
 private:
     QtColorTriangle *triangle;
+    bool blockTriangle;
     void init();
-    bool block;
 
 private Q_SLOTS:
-    void updateCurrentColor(const QColor &color);
+    void handleTriangleColorChanged(const QColor &color);
     void handleCurrentColorChanged(const QColor &color);
 };
 
-#endif // COLORDIALOG_H
+NATRON_NAMESPACE_EXIT
+
+#endif // Gui_ColorDialog_h
