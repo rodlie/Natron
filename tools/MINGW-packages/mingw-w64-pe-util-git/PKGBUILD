@@ -1,0 +1,50 @@
+# Maintainer: ole.andre.rodlie@gmail.com
+
+_realname=pe-util
+pkgbase=mingw-w64-${_realname}-git
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}-git"
+gitcommit=5b07cb3
+pkgver=19.5b07cb3
+pkgrel=1
+pkgdesc="List shared object dependencies of a portable executable (PE)"
+arch=('any')
+url="https://github.com/gsauthof/pe-util"
+license=('MIT')
+provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+depends=("${MINGW_PACKAGE_PREFIX}-boost")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake" "git")
+options=('strip')
+source=("${_realname}"::"git+https://github.com/gsauthof/pe-util#commit=${gitcommit}"
+        0001-build-hack-for-MSYS2.patch)
+sha256sums=('SKIP'
+            '8657b6451fa246152465a486c4e105067b4c91e2bfe0df0e549649422bd76bb7')
+
+pkgver() {
+  cd "${srcdir}/${_realname}"
+  printf "%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd ${_realname}
+  git submodule update -i
+  patch -p1 -i ${srcdir}/0001-build-hack-for-MSYS2.patch
+}
+
+build() {
+  [[ -d "build-${MINGW_CHOST}" ]] && rm -rf "build-${MINGW_CHOST}"
+  mkdir -p build-${MINGW_CHOST} && cd build-${MINGW_CHOST}
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake \
+    -G"MSYS Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    ../${_realname}
+
+  make
+}
+
+package() {
+  cd build-${MINGW_CHOST}
+  make DESTDIR=${pkgdir} install
+}
