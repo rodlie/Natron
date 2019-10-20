@@ -52,6 +52,7 @@ macx {
   # replace com.yourcompany with something more meaningful
   QMAKE_TARGET_BUNDLE_PREFIX = fr.inria
   QMAKE_PKGINFO_TYPEINFO = Ntrn
+  QMAKE_SUBSTITUTES += NatronInfo.plist.in
 }
 
 
@@ -82,6 +83,7 @@ macx {
     INSTALLS += Resources
 }
 
+QMAKE_SUBSTITUTES += $$PWD/../Gui/Resources/etc/fonts/fonts.conf.in
 
 
 win32-g++ {

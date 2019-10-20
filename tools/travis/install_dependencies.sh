@@ -45,7 +45,9 @@ if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
     # see http://stackoverflow.com/questions/11302758/error-while-copy-constructing-boostshared-ptr-using-c11
     ## we used the irie/boost ppa for that purpose
     #sudo add-apt-repository -y ppa:irie/boost
-    if [ `lsb_release -cs` = "trusty" ]; then
+    if [ `lsb_release -cs` = "xenial" ]; then
+        BOOSTVER=1.58
+    elif [ `lsb_release -cs` = "trusty" ]; then
         # samuel-bachmann/boost has a backport of boost 1.60
         sudo add-apt-repository -y ppa:samuel-bachmann/boost
         BOOSTVER=1.60
@@ -57,7 +59,8 @@ if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
         BOOSTVER=1.55
         sudo add-apt-repository -y ppa:kalakris-cmake
     fi
-    PKGS="$PKGS libboost${BOOSTVER}-dev libboost-math${BOOSTVER}-dev libboost-serialization${BOOSTVER}-dev"
+    #PKGS="$PKGS libboost${BOOSTVER}-dev libboost-math${BOOSTVER}-dev libboost-serialization${BOOSTVER}-dev"
+    PKGS="$PKGS libboost-dev libboost-math-dev libboost-serialization-dev"
 
     # the PPA xorg-edgers contains cairo 1.12 (required for rotoscoping)
     sudo add-apt-repository -y ppa:xorg-edgers/ppa
@@ -81,9 +84,11 @@ if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
     #if [ "$CC" = "$TEST_CC" ]; then sudo add-apt-repository -y ppa:archivematica/externals; fi #2.5.1
     #if [ "$CC" = "$TEST_CC" ]; then sudo add-apt-repository -y ppa:pavlyshko/precise; fi #2.6.1
     if [ "$CC" = "$TEST_CC" ]; then
-        if [ `lsb_release -cs` = "trusty" ]; then
-            sudo add-apt-repository -y ppa:jonathonf/ffmpeg-3; #3.2.4
-        else
+        if [ `lsb_release -cs` = "xenial" ]; then
+            sudo add-apt-repository -y ppa:jonathonf/ffmpeg-3; #3.4.4
+        elif [ `lsb_release -cs` = "trusty" ]; then
+            sudo add-apt-repository -y ppa:jonathonf/ffmpeg-3; #3.4.4
+        elif [ `lsb_release -cs` = "precise" ]; then
             sudo add-apt-repository -y ppa:spvkgn/ffmpeg-dev; #2.8.6 (on precise)
         fi
     fi
@@ -104,9 +109,12 @@ if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
     # - ffmpeg
     if [ "$CC" = "$TEST_CC" ]; then
         if [ `lsb_release -cs` = "trusty" ]; then
-            PKGS="$PKGS cmake libtinyxml-dev liblcms2-dev libyaml-cpp-dev libboost${BOOSTVER}-dev libavcodec-dev libavformat-dev libswscale-dev libavutil-dev libswresample-dev"
+            PKGS="$PKGS cmake libtinyxml-dev liblcms2-dev libyaml-cpp-dev libboost${BOOSTVER}-dev libavcodec-dev libavformat-dev libswscale-dev libavutil-dev libswresample-dev libgl-dev"
+        elif [ `lsb_release -cs` = "precise" ]; then
+            PKGS="$PKGS cmake libtinyxml-dev liblcms2-dev libyaml-cpp-dev libboost${BOOSTVER}-dev libavcodec-dev libavformat-dev libswscale-dev libavutil-dev libswresample-dev libgl-dev"
         else
-            PKGS="$PKGS cmake libtinyxml-dev liblcms2-dev libyaml-cpp-dev libboost${BOOSTVER}-dev libavcodec-dev libavformat-dev libswscale-dev libavutil-dev libswresample-dev"
+            # xenial and more recent
+            PKGS="$PKGS cmake libtinyxml-dev liblcms2-dev libyaml-cpp-dev libboost-dev libavcodec-dev libavformat-dev libswscale-dev libavutil-dev libswresample-dev libgl-dev"
         fi
     fi
     # - opencolorio (available as libopencolorio-dev on trusty)
@@ -121,7 +129,8 @@ if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
     #fi
     # - openimageio
     if [ "$CC" = "$TEST_CC" ]; then
-        PKGS="$PKGS libopenjp2-7-dev libtiff4-dev libjpeg-dev libpng-dev libraw-dev libboost-filesystem${BOOSTVER}-dev libboost-regex${BOOSTVER}-dev libboost-thread${BOOSTVER}-dev libboost-system${BOOSTVER}-dev libwebp-dev libfreetype6-dev libssl-dev"
+        #PKGS="$PKGS libopenjp2-7-dev libtiff-dev libjpeg-dev libpng-dev libraw-dev libboost-filesystem${BOOSTVER}-dev libboost-regex${BOOSTVER}-dev libboost-thread${BOOSTVER}-dev libboost-system${BOOSTVER}-dev libwebp-dev libfreetype6-dev libssl-dev"
+        PKGS="$PKGS libopenjp2-7-dev libtiff-dev libjpeg-dev libpng-dev libraw-dev libboost-filesystem-dev libboost-regex-dev libboost-thread-dev libboost-system-dev libwebp-dev libfreetype6-dev libssl-dev"
     fi
 
 
@@ -158,9 +167,9 @@ if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
         mv libs/OpenFX/Support/Plugins/*/*-64-debug/*.ofx.bundle libs/OpenFX/Support/PropTester/*-64-debug/*.ofx.bundle Tests/Plugins/Support;
         # - opencolorio
         if [ ! -d "$HOME/ocio/lib" ]; then
-            wget https://github.com/imageworks/OpenColorIO/archive/v1.1.0.tar.gz -O /tmp/ocio.tgz;
+            wget https://github.com/imageworks/OpenColorIO/archive/v1.1.1.tar.gz -O /tmp/ocio.tgz;
             tar -xvzf /tmp/ocio.tgz -C $HOME;
-            pushd $HOME/OpenColorIO-1.1.0;
+            pushd $HOME/OpenColorIO-1.1.1;
             find . -name CMakeLists.txt -exec sed -e s/-Werror// -i {} \; ;
             mkdir _build && cd _build;
             cmake -DCMAKE_INSTALL_PREFIX=$HOME/ocio -DCMAKE_BUILD_TYPE=Release -DOCIO_BUILD_JNIGLUE=OFF -DOCIO_BUILD_NUKE=OFF -DOCIO_BUILD_SHARED=ON -DOCIO_BUILD_STATIC=OFF -DOCIO_STATIC_JNIGLUE=OFF -DOCIO_BUILD_TRUELIGHT=OFF -DUSE_EXTERNAL_LCMS=ON -DUSE_EXTERNAL_TINYXML=ON -DUSE_EXTERNAL_YAML=ON -DOCIO_BUILD_APPS=OFF -DOCIO_USE_BOOST_PTR=ON -DOCIO_BUILD_TESTS=OFF -DOCIO_BUILD_PYGLUE=OFF ..;
@@ -173,15 +182,15 @@ if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
         # OpenEXR
         # see https://github.com/PixarAnimationStudios/USD/blob/master/.travis.yml
         if [ ! -d "$HOME/openexr/lib" ]; then
-            wget http://download.savannah.nongnu.org/releases/openexr/ilmbase-2.2.1.tar.gz -O /tmp/ilmbase.tgz;
+            wget https://github.com/openexr/openexr/releases/download/v2.3.0/ilmbase-2.3.0.tar.gz -O /tmp/ilmbase.tgz;
             tar -xvzf /tmp/ilmbase.tgz -C $HOME;
-            pushd $HOME/ilmbase-2.2.1;
+            pushd $HOME/ilmbase-2.3.0;
             ./configure --prefix=$HOME/openexr;
             make && make install;
             popd;
-            wget http://download.savannah.nongnu.org/releases/openexr/openexr-2.2.1.tar.gz -O /tmp/openexr.tgz;
+            wget https://github.com/openexr/openexr/releases/download/v2.3.0/openexr-2.3.0.tar.gz -O /tmp/openexr.tgz;
             tar -xvzf /tmp/openexr.tgz -C $HOME;
-            pushd $HOME/openexr-2.2.1;
+            pushd $HOME/openexr-2.3.0;
             ./configure --prefix=$HOME/openexr --with-pkg-config=no LDFLAGS="-Wl,-rpath -Wl,$HOME/openexr/lib";
             make $J && make install;
             popd;
@@ -190,11 +199,11 @@ if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
         fi
         # - openimageio
         if [ ! -d "$HOME/oiio/lib" ]; then
-            wget https://github.com/OpenImageIO/oiio/archive/Release-1.8.8.tar.gz -O /tmp/oiio.tgz;
+            wget https://github.com/OpenImageIO/oiio/archive/Release-2.0.8.tar.gz -O /tmp/oiio.tgz;
             tar -xvzf /tmp/oiio.tgz -C $HOME;
-            pushd $HOME/oiio-Release-1.8.8;
+            pushd $HOME/oiio-Release-2.0.8;
             mkdir _build && cd _build;
-            cmake -DCMAKE_INSTALL_PREFIX=$HOME/oiio -DILMBASE_HOME=$HOME/openexr -DOPENEXR_HOME=$HOME/openexr -DOCIO_PATH=$HOME/ocio -DUSE_QT=OFF -DUSE_PYTHON=OFF -DUSE_PYTHON3=OFF -DUSE_FIELD3D=OFF -DUSE_FFMPEG=OFF -DUSE_OPENJPEG=ON -DUSE_OCIO=ON -DUSE_OPENCV=OFF -DUSE_OPENSSL=OFF -DUSE_FREETYPE=ON -DUSE_GIF=OFF -DUSE_PTEX=OFF -DUSE_LIBRAW=ON -DOIIO_BUILD_TESTS=OFF -DOIIO_BUILD_TOOLS=OFF -DSTOP_ON_WARNING=OFF ..;
+            cmake -DCMAKE_INSTALL_PREFIX=$HOME/oiio -DILMBASE_ROOT_DIR=$HOME/openexr -DOPENEXR_ROOT_DIR=$HOME/openexr -DOCIO_HOME=$HOME/ocio -DUSE_QT=OFF -DUSE_PYTHON=OFF -DUSE_PYTHON3=OFF -DUSE_FIELD3D=OFF -DUSE_FFMPEG=OFF -DUSE_OPENJPEG=ON -DUSE_OCIO=ON -DUSE_OPENCV=OFF -DUSE_OPENSSL=OFF -DUSE_FREETYPE=ON -DUSE_GIF=OFF -DUSE_PTEX=OFF -DUSE_LIBRAW=ON -DOIIO_BUILD_TESTS=OFF -DOIIO_BUILD_TOOLS=OFF -DSTOP_ON_WARNING=OFF ..;
             make $J && make install;
             popd;
         else

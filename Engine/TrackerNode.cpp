@@ -1110,7 +1110,7 @@ TrackerNode::drawOverlay(double time,
                     }
 
 
-                    //////DRAWING OUTTER POINTS
+                    //////DRAWING OUTER POINTS
 
                     if ( isHoverOrDraggedMarker && ( (_imp->ui->hoverState == eDrawStateHoveringOuterBtmLeft) || (_imp->ui->eventState == eMouseStateDraggingOuterBtmLeft) ) ) {
                         glColor3f(0.f * l, 1.f * l, 0.f * l);
@@ -1191,7 +1191,7 @@ TrackerNode::drawOverlay(double time,
                     glVertex2d( innerMidBtm.x(), innerMidBtm.y() );
                     glVertex2d( innerMidBtmExt.x(), innerMidBtmExt.y() );
 
-                    //////DRAWING OUTTER HANDLES
+                    //////DRAWING OUTER HANDLES
 
                     if ( isHoverOrDraggedMarker && ( (_imp->ui->hoverState == eDrawStateHoveringOuterMidLeft) || (_imp->ui->eventState == eMouseStateDraggingOuterMidLeft) ) ) {
                         glColor3f(0.f * l, 1.f * l, 0.f * l);
@@ -1762,11 +1762,9 @@ TrackerNode::onOverlayPenMotion(double time,
                 didSomething = false;
                 break;
             }
-            for (int i = 0; i < 4; ++i) {
-                if (!patternCorners[i]) {
-                    didSomething = false;
-                    break;
-                }
+            if (!patternCorners[0] || !patternCorners[1] || !patternCorners[2] || !patternCorners[3]) {
+                didSomething = false;
+                break;
             }
 
             if (_imp->ui->eventState == eMouseStateDraggingOffset) {
@@ -1805,11 +1803,9 @@ TrackerNode::onOverlayPenMotion(double time,
                 didSomething = false;
                 break;
             }
-            for (int i = 0; i < 4; ++i) {
-                if (!patternCorners[i]) {
-                    didSomething = false;
-                    break;
-                }
+            if (!patternCorners[0] || !patternCorners[1] || !patternCorners[2] || !patternCorners[3]) {
+                didSomething = false;
+                break;
             }
             int index = 0;
             if (_imp->ui->eventState == eMouseStateDraggingInnerBtmLeft) {
@@ -1860,7 +1856,7 @@ TrackerNode::onOverlayPenMotion(double time,
             nextDiagVec.x = prev.x - diag.x;
             nextDiagVec.y = prev.y - diag.y;
 
-            //Clamp so the 4 points remaing the same in the homography
+            //Clamp so the 4 points remaining the same in the homography
             if (prevVec.x * nextVec.y - prevVec.y * nextVec.x < 0.) {         // cross-product
                 TrackerNodeInteract::findLineIntersection(cur, prev, next, &cur);
             }
@@ -1903,11 +1899,9 @@ TrackerNode::onOverlayPenMotion(double time,
                 didSomething = false;
                 break;
             }
-            for (int i = 0; i < 4; ++i) {
-                if (!patternCorners[i]) {
-                    didSomething = false;
-                    break;
-                }
+            if (!patternCorners[0] || !patternCorners[1] || !patternCorners[2] || !patternCorners[3]) {
+                didSomething = false;
+                break;
             }
             Point center;
             center.x = centerKnob->getValueAtTime(time, 0);
@@ -1965,11 +1959,9 @@ TrackerNode::onOverlayPenMotion(double time,
                 didSomething = false;
                 break;
             }
-            for (int i = 0; i < 4; ++i) {
-                if (!patternCorners[i]) {
-                    didSomething = false;
-                    break;
-                }
+            if (!patternCorners[0] || !patternCorners[1] || !patternCorners[2] || !patternCorners[3]) {
+                didSomething = false;
+                break;
             }
             Point center;
             center.x = centerKnob->getValueAtTime(time, 0);
@@ -2033,11 +2025,9 @@ TrackerNode::onOverlayPenMotion(double time,
                 didSomething = false;
                 break;
             }
-            for (int i = 0; i < 4; ++i) {
-                if (!patternCorners[i]) {
-                    didSomething = false;
-                    break;
-                }
+            if (!patternCorners[0] || !patternCorners[1] || !patternCorners[2] || !patternCorners[3]) {
+                didSomething = false;
+                break;
             }
             Point center;
             center.x = centerKnob->getValueAtTime(time, 0);
@@ -2098,11 +2088,9 @@ TrackerNode::onOverlayPenMotion(double time,
                 didSomething = false;
                 break;
             }
-            for (int i = 0; i < 4; ++i) {
-                if (!patternCorners[i]) {
-                    didSomething = false;
-                    break;
-                }
+            if (!patternCorners[0] || !patternCorners[1] || !patternCorners[2] || !patternCorners[3]) {
+                didSomething = false;
+                break;
             }
             Point center;
             center.x = centerKnob->getValueAtTime(time, 0);
@@ -2226,11 +2214,9 @@ TrackerNode::onOverlayPenMotion(double time,
                 didSomething = false;
                 break;
             }
-            for (int i = 0; i < 4; ++i) {
-                if (!patternCorners[i]) {
-                    didSomething = false;
-                    break;
-                }
+            if (!patternCorners[0] || !patternCorners[1] || !patternCorners[2] || !patternCorners[3]) {
+                didSomething = false;
+                break;
             }
             double x = centerKnob->getValueAtTime(time, 0);
             double y = centerKnob->getValueAtTime(time, 1);

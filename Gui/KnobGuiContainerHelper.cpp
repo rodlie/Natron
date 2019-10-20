@@ -56,7 +56,7 @@ struct KnobGuiContainerHelperPrivate
     KnobGuiContainerHelper* _p;
     KnobHolder* holder;
 
-    // Stores our KnobGui refered to by the internal Knob
+    // Stores our KnobGui referred to by the internal Knob
     KnobsGuiMapping knobsMap;
     KnobPageGuiWPtr currentPage;
     PagesMap pages;
@@ -838,7 +838,6 @@ KnobGuiContainerHelper::findKnobGuiOrCreate(const KnobIPtr & knob,
 
             const bool labelOnSameColumn = ret->isLabelOnSameColumn();
             Qt::Alignment labelAlignment;
-            Qt::Alignment fieldAlignment;
 
             if (isGroup) {
                 labelAlignment = Qt::AlignLeft;

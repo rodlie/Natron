@@ -1,9 +1,10 @@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
 
 PortSystem                      1.0
+PortGroup                       clang_dependency 1.0
 
 name                            curl
-version                         7.64.0
+version                         7.66.0
 categories                      net www
 platforms                       darwin freebsd
 maintainers                     {ryandesign @ryandesign}
@@ -26,9 +27,9 @@ set curl_distfile               ${distfiles}
 distfiles                       ${curl_distfile}:curl
 
 checksums                       ${curl_distfile} \
-                                rmd160  40806b3ea50ddab9d2f063dad37e81fdf6b04a17 \
-                                sha256  2f2f13fa34d44aa29cb444077ad7dc4dc6d189584ad552e0aaeb06e608af6001 \
-                                size    2398904
+                                rmd160  24b4a7432d117efcca0c1de95fb4797dcf186216 \
+                                sha256  dbb48088193016d079b97c5c3efde8efa56ada2ebf336e8a97d04eb8e2ed98c1 \
+                                size    2414840
 
 if {${name} eq ${subport}} {
     PortGroup                   muniversal 1.0
@@ -112,6 +113,8 @@ if {${name} eq ${subport}} {
             CONTRIBUTE.md \
             FAQ \
             FEATURES \
+            GOVERNANCE.md \
+            HELP-US.md \
             HISTORY.md \
             HTTP-COOKIES.md \
             HTTP2.md \
@@ -119,7 +122,6 @@ if {${name} eq ${subport}} {
             KNOWN_BUGS \
             LICENSE-MIXING.md \
             MAIL-ETIQUETTE \
-            MANUAL \
             RESOURCES \
             ROADMAP.md \
             SECURITY-PROCESS.md \
@@ -204,7 +206,7 @@ if {${name} eq ${subport}} {
 }
 
 subport curl-ca-bundle {
-    revision                    0
+    revision                    1
     categories                  net
     license                     {MPL-2 LGPL-2.1+}
     supported_archs             noarch
@@ -224,8 +226,8 @@ subport curl-ca-bundle {
     set certdata_file           certdata.txt
     # The output of the Tcl command "clock seconds" (you can run it in tclsh) when
     # the certdata.txt file in the port was last updated.
-    set certdata_updated        1545056376
-    set certdata_version        3a4a3b9133e9
+    set certdata_updated        1559870717
+    set certdata_version        3709f100f264
     set certdata_extract_cmd    bzip2
     set certdata_extract_suffix .tar.bz2
     set certdata_distfile       certdata-${certdata_version}${certdata_extract_suffix}
@@ -241,9 +243,9 @@ subport curl-ca-bundle {
     distfiles-append            ${certdata_distfile}:certdata
 
     checksums-append            ${certdata_distfile} \
-                                rmd160  39cd56f6d1e13ca53eee747629aad349206d5ddb \
-                                sha256  c191063da22a44d5694c765aa2210373e4c48c4a5f1d700321a3c03e80eae16b \
-                                size    191985
+                                rmd160  4f198d012501659d460f8fca9e17fabfd3b80a1c \
+                                sha256  9126c48a0b071abf105cabc1a20984b8b6480b4e9a6a719dd88c933b0c03542c \
+                                size    195136
 
     extract.only                ${curl_distfile}
     set curl_mk_ca_bundle_files "${worksrcdir}/Makefile ${worksrcdir}/lib/mk-ca-bundle.pl"

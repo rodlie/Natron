@@ -208,7 +208,7 @@ Settings::initializeKnobsGeneral()
     assert(visibleHostEntries.size() == (int)eKnownHostNameNuke);
     visibleHostEntries.push_back(ChoiceOption("uk.co.thefoundry.nuke", "Nuke", ""));
     assert(visibleHostEntries.size() == (int)eKnownHostNameFusion);
-    visibleHostEntries.push_back(ChoiceOption("com.eyeonline.Fusion", "Fusion", ""));
+    visibleHostEntries.push_back(ChoiceOption("com.eyeonline.Fusion", "Fusion", "")); // or com.blackmagicdesign.Fusion
     assert(visibleHostEntries.size() == (int)eKnownHostNameCatalyst);
     visibleHostEntries.push_back(ChoiceOption("com.sony.Catalyst.Edit", "Sony Catalyst Edit", ""));
     assert(visibleHostEntries.size() == (int)eKnownHostNameVegas);
@@ -262,7 +262,7 @@ Settings::initializeKnobsGeneral()
     _customHostName->setName("customHostName");
     _customHostName->setHintToolTip( tr("This is the name of the OpenFX host (application) as it appears to the OpenFX plugins. "
                                         "Changing it to the name of another application can help loading some plugins which "
-                                        "restrict their usage to specific OpenFX hosts. You shoud leave "
+                                        "restrict their usage to specific OpenFX hosts. You should leave "
                                         "this to its default value, unless a specific plugin refuses to load or run. "
                                         "Changing this takes effect upon the next application launch, and requires clearing "
                                         "the OpenFX plugins cache from the Cache menu. "
@@ -1267,17 +1267,20 @@ Settings::initializeKnobsCaching()
     _cachingTab->addKnob(_maxDiskCacheNodeGB);
 
 
-    _diskCachePath = AppManager::createKnob<KnobPath>( this, tr("Disk cache path (empty = default)") );
+    _diskCachePath = AppManager::createKnob<KnobPath>( this, tr("Disk cache path") );
     _diskCachePath->setName("diskCachePath");
     _diskCachePath->setMultiPath(false);
 
     QString defaultLocation = StandardPaths::writableLocation(StandardPaths::eStandardLocationCache);
     QString diskCacheTt( tr("WARNING: Changing this parameter requires a restart of the application. \n"
-                            "This is points to the location where %1 on-disk caches will be. "
-                            "This variable should point to your fastest disk. If the parameter is left empty or the location set is invalid, "
-                            "the default location will be used. The default location is: \n").arg( QString::fromUtf8(NATRON_APPLICATION_NAME) ) );
+                            "This points to the location where %1 on-disk caches will be. "
+                            "This variable should point to your fastest disk. This parameter can be "
+                            "overriden by the value of the environment variable %2.").arg( QString::fromUtf8(NATRON_APPLICATION_NAME) ).arg( QString::fromUtf8(NATRON_DISK_CACHE_PATH_ENV_VAR) ) );
 
-    _diskCachePath->setHintToolTip( diskCacheTt + defaultLocation );
+    QString diskCacheTt2( tr("If the parameter is left empty or the location set is invalid, "
+                             "the default location will be used. The default location is: %1").arg(defaultLocation) );
+
+    _diskCachePath->setHintToolTip( diskCacheTt + QLatin1Char('\n') + diskCacheTt2 );
     _cachingTab->addKnob(_diskCachePath);
 
     _wipeDiskCache = AppManager::createKnob<KnobButton>( this, tr("Wipe Disk Cache") );
@@ -1360,7 +1363,7 @@ Settings::initializeKnobsPython()
     _onProjectCreated->setName("afterProjectCreated");
     _onProjectCreated->setHintToolTip( tr("Callback called once a new project is created (this is never called "
                                           "when \"After project loaded\" is called.)\n"
-                                          "The signature of the callback is : callback(app) where:\n"
+                                          "The signature of the callback is: callback(app) where:\n"
                                           "- app: points to the current application instance\n") );
     _pythonPage->addKnob(_onProjectCreated);
 
@@ -1400,7 +1403,7 @@ Settings::initializeKnobsPython()
                                                      "whether you want to upgrade to the new version of the PyPlug in your project. "
                                                      "If the .py file is not found, it will fallback to the same behavior "
                                                      "as when this option is unchecked. When unchecked the PyPlug will load as a regular group "
-                                                     "with the informations embedded in the project file.") );
+                                                     "with the information embedded in the project file.") );
     _loadPyPlugsFromPythonScript->setDefaultValue(true);
     _pythonPage->addKnob(_loadPyPlugsFromPythonScript);
 
@@ -1962,7 +1965,7 @@ Settings::saveSettings(const std::vector<KnobI*>& knobs,
                 } else {
                     assert(false);
                 }
-            } catch (std::logic_error) {
+            } catch (std::logic_error&) {
                 // ignore
             }
         } // for (int j = 0; j < knobs[i]->getDimension(); ++j) {
@@ -2121,7 +2124,7 @@ Settings::restoreSettings(bool useDefault)
         appPTR->setNThreadsToRender( getNumberOfThreads() );
         appPTR->setUseThreadPool( _useThreadPool->getValue() );
         appPTR->setPluginsUseInputImageCopyToRender( _pluginUseImageCopyForSource->getValue() );
-    } catch (std::logic_error) {
+    } catch (std::logic_error&) {
         // ignore
     }
 
@@ -2485,13 +2488,13 @@ Settings::getRamMaximumPercent() const
 U64
 Settings::getMaximumViewerDiskCacheSize() const
 {
-    return (U64)( _maxViewerDiskCacheGB->getValue() ) * std::pow(1024., 3.);
+    return (U64)( _maxViewerDiskCacheGB->getValue() ) * 1024 * 1024 * 1024;
 }
 
 U64
 Settings::getMaximumDiskCacheNodeSize() const
 {
-    return (U64)( _maxDiskCacheNodeGB->getValue() ) * std::pow(1024., 3.);
+    return (U64)( _maxDiskCacheNodeGB->getValue() ) * 1024 * 1024 * 1024;
 }
 
 ///////////////////////////////////////////////////
@@ -2566,6 +2569,7 @@ Settings::makeHTMLDocumentation(bool genHTML) const
     QTextStream ts(&ret);
     QTextStream ms(&markdown);
 
+    ms << ( QString::fromUtf8(".. ") + tr("Do not edit this file! It is generated automatically by %1 itself.").arg ( QString::fromUtf8( NATRON_APPLICATION_NAME) ) + QString::fromUtf8("\n\n") );
     ms << tr("Preferences") << "\n==========\n\n";
 
     const KnobsVec& knobs = getKnobs_mt_safe();
@@ -2706,7 +2710,7 @@ Settings::getOpenFXPluginsSearchPaths(std::list<std::string>* paths) const
     assert(paths);
     try {
         _extraPluginPaths->getPaths(paths);
-    } catch (std::logic_error) {
+    } catch (std::logic_error&) {
         paths->clear();
     }
 }

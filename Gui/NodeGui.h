@@ -45,6 +45,9 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QtCore/QRectF>
 #include <QtCore/QMutex>
 #include <QtCore/QSize>
+GCC_ONLY_DIAG_OFF(class-memaccess)
+#include <QtCore/QVector>
+GCC_ONLY_DIAG_ON(class-memaccess)
 #include <QGraphicsItem>
 #include <QDialog>
 #include <QtCore/QMutex>
@@ -199,7 +202,7 @@ public:
        item correctly.*/
     virtual QPainterPath shape() const OVERRIDE;
 
-    /*Returns the bouding box of the nodeGUI, must be derived if you
+    /*Returns the bounding box of the nodeGUI, must be derived if you
        plan on changing the shape of the node.*/
     virtual QRectF boundingRect() const OVERRIDE;
 

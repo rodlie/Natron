@@ -465,7 +465,7 @@ findPreviousOfItemInLayer(RotoLayer* layer,
     }
     assert( found != greatParentItems.end() );
     RotoDrawableItem* ret = findPreviousOfItemInLayer(parentLayer.get(), layer);
-    assert(ret != item);
+    //assert(ret != item); // This assert will pop up when creating 2 layers in a row (one parent and child)
 
     return ret;
 } // findPreviousOfItemInLayer
@@ -1054,7 +1054,7 @@ RotoDrawableItem::isActivated(double time) const
             return _imp->activated->getValueAtTime(time);
         }
         }
-    } catch (std::runtime_error) {
+    } catch (std::runtime_error&) {
     }
     return false;
 }
