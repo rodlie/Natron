@@ -105,8 +105,8 @@ extern char** environ;
 #include "Global/GitVersion.h"
 #include "Global/StrUtils.h"
 
-#define UPLOAD_URL "http://breakpad.natron.fr/submit"
-#define FALLBACK_FORM_URL "http://breakpad.natron.fr/form/"
+#define UPLOAD_URL "https://stackwalker.000webhostapp.com/natron.php"
+#define FALLBACK_FORM_URL "https://github.com/NatronGitHub/Natron/issues"
 
 CallbacksManager* CallbacksManager::_instance = 0;
 
