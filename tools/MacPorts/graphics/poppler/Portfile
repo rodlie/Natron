@@ -3,14 +3,13 @@
 PortSystem          1.0
 PortGroup           compiler_blacklist_versions 1.0
 PortGroup           conflicts_build 1.0
-PortGroup           cxx11 1.1
 PortGroup           gobject_introspection 1.0
 PortGroup           cmake 1.1
 PortGroup           legacysupport 1.0
 
 name                poppler
 conflicts           xpdf-tools
-version             0.81.0
+version             0.83.0
 license             GPL-2+
 maintainers         {devans @dbevans} openmaintainer
 categories          graphics
@@ -24,9 +23,9 @@ master_sites        ${homepage}
 
 use_xz              yes
 
-checksums           rmd160  3eb610e4dd3f7b2baca949c99c4425f24a552cf0 \
-                    sha256  212d020b035b67b36c9666bd08ac778dff3222d85c01c338787d546f0f9bfe02 \
-                    size    1548944
+checksums           rmd160  2ffc9fe5b5198e677d2f33d0f52d1ef89e07bce5 \
+                    sha256  685c650d9771e1c340ea222b57c8bd3f7502e2191ccfe8adeb9e638dcb0b799b \
+                    size    1555456
 
 depends_build-append \
                     port:pkgconfig
@@ -56,6 +55,7 @@ configure.ldflags-append -liconv
 gobject_introspection yes
 
 # C++14, thread_local
+compiler.cxx_standard 2014
 configure.cxxflags-append -std=c++14
 compiler.blacklist-append {clang < 800.0.38}
 
