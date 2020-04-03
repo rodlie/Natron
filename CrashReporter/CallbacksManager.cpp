@@ -745,15 +745,12 @@ getLinuxVersionString()
 
 void
 CallbacksManager::uploadFileToRepository(const QString& filepath,
-                                         const QString& comments,
-                                         const QString& contact,
-                                         const QString& severity,
+                                         const QString& description,
                                          const QString& GLrendererInfo,
                                          const QString& GLversionInfo,
                                          const QString& GLvendorInfo,
                                          const QString& GLshaderInfo,
-                                         const QString& GLextInfo,
-                                         const QString& features)
+                                         const QString& GLextInfo)
 {
     assert(!_uploadReply);
 
@@ -812,14 +809,8 @@ CallbacksManager::uploadFileToRepository(const QString& filepath,
     addTextHttpPart(multiPart, QString::fromUtf8("GitBranch"), gitBranch);
     addTextHttpPart(multiPart, QString::fromUtf8("Version"), versionStr);
     addTextHttpPart(multiPart, QString::fromUtf8("guid"), guidStr);
-    addTextHttpPart(multiPart, QString::fromUtf8("Comments"), comments);
+    addTextHttpPart(multiPart, QString::fromUtf8("Comments"), description);
     addFileHttpPart(multiPart, QString::fromUtf8("upload_file_minidump"), filepath);
-    if ( !contact.isEmpty() ) {
-        addTextHttpPart(multiPart, QString::fromUtf8("Contact"), contact);
-    }
-    if ( !severity.isEmpty() ) {
-        addTextHttpPart(multiPart, QString::fromUtf8("Severity"), severity);
-    }
     if ( !GLrendererInfo.isEmpty() ) {
         addTextHttpPart(multiPart, QString::fromUtf8("GLrenderer"), GLrendererInfo);
     }
@@ -834,9 +825,6 @@ CallbacksManager::uploadFileToRepository(const QString& filepath,
     }
     if ( !GLextInfo.isEmpty() ) {
         addTextHttpPart(multiPart, QString::fromUtf8("GLext"), GLextInfo);
-    }
-    if ( !features.isEmpty() ) {
-        addTextHttpPart(multiPart, QString::fromUtf8("features"), features);
     }
 #ifdef Q_OS_LINUX
     if ( !linuxVersion.isEmpty() ) {
@@ -998,7 +986,7 @@ void
 CallbacksManager::processCrashReport()
 {
 #ifdef REPORTER_CLI_ONLY
-    uploadFileToRepository( _dumpFilePath, QString::fromUtf8("Crash auto-uploaded from NatronRenderer"), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8("") );
+    uploadFileToRepository( _dumpFilePath, QString::fromUtf8("Crash auto-uploaded from NatronRenderer"), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8("") );
 
     ///@todo We must notify the user the log is available at filePath but we don't have access to the terminal with this process
 #else
@@ -1038,7 +1026,7 @@ CallbacksManager::onCrashDialogFinished()
     }
 
     if (doUpload) {
-        uploadFileToRepository( _dialog->getOriginalDumpFilePath(), _dialog->getDescription(), _dialog->getContact(), _dialog->getSeverity(), _dialog->getGLrenderer(), _dialog->getGLversion(), _dialog->getGLvendor(), _dialog->getGLshader(), _dialog->getGLext(), _dialog->getFeatures() );
+        uploadFileToRepository( _dialog->getOriginalDumpFilePath(), _dialog->getDescription(), _dialog->getGLrenderer(), _dialog->getGLversion(), _dialog->getGLvendor(), _dialog->getGLshader(), _dialog->getGLext() );
     } else {
         _dialog->deleteLater();
         EXIT_APP(0, true);

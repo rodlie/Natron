@@ -1,6 +1,7 @@
 /* ***** BEGIN LICENSE BLOCK *****
- * This file is part of Natron <http://www.natron.fr/>,
- * Copyright (C) 2016 INRIA and Alexandre Gauthier-Foichat
+ * This file is part of Natron <https://natrongithub.github.io/>,
+ * Copyright (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
+ * Copyright (C) 2018-2020 The Natron developers
  *
  * Natron is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,15 +58,8 @@ public:
     virtual ~CrashDialog();
 
     QString getDescription() const;
-
+    void setDescription(const QString &description);
     UserChoice getUserChoice() const;
-
-    QString getContact() const;
-
-    QString getSeverity() const;
-
-    QString getFeatures() const;
-
     QString getGLrenderer() const;
     QString getGLversion() const;
     QString getGLvendor() const;
@@ -80,13 +74,7 @@ public:
 public Q_SLOTS:
 
     void onSendClicked();
-
     void onDontSendClicked();
-
-    void onSaveClicked();
-
-    void restoreSettings();
-    void saveSettings();
 
 private:
 
@@ -96,46 +84,12 @@ private:
     QGridLayout* _gridLayout;
     QLabel* _iconLabel;
     QLabel* _infoLabel;
-    QLabel* _refLabel;
-    QLabel* _refContent;
-    QLabel* _descLabel;
     PlaceHolderTextEdit* _descEdit;
-    QLabel* _featLabel;
-    QFrame* _featMainFrame;
-    QFrame* _featFrame01;
-    QFrame* _featFrame02;
-    QFrame* _featFrame03;
-    QFrame* _featFrame04;
-    QHBoxLayout* _featMainLayout;
-    QVBoxLayout* _featColLayout01;
-    QVBoxLayout* _featColLayout02;
-    QVBoxLayout* _featColLayout03;
-    QVBoxLayout* _featColLayout04;
-    QCheckBox* _feat01Box;
-    QCheckBox* _feat02Box;
-    QCheckBox* _feat03Box;
-    QCheckBox* _feat04Box;
-    QCheckBox* _feat05Box;
-    QCheckBox* _feat06Box;
-    QCheckBox* _feat07Box;
-    QCheckBox* _feat08Box;
-    QCheckBox* _feat09Box;
-    QCheckBox* _feat10Box;
-    QCheckBox* _feat11Box;
-    QCheckBox* _feat12Box;
-    QCheckBox* _feat13Box;
     QFrame* _buttonsFrame;
     QHBoxLayout* _buttonsLayout;
     QPushButton* _sendButton;
     QPushButton* _dontSendButton;
-    QPushButton* _saveReportButton;
     QPushButton* _pressedButton;
-    QFrame* _userFrame;
-    QHBoxLayout* _userLayout;
-    QLineEdit* _userEmail;
-    QComboBox* _severity;
-    QLabel* _severityLabel;
-    QCheckBox* _contactMe;
     QString _GLrenderer;
     QString _GLversion;
     QString _GLvendor;
