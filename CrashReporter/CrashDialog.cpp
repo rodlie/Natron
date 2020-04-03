@@ -23,8 +23,6 @@
 #include <iostream>
 #include <cassert>
 
-#include <QDir>
-#include <QThread>
 #include <QTextStream>
 #include <QFile>
 #include <QFrame>
@@ -34,15 +32,8 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QTextEdit>
-#include <QFileInfo>
-#include <QPainter>
 #include <QApplication>
-#include <QLocalSocket>
-#include <QFileDialog>
-#include <QTextDocument>
-#include <QMessageBox>
 #include <QStyle>
-#include <QSettings>
 
 #include <QtOpenGL/QGLWidget>
 #ifdef __APPLE__
@@ -55,61 +46,6 @@
 
 #define NATRON_FONT "Droid Sans"
 #define NATRON_FONT_SIZE_DEFAULT 11
-
-class PlaceHolderTextEdit
-    : public QTextEdit
-{
-    QString placeHolder;
-
-public:
-
-
-    PlaceHolderTextEdit(QWidget* parent)
-        : QTextEdit(parent)
-        , placeHolder()
-    {
-    }
-
-    void setPlaceHolderText(const QString& ph)
-    {
-        placeHolder = ph;
-    }
-
-    QString getText() const
-    {
-        QString ret = toPlainText();
-
-        if (ret == placeHolder) {
-            return QString();
-        }
-
-        return ret;
-    }
-
-private:
-
-    virtual void focusInEvent(QFocusEvent *e)
-    {
-        if ( !placeHolder.isNull() ) {
-            QString t = toPlainText();
-            if ( t.isEmpty() || (t == placeHolder) ) {
-                clear();
-            }
-        }
-        QTextEdit::focusInEvent(e);
-    }
-
-    virtual void focusOutEvent(QFocusEvent *e)
-    {
-        if ( !placeHolder.isEmpty() ) {
-            if ( toPlainText().isEmpty() ) {
-                setText(placeHolder);
-            }
-        }
-        QTextEdit::focusOutEvent(e);
-    }
-};
-
 
 CrashDialog::CrashDialog(const QString &filePath)
     : QDialog(0, Qt::Dialog | Qt::WindowStaysOnTopHint)
@@ -178,7 +114,7 @@ CrashDialog::CrashDialog(const QString &filePath)
 
     _gridLayout->addWidget(_infoLabel, 1, 0, 1, 2);
 
-    PlaceHolderTextEdit* edit = new PlaceHolderTextEdit(_mainFrame);
+    QTextEdit* edit = new QTextEdit(_mainFrame);
     edit->setReadOnly(true);
     _descEdit = edit;
     _gridLayout->addWidget(_descEdit, 4, 1, 1, 1);
@@ -221,7 +157,7 @@ CrashDialog::~CrashDialog()
 QString
 CrashDialog::getDescription() const
 {
-    return _descEdit->getText();
+    return _descEdit->toPlainText();
 }
 
 void CrashDialog::setDescription(const QString &description)

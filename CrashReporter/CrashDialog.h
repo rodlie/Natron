@@ -26,8 +26,6 @@ CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QDialog>
 #include <QLineEdit>
-#include <QComboBox>
-#include <QCheckBox>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -84,7 +82,7 @@ private:
     QGridLayout* _gridLayout;
     QLabel* _iconLabel;
     QLabel* _infoLabel;
-    PlaceHolderTextEdit* _descEdit;
+    QTextEdit* _descEdit;
     QFrame* _buttonsFrame;
     QHBoxLayout* _buttonsLayout;
     QPushButton* _sendButton;
