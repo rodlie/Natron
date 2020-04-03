@@ -172,9 +172,27 @@ function installPlugin() {
     cp -a "${TMP_BINARIES_PATH}/OFX/Plugins/${OFX_BINARY}.ofx.bundle" "${TMP_PORTABLE_DIR}/Plugins/OFX/Natron/"
     cp -a "${TMP_BINARIES_PATH}/OFX/Plugins/${OFX_BINARY}.ofx.bundle" "$PKG_PATH/data/Plugins/OFX/Natron/"
 
-        # Dump symbols
+    # Dump symbols
     if [ "${DISABLE_BREAKPAD:-}" != "1" ] && [ -d "${TMP_BINARIES_PATH}/OFX/Plugins/${OFX_BINARY}.ofx.bundle" ]; then
-        dump_syms_safe "$PKG_PATH/data/Plugins/OFX/Natron/${OFX_BINARY}.ofx.bundle/Contents/Win${BITS}/${OFX_BINARY}.ofx" "${BUILD_ARCHIVE_DIRECTORY}/symbols/${OFX_BINARY}.ofx-${VERSION_TAG}${BPAD_TAG:-}-${PKGOS_BITS}.sym"
+        PLUG_SYMBOL="${BUILD_ARCHIVE_DIRECTORY}/symbols/${OFX_BINARY}.ofx-${VERSION_TAG}${BPAD_TAG:-}-${PKGOS_BITS}.sym"
+        dump_syms_safe "$PKG_PATH/data/Plugins/OFX/Natron/${OFX_BINARY}.ofx.bundle/Contents/Win${BITS}/${OFX_BINARY}.ofx" ${PLUG_SYMBOL}
+        # Create a breakpad symbol storage
+        PLUG_SYMBOL_ID=`head -1 ${PLUG_SYMBOL} | awk '{print $4}'`
+        if [ ! -z "${PLUG_SYMBOL_ID}" ]; then
+            PLUG_STORAGE_PORTABLE="${TMP_PORTABLE_DIR}/Resources/symbols/${OFX_BINARY}.ofx/${PLUG_SYMBOL_ID}"
+            PLUG_STORAGE_PKG="${PKG_PATH}/data/Resources/symbols/${OFX_BINARY}.ofx/${PLUG_SYMBOL_ID}"
+            mkdir -p ${PLUG_STORAGE_PORTABLE} ${PLUG_STORAGE_PKG}
+            cp -a ${PLUG_SYMBOL} ${PLUG_STORAGE_PORTABLE}/${OFX_BINARY}.ofx
+            cp -a ${PLUG_SYMBOL} ${PLUG_STORAGE_PKG}/${OFX_BINARY}.ofx
+            ( cd ${PLUG_STORAGE_PORTABLE} ;
+                zip -9 ${OFX_BINARY}.ofx.zip ${OFX_BINARY}.ofx
+                rm -f ${OFX_BINARY}.ofx
+            )
+            ( cd ${PLUG_STORAGE_PKG} ;
+                zip -9 ${OFX_BINARY}.ofx.zip ${OFX_BINARY}.ofx
+                rm -f ${OFX_BINARY}.ofx
+            )
+        fi
     fi
 
     # Strip ofx binaries (must be done before manifest)
@@ -246,6 +264,18 @@ $GSED "s/_VERSION_/${VERSION_TAG}/;s/_DATE_/${INSTALLER_XML_DATE}/" < "$XML/natr
 cp "$QS/$PKGOS/natron.qs" "$NATRON_PACKAGE_PATH/meta/installscript.qs"
 cat "${TMP_BINARIES_PATH}/docs/natron/LICENSE.txt" > "$NATRON_PACKAGE_PATH/meta/natron-license.txt"
 
+# Dump symbols for crash reporting on Natron binaries
+if [ "${DISABLE_BREAKPAD:-}" != "1" ]; then
+    NATRON_SYMBOL="${BUILD_ARCHIVE_DIRECTORY}/symbols/Natron-${VERSION_TAG}${BPAD_TAG:-}-${PKGOS_BITS}.sym"
+    NATRONRENDERER_SYMBOL="${BUILD_ARCHIVE_DIRECTORY}/symbols/NatronRenderer-${VERSION_TAG}${BPAD_TAG:-}-${PKGOS_BITS}.sym"
+
+    dump_syms_safe "${TMP_BINARIES_PATH}/bin/Natron.exe" ${NATRON_SYMBOL}
+    dump_syms_safe "${TMP_BINARIES_PATH}/bin/NatronRenderer.exe" ${NATRONRENDERER_SYMBOL}
+
+    NATRON_SYMBOL_ID=`head -1 ${NATRON_SYMBOL} | awk '{print $4}'`
+    NATRONRENDERER_SYMBOL_ID=`head -1 ${NATRONRENDERER_SYMBOL} | awk '{print $4}'`
+fi
+
 # We copy all files to both the portable archive and the package for the installer in a loop
 COPY_LOCATIONS=("${TMP_PORTABLE_DIR}" "$NATRON_PACKAGE_PATH/data")
 
@@ -266,6 +296,25 @@ for location in "${COPY_LOCATIONS[@]}"; do
         cp "${TMP_BINARIES_PATH}/bin/NatronRenderer.exe" "$location/bin/NatronRenderer-bin.exe"
         cp "${TMP_BINARIES_PATH}/bin/NatronCrashReporter.exe" "$location/bin/Natron.exe"
         cp "${TMP_BINARIES_PATH}/bin/NatronRendererCrashReporter.exe" "$location/bin/NatronRenderer.exe"
+        # Create breakpad symbol storage
+        if [ ! -z "${NATRON_SYMBOL_ID}" ]; then
+            NATRON_SYMBOL_STORAGE="$location/Resources/symbols/Natron-bin.exe/${NATRON_SYMBOL_ID}"
+            mkdir -p ${NATRON_SYMBOL_STORAGE}
+            cp -a ${NATRON_SYMBOL} ${NATRON_SYMBOL_STORAGE}/Natron-bin.exe.sym
+            ( cd ${NATRON_SYMBOL_STORAGE} ;
+                zip -9 Natron-bin.exe.sym.zip Natron-bin.exe.sym
+                rm -f Natron-bin.exe.sym
+            )
+        fi
+        if [ ! -z "${NATRONRENDERER_SYMBOL_ID}" ]; then
+            NATRONRENDERER_SYMBOL_STORAGE="$location/Resources/symbols/NatronRenderer-bin.exe/${NATRONRENDERER_SYMBOL_ID}"
+            mkdir -p ${NATRONRENDERER_SYMBOL_STORAGE}
+            cp -a ${NATRONRENDERER_SYMBOL} ${NATRONRENDERER_SYMBOL_STORAGE}/NatronRenderer-bin.exe.sym
+            ( cd ${NATRONRENDERER_SYMBOL_STORAGE} ;
+                zip -9 NatronRenderer-bin.exe.sym.zip NatronRenderer-bin.exe.sym
+                rm -f NatronRenderer-bin.exe.sym
+            )
+        fi
     else
         cp "${TMP_BINARIES_PATH}/bin/Natron.exe" "$location/bin/Natron.exe"
         cp "${TMP_BINARIES_PATH}/bin/NatronRenderer.exe" "$location/bin/NatronRenderer.exe"
@@ -302,13 +351,6 @@ for location in "${COPY_LOCATIONS[@]}"; do
 
     # end for all locations
 done
-
-# Dump symbols for crash reporting on Natron binaries
-if [ "${DISABLE_BREAKPAD:-}" != "1" ]; then
-    dump_syms_safe "${TMP_BINARIES_PATH}/bin/Natron.exe" "${BUILD_ARCHIVE_DIRECTORY}/symbols/Natron-${VERSION_TAG}${BPAD_TAG:-}-${PKGOS_BITS}.sym"
-    dump_syms_safe "${TMP_BINARIES_PATH}/bin/NatronRenderer.exe" "${BUILD_ARCHIVE_DIRECTORY}/symbols/NatronRenderer-${VERSION_TAG}${BPAD_TAG:-}-${PKGOS_BITS}.sym"
-fi
-
 
 
 # OCIO package
@@ -520,7 +562,7 @@ fi
 if [ "$DISABLE_PORTABLE_ARCHIVE" != "1" ]; then
     mkdir -p "${BUILD_ARCHIVE_DIRECTORY}/$ZIP_INSTALL_DIR"
     # Portable zip
-    (cd "${TMP_BINARIES_PATH}" && zip -q -r "${PORTABLE_DIRNAME}.zip" "${PORTABLE_DIRNAME}"; mv "${PORTABLE_DIRNAME}.zip" "${BUILD_ARCHIVE_DIRECTORY}/$ZIP_INSTALL_DIR/${PORTABLE_DIRNAME}.zip")
+    (cd "${TMP_BINARIES_PATH}" && zip -9 -q -r "${PORTABLE_DIRNAME}.zip" "${PORTABLE_DIRNAME}"; mv "${PORTABLE_DIRNAME}.zip" "${BUILD_ARCHIVE_DIRECTORY}/$ZIP_INSTALL_DIR/${PORTABLE_DIRNAME}.zip")
 fi
 
 echo "*** Artifacts:"
