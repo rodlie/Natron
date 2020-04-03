@@ -734,7 +734,7 @@ CallbacksManager::processCrashReport()
 #else
     assert(!_dialog);
     _dialog = new CrashDialog(_dumpFilePath);
-    if (!_crashDumpPlainText.isEmpty()) {
+    if ( !_crashDumpPlainText.isEmpty() ) {
         _dialog->setDescription(_crashDumpPlainText);
     }
     QObject::connect( _dialog, SIGNAL(rejected()), this, SLOT(onCrashDialogFinished()) );
@@ -757,22 +757,20 @@ CallbacksManager::parseCrashDump()
     const QString MiscGitHash = QString::fromUtf8(MISC_GIT_COMMIT);
     const QString ArenaGitHash = QString::fromUtf8(ARENA_GIT_COMMIT);
 
-    QString header;
-    header.append( QString::fromUtf8("CRASH REPORT FOR VERSION %1 ON BRANCH %2\n\n").arg( getVersionString() ).arg(gitBranch) );
-    header.append( QString::fromUtf8("NATRON       : %1\n").arg(gitHash) );
-    header.append( QString::fromUtf8("OPENFX-IO    : %1\n").arg(IOGitHash) );
-    header.append( QString::fromUtf8("OPENFX-MISC  : %1\n").arg(MiscGitHash) );
-    header.append( QString::fromUtf8("OPENFX-ARENA : %1\n").arg(ArenaGitHash) );
+    QString result;
+    result.append( QString::fromUtf8("CRASH REPORT FOR VERSION %1 ON BRANCH %2\n\n").arg( getVersionString() ).arg(gitBranch) );
+    result.append( QString::fromUtf8("NATRON       : %1\n").arg(gitHash) );
+    result.append( QString::fromUtf8("OPENFX-IO    : %1\n").arg(IOGitHash) );
+    result.append( QString::fromUtf8("OPENFX-MISC  : %1\n").arg(MiscGitHash) );
+    result.append( QString::fromUtf8("OPENFX-ARENA : %1\n").arg(ArenaGitHash) );
 #ifdef Q_OS_LINUX
-    header.append(QString::fromUtf8("\n\nLINUX    : %1\n").arg(getLinuxVersionString()));
+    result.append(QString::fromUtf8("\n\nLINUX    : %1\n").arg(getLinuxVersionString()));
 #endif
 
     std::vector<std::string> storage;
     storage.push_back( QString::fromUtf8("%1/../Resources/symbols").arg( qApp->applicationDirPath() ).toStdString() );
     QString dump = QString::fromStdString( BreakDown::convertDumpToString(_dumpFilePath.toStdString(), storage) );
 
-    QString result;
-    result.append(header);
     result.append(dump);
 
     _crashDumpPlainText = result;
@@ -791,7 +789,7 @@ CallbacksManager::saveCrashReport()
     }
 
     QFile file(filename);
-    if ( file.open(QIODevice::WriteOnly, QIODevice::Text) ) {
+    if ( file.open(QIODevice::WriteOnly | QIODevice::Text) ) {
         file.write( _crashDumpPlainText.toUtf8() );
         file.close();
     }
