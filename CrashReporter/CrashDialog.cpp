@@ -109,7 +109,7 @@ CrashDialog::CrashDialog(const QString &filePath)
     _iconLabel->setPixmap(pix);
     _gridLayout->addWidget(_iconLabel, 0, 0, 1, 2, Qt::AlignHCenter | Qt::AlignVCenter);
 
-    QString infoStr = tr("Natron quit unexpectedly. See details below for more information.\nSubmitting a crash report requires a valid GitHub account.");
+    QString infoStr = tr("Natron quit unexpectedly. See details below for more information.\nSubmitting a crash report will open GitHub with the system default web browser.");
     _infoLabel = new QLabel(Qt::convertFromPlainText(infoStr, Qt::WhiteSpaceNormal), _mainFrame);
     _infoLabel->setAlignment(Qt::AlignCenter);
 

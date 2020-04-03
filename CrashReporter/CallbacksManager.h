@@ -138,8 +138,6 @@ private:
 
     void createCrashGenerationServer();
 
-    //void uploadFileToRepository(const QString& filepath, const QString& description, const QString& GLrendererInfo, const QString& GLversionInfo, const QString& GLvendorInfo, const QString& GLshaderInfo, const QString& GLextInfo);
-
     static CallbacksManager *_instance;
 
 

@@ -701,104 +701,6 @@ getLinuxVersionString()
 
 #endif
 
-/*void
-CallbacksManager::uploadFileToRepository(const QString& filepath,
-                                         const QString& description,
-                                         const QString& GLrendererInfo,
-                                         const QString& GLversionInfo,
-                                         const QString& GLvendorInfo,
-                                         const QString& GLshaderInfo,
-                                         const QString& GLextInfo)
-{
-    assert(!_uploadReply);
-
-    const QString productName = QString::fromUtf8(NATRON_APPLICATION_NAME);
-    QString versionStr = getVersionString();
-    const QString gitHash = QString::fromUtf8(GIT_COMMIT);
-    const QString gitBranch = QString::fromUtf8(GIT_BRANCH);
-    const QString IOGitHash = QString::fromUtf8(IO_GIT_COMMIT);
-    const QString MiscGitHash = QString::fromUtf8(MISC_GIT_COMMIT);
-    const QString ArenaGitHash = QString::fromUtf8(ARENA_GIT_COMMIT);
-#ifdef Q_OS_LINUX
-    QString linuxVersion = getLinuxVersionString();
-#endif
-
-#ifndef REPORTER_CLI_ONLY
-    assert(_dialog);
-    _progressDialog = new QProgressDialog(_dialog);
-    _progressDialog->setRange(0, 100);
-    _progressDialog->setMinimumDuration(100);
-    _progressDialog->setLabelText( tr("Uploading crash report...") );
-    QObject::connect( _progressDialog, SIGNAL(canceled()), this, SLOT(onProgressDialogCanceled()) );
-#else
-    std::cerr << tr("Crash report received and located in: ").toStdString() << std::endl;
-    std::cerr << filepath.toStdString() << std::endl;
-    std::cerr << tr("Uploading crash report...").toStdString() << std::endl;
-#endif
-
-    QFileInfo finfo(filepath);
-    if ( !finfo.exists() ) {
-        std::cerr << tr("Dump File (").toStdString() << filepath.toStdString() << tr(") does not exist").toStdString() << std::endl;
-
-        return;
-    }
-
-    QString guidStr = finfo.fileName();
-    {
-        int lastDotPos = guidStr.lastIndexOf( QLatin1Char('.') );
-        if (lastDotPos != -1) {
-            guidStr = guidStr.mid(0, lastDotPos);
-        }
-    }
-    QNetworkAccessManager *networkMnger = new QNetworkAccessManager(this);
-
-
-    //Corresponds to the "multipart/form-data" subtype, meaning the body parts contain form elements, as described in RFC 2388
-    // https://www.ietf.org/rfc/rfc2388.txt
-    // http://doc.qt.io/qt-4.8/qhttpmultipart.html#ContentType-enum
-    QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
-
-    addTextHttpPart(multiPart, QString::fromUtf8("ProductName"), productName);
-    addTextHttpPart(multiPart, QString::fromUtf8("Version"), versionStr);
-    addTextHttpPart(multiPart, QString::fromUtf8("GitHash"), gitHash);
-    addTextHttpPart(multiPart, QString::fromUtf8("IOGitHash"), IOGitHash);
-    addTextHttpPart(multiPart, QString::fromUtf8("MiscGitHash"), MiscGitHash);
-    addTextHttpPart(multiPart, QString::fromUtf8("ArenaGitHash"), ArenaGitHash);
-    addTextHttpPart(multiPart, QString::fromUtf8("GitBranch"), gitBranch);
-    addTextHttpPart(multiPart, QString::fromUtf8("Version"), versionStr);
-    addTextHttpPart(multiPart, QString::fromUtf8("guid"), guidStr);
-    addTextHttpPart(multiPart, QString::fromUtf8("Comments"), description);
-    addFileHttpPart(multiPart, QString::fromUtf8("upload_file_minidump"), filepath);
-    if ( !GLrendererInfo.isEmpty() ) {
-        addTextHttpPart(multiPart, QString::fromUtf8("GLrenderer"), GLrendererInfo);
-    }
-    if ( !GLversionInfo.isEmpty() ) {
-        addTextHttpPart(multiPart, QString::fromUtf8("GLversion"), GLversionInfo);
-    }
-    if ( !GLvendorInfo.isEmpty() ) {
-        addTextHttpPart(multiPart, QString::fromUtf8("GLvendor"), GLvendorInfo);
-    }
-    if ( !GLshaderInfo.isEmpty() ) {
-        addTextHttpPart(multiPart, QString::fromUtf8("GLshader"), GLshaderInfo);
-    }
-    if ( !GLextInfo.isEmpty() ) {
-        addTextHttpPart(multiPart, QString::fromUtf8("GLext"), GLextInfo);
-    }
-#ifdef Q_OS_LINUX
-    if ( !linuxVersion.isEmpty() ) {
-        addTextHttpPart(multiPart, QString::fromUtf8("LinuxVersion"), linuxVersion);
-    }
-#endif
-
-    QUrl url = QUrl::fromEncoded( QByteArray(UPLOAD_URL) );
-    QNetworkRequest request(url);
-    _uploadReply = networkMnger->post(request, multiPart);
-
-    QObject::connect( networkMnger, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)) );
-    QObject::connect( _uploadReply, SIGNAL(uploadProgress(qint64,qint64)), this, SLOT(onUploadProgress(qint64,qint64)) );
-    multiPart->setParent(_uploadReply);
-} // CallbacksManager::uploadFileToRepository*/
-
 void
 CallbacksManager::onDoDumpOnMainThread(const QString& filePath)
 {
@@ -826,7 +728,7 @@ CallbacksManager::processCrashReport()
 {
     parseCrashDump();
 #ifdef REPORTER_CLI_ONLY
-    //uploadFileToRepository( _dumpFilePath, QString::fromUtf8("Crash auto-uploaded from NatronRenderer"), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8("") );
+    saveCrashReport();
 
     ///@todo We must notify the user the log is available at filePath but we don't have access to the terminal with this process
 #else
