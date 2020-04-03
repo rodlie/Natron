@@ -271,12 +271,10 @@ CallbacksManager::CallbacksManager()
 #endif
     , _comServer(0)
     , _comPipeConnection(0)
-    , _uploadReply(0)
     , _dumpReceived(false)
     , _mustInitQAppAfterDump(false)
 #ifndef REPORTER_CLI_ONLY
     , _dialog(0)
-    , _progressDialog(0)
 #endif
     , _dumpFilePath()
     , _pipePath()
@@ -647,41 +645,6 @@ CallbacksManager::initInternal()
 
 
 
-static void
-addTextHttpPart(QHttpMultiPart* multiPart,
-                const QString& name,
-                const QString& value)
-{
-    QHttpPart part;
-
-    part.setHeader( QNetworkRequest::ContentTypeHeader, QVariant( QString::fromUtf8("text/plain") ) );
-    part.setHeader( QNetworkRequest::ContentDispositionHeader, QVariant( QString::fromUtf8("form-data; name=\"") + name + QString::fromUtf8("\"") ) );
-    part.setBody( value.toLatin1() );
-    multiPart->append(part);
-}
-
-static void
-addFileHttpPart(QHttpMultiPart* multiPart,
-                const QString& name,
-                const QString& filePath)
-{
-    QFile *file = new QFile(filePath);
-
-    file->setParent(multiPart);
-    if ( !file->open(QIODevice::ReadOnly) ) {
-        std::cerr << "Failed to open the following file for uploading: " + filePath.toStdString() << std::endl;
-
-        return;
-    }
-
-    QHttpPart part;
-    part.setHeader( QNetworkRequest::ContentTypeHeader, QVariant( QString::fromUtf8("text/dmp") ) );
-    part.setHeader( QNetworkRequest::ContentDispositionHeader, QVariant( QString::fromUtf8("form-data; name=\"") + name + QString::fromUtf8("\"; filename=\"") +  file->fileName() + QString::fromUtf8("\"") ) );
-    part.setBodyDevice(file);
-
-    multiPart->append(part);
-}
-
 static QString
 getVersionString()
 {
@@ -743,7 +706,7 @@ getLinuxVersionString()
 
 #endif
 
-void
+/*void
 CallbacksManager::uploadFileToRepository(const QString& filepath,
                                          const QString& description,
                                          const QString& GLrendererInfo,
@@ -839,126 +802,7 @@ CallbacksManager::uploadFileToRepository(const QString& filepath,
     QObject::connect( networkMnger, SIGNAL(finished(QNetworkReply*)), this, SLOT(replyFinished(QNetworkReply*)) );
     QObject::connect( _uploadReply, SIGNAL(uploadProgress(qint64,qint64)), this, SLOT(onUploadProgress(qint64,qint64)) );
     multiPart->setParent(_uploadReply);
-} // CallbacksManager::uploadFileToRepository
-
-void
-CallbacksManager::onProgressDialogCanceled()
-{
-    if (_uploadReply) {
-        _uploadReply->abort();
-    }
-}
-
-void
-CallbacksManager::onUploadProgress(qint64 bytesSent,
-                                   qint64 bytesTotal)
-{
-#ifndef REPORTER_CLI_ONLY
-    assert(_progressDialog);
-    double percent = (double)bytesSent / bytesTotal;
-    _progressDialog->setValue(percent * 100);
-#else
-    Q_UNUSED(bytesSent);
-    Q_UNUSED(bytesTotal);
-#endif
-}
-
-#ifndef REPORTER_CLI_ONLY
-
-
-NetworkErrorDialog::NetworkErrorDialog(const QString& errorMessage,
-                                       QWidget* parent)
-    : QDialog(parent)
-    , mainLayout(0)
-    , textArea(0)
-    , buttons(0)
-{
-    mainLayout = new QVBoxLayout(this);
-    textArea = new QTextEdit(this);
-    textArea->setTextInteractionFlags(Qt::TextBrowserInteraction);
-    textArea->setPlainText(errorMessage);
-
-    buttons = new QDialogButtonBox(QDialogButtonBox::Ok, Qt::Horizontal, this);
-    QObject::connect( buttons, SIGNAL(accepted()), this, SLOT(accept()) );
-    QObject::connect( buttons, SIGNAL(rejected()), this, SLOT(reject()) );
-
-    mainLayout->addWidget(textArea);
-    mainLayout->addWidget(buttons);
-}
-
-NetworkErrorDialog::~NetworkErrorDialog()
-{
-}
-
-#endif
-
-void
-CallbacksManager::replyFinished(QNetworkReply* replyParam)
-{
-    Q_UNUSED(replyParam);
-    assert(replyParam == _uploadReply);
-
-    if (!_uploadReply) {
-        return;
-    }
-
-    QNetworkReply::NetworkError err = _uploadReply->error();
-    if (err == QNetworkReply::NoError) {
-        QByteArray reply = _uploadReply->readAll();
-        while ( reply.endsWith('\n') ) {
-            reply.chop(1);
-        }
-        QString crashID = QString::fromUtf8(reply);
-        QString issueTitle = QString::fromUtf8("Crash Report %1").arg(crashID);
-        QString successStr( QString::fromUtf8("<h3>File uploaded successfully!</h3><p>Crash ID = %1</p>").arg(crashID) );
-        successStr.append( QString::fromUtf8("<p><strong>You can also report this on our <a href=\"%1/new?title=%2\">issue tracker</a>.</strong></p>").arg( QString::fromUtf8(NATRON_ISSUE_TRACKER_URL) ).arg(issueTitle) );
-
-#ifndef REPORTER_CLI_ONLY
-        QMessageBox info(QMessageBox::Information, QString::fromUtf8("Dump Uploading"), successStr, QMessageBox::NoButton, _dialog, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
-        info.setTextFormat(Qt::RichText);
-        info.exec();
-
-        if (_dialog) {
-            _dialog->deleteLater();
-        }
-#else
-        std::cerr << successStr.toStdString() << std::endl;
-#endif
-    } else {
-        QFileInfo finfo(_dumpFilePath);
-        if ( !finfo.exists() ) {
-            std::cerr << "Dump file (" <<  _dumpFilePath.toStdString() << ") does not exist";
-        }
-
-        QString guidStr = finfo.fileName();
-        {
-            int lastDotPos = guidStr.lastIndexOf( QLatin1Char('.') );
-            if (lastDotPos != -1) {
-                guidStr = guidStr.mid(0, lastDotPos);
-            }
-        }
-        QString errStr( QString::fromUtf8("Network error: (") + QString::number(err) + QString::fromUtf8(") ") + _uploadReply->errorString() + QString::fromUtf8("\nDump file is located at ") +
-                        _dumpFilePath + QString::fromUtf8("\nYou can submit it directly to the developers by filling out the form at\n\n") + QString::fromUtf8(FALLBACK_FORM_URL) +
-                        QString::fromUtf8("?product=") + QString::fromUtf8(NATRON_APPLICATION_NAME) + QString::fromUtf8("&version=") + getVersionString() +
-                        QString::fromUtf8("&id=") + guidStr + QString::fromUtf8("\n\nPlease add any comment describing the issue and the state of the application at the moment it crashed.") );
-
-
-#ifndef REPORTER_CLI_ONLY
-        NetworkErrorDialog info(errStr, _dialog);
-        info.setWindowTitle( QString::fromUtf8("Dump Uploading") );
-        info.exec();
-
-        if (_dialog) {
-            _dialog->deleteLater();
-        }
-#else
-        std::cerr << errStr.toStdString() << std::endl;
-#endif
-    }
-
-    _uploadReply = 0;
-    EXIT_APP(0, true);
-} // CallbacksManager::replyFinished
+} // CallbacksManager::uploadFileToRepository*/
 
 void
 CallbacksManager::onDoDumpOnMainThread(const QString& filePath)
@@ -985,19 +829,76 @@ CallbacksManager::onDoDumpOnMainThread(const QString& filePath)
 void
 CallbacksManager::processCrashReport()
 {
+    parseCrashDump();
 #ifdef REPORTER_CLI_ONLY
-    uploadFileToRepository( _dumpFilePath, QString::fromUtf8("Crash auto-uploaded from NatronRenderer"), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8("") );
+    //uploadFileToRepository( _dumpFilePath, QString::fromUtf8("Crash auto-uploaded from NatronRenderer"), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8(""), QString::fromUtf8("") );
 
     ///@todo We must notify the user the log is available at filePath but we don't have access to the terminal with this process
 #else
     assert(!_dialog);
     _dialog = new CrashDialog(_dumpFilePath);
+    if (!_crashDumpPlainText.isEmpty()) {
+        _dialog->setDescription(_crashDumpPlainText);
+    }
     QObject::connect( _dialog, SIGNAL(rejected()), this, SLOT(onCrashDialogFinished()) );
     QObject::connect( _dialog, SIGNAL(accepted()), this, SLOT(onCrashDialogFinished()) );
     _dialog->raise();
     _dialog->show();
-
 #endif
+}
+
+void
+CallbacksManager::parseCrashDump()
+{
+    if ( !QFile::exists(_dumpFilePath) ) {
+        return;
+    }
+
+    const QString gitHash = QString::fromUtf8(GIT_COMMIT);
+    const QString gitBranch = QString::fromUtf8(GIT_BRANCH);
+    const QString IOGitHash = QString::fromUtf8(IO_GIT_COMMIT);
+    const QString MiscGitHash = QString::fromUtf8(MISC_GIT_COMMIT);
+    const QString ArenaGitHash = QString::fromUtf8(ARENA_GIT_COMMIT);
+
+    QString header;
+    header.append(QString::fromUtf8("CRASH REPORT FOR VERSION %1 ON BRANCH %2\n\n").arg(getVersionString()).arg(gitBranch));
+    header.append(QString::fromUtf8("NATRON       : %1\n").arg(gitHash));
+    header.append(QString::fromUtf8("OPENFX-IO    : %1\n").arg(IOGitHash));
+    header.append(QString::fromUtf8("OPENFX-MISC  : %1\n").arg(MiscGitHash));
+    header.append(QString::fromUtf8("OPENFX-ARENA : %1\n").arg(ArenaGitHash));
+#ifdef Q_OS_LINUX
+    header.append(QString::fromUtf8("\n\nLINUX    : %1\n").arg(getLinuxVersionString()));
+#endif
+
+    std::vector<std::string> storage;
+    storage.push_back( QString::fromUtf8("%1/../Resources/symbols").arg( qApp->applicationDirPath() ).toStdString() );
+    QString dump = QString::fromStdString( BreakDown::convertDumpToString(_dumpFilePath.toStdString(), storage) );
+
+    QString result;
+    result.append(header);
+    result.append(dump);
+
+    _crashDumpPlainText = result;
+}
+
+void
+CallbacksManager::saveCrashReport()
+{
+    if ( !QFile::exists(_dumpFilePath) || _crashDumpPlainText.isEmpty() ) {
+        return;
+    }
+}
+
+void
+CallbacksManager::sendCrashReport(const QString &GLrendererInfo,
+                                  const QString &GLversionInfo,
+                                  const QString &GLvendorInfo,
+                                  const QString &GLshaderInfo,
+                                  const QString &GLextInfo)
+{
+    if ( _crashDumpPlainText.isEmpty() ) {
+        return;
+    }
 }
 
 void
@@ -1020,13 +921,13 @@ CallbacksManager::onCrashDialogFinished()
     case CrashDialog::eUserChoiceUpload:
         doUpload = true;
         break;
-    case CrashDialog::eUserChoiceSave:     // already handled in the dialog
+    case CrashDialog::eUserChoiceSave:     // save is only used for the renderer
     case CrashDialog::eUserChoiceIgnore:
         break;
     }
 
     if (doUpload) {
-        uploadFileToRepository( _dialog->getOriginalDumpFilePath(), _dialog->getDescription(), _dialog->getGLrenderer(), _dialog->getGLversion(), _dialog->getGLvendor(), _dialog->getGLshader(), _dialog->getGLext() );
+        //uploadFileToRepository( _dialog->getOriginalDumpFilePath(), _dialog->getDescription(), _dialog->getGLrenderer(), _dialog->getGLversion(), _dialog->getGLvendor(), _dialog->getGLshader(), _dialog->getGLext() );
     } else {
         _dialog->deleteLater();
         EXIT_APP(0, true);

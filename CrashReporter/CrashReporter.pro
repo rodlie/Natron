@@ -49,6 +49,9 @@ CONFIG += static-breakpadclient
 
 include(../global.pri)
 
+# we need breakdown to parse crash dumps
+PKGCONFIG += breakdown
+
 #used by breakpad internals on Linux
 unix:!mac: DEFINES += N_UNDF=0
 

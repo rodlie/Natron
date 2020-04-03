@@ -91,6 +91,7 @@ CrashDialog::CrashDialog(const QString &filePath)
 
     setWindowTitle( tr("Problem Report for Natron ") + QString::fromUtf8(NATRON_VERSION_STRING) );
     setAttribute(Qt::WA_DeleteOnClose, false);
+    setMinimumWidth(600);
 
     _mainLayout = new QVBoxLayout(this);
 
@@ -116,6 +117,9 @@ CrashDialog::CrashDialog(const QString &filePath)
 
     QTextEdit* edit = new QTextEdit(_mainFrame);
     edit->setReadOnly(true);
+    edit->setAcceptRichText(false);
+    edit->setWordWrapMode(QTextOption::NoWrap);
+
     _descEdit = edit;
     _gridLayout->addWidget(_descEdit, 4, 1, 1, 1);
 
