@@ -121,11 +121,13 @@ private:
 
     void parseCrashDump();
     void saveCrashReport();
+#ifndef REPORTER_CLI_ONLY
     void sendCrashReport(const QString& GLrendererInfo = QString(),
                          const QString& GLversionInfo = QString(),
                          const QString& GLvendorInfo = QString(),
                          const QString& GLshaderInfo = QString(),
                          const QString& GLextInfo = QString());
+#endif
 
     /**
      * @brief To be called to start breakpad generation server right away

@@ -30,19 +30,14 @@
 
 #include <QtCore/QDebug>
 
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QHttpMultiPart>
-
 #ifndef REPORTER_CLI_ONLY
 #include <QApplication>
-#include <QProgressDialog>
-#include <QMessageBox>
-#include <QDialogButtonBox>
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QTextEdit>
+#include <QDesktopServices>
+#include <QUrl>
 #endif
 
 #include <QCoreApplication>
@@ -861,11 +856,11 @@ CallbacksManager::parseCrashDump()
     const QString ArenaGitHash = QString::fromUtf8(ARENA_GIT_COMMIT);
 
     QString header;
-    header.append(QString::fromUtf8("CRASH REPORT FOR VERSION %1 ON BRANCH %2\n\n").arg(getVersionString()).arg(gitBranch));
-    header.append(QString::fromUtf8("NATRON       : %1\n").arg(gitHash));
-    header.append(QString::fromUtf8("OPENFX-IO    : %1\n").arg(IOGitHash));
-    header.append(QString::fromUtf8("OPENFX-MISC  : %1\n").arg(MiscGitHash));
-    header.append(QString::fromUtf8("OPENFX-ARENA : %1\n").arg(ArenaGitHash));
+    header.append( QString::fromUtf8("CRASH REPORT FOR VERSION %1 ON BRANCH %2\n\n").arg( getVersionString() ).arg(gitBranch) );
+    header.append( QString::fromUtf8("NATRON       : %1\n").arg(gitHash) );
+    header.append( QString::fromUtf8("OPENFX-IO    : %1\n").arg(IOGitHash) );
+    header.append( QString::fromUtf8("OPENFX-MISC  : %1\n").arg(MiscGitHash) );
+    header.append( QString::fromUtf8("OPENFX-ARENA : %1\n").arg(ArenaGitHash) );
 #ifdef Q_OS_LINUX
     header.append(QString::fromUtf8("\n\nLINUX    : %1\n").arg(getLinuxVersionString()));
 #endif
@@ -887,19 +882,58 @@ CallbacksManager::saveCrashReport()
     if ( !QFile::exists(_dumpFilePath) || _crashDumpPlainText.isEmpty() ) {
         return;
     }
+
+    QString filename = QString(_dumpFilePath).replace( QString::fromUtf8(".dmp"), QString::fromUtf8(".txt") );
+    if ( QFile::exists(filename) ) {
+        return;
+    }
+
+    QFile file(filename);
+    if ( file.open(QIODevice::WriteOnly, QIODevice::Text) ) {
+        file.write( _crashDumpPlainText.toUtf8() );
+        file.close();
+    }
 }
 
+#ifndef REPORTER_CLI_ONLY
 void
 CallbacksManager::sendCrashReport(const QString &GLrendererInfo,
                                   const QString &GLversionInfo,
                                   const QString &GLvendorInfo,
                                   const QString &GLshaderInfo,
-                                  const QString &GLextInfo)
+                                  const QString &/*GLextInfo*/)
 {
     if ( _crashDumpPlainText.isEmpty() ) {
         return;
     }
+
+    QString body;
+    body.append( QString::fromUtf8("Problem\n---\n\nDescribe the problem here.\n\n") );
+    body.append( QString::fromUtf8("**Expected behavior:** [What you expected to happen]\n\n") );
+    body.append( QString::fromUtf8("**Actual behavior:** [What actually happened]\n\n") );
+    body.append( QString::fromUtf8("Steps to Reproduce\n---\n\nDescribe the problem here.\n\n") );
+    body.append( QString::fromUtf8("1. [First Step]\n") );
+    body.append( QString::fromUtf8("2. [Second Step]\n") );
+    body.append( QString::fromUtf8("3. [and so on...]\n\n") );
+    body.append( QString::fromUtf8("You may submit a link to any screenshots/videos that can be used to understand how to reproduce the issue.\n\n") );
+    body.append( QString::fromUtf8("Crash\n---\n\n") );
+    body.append( QString::fromUtf8("```\n") );
+    body.append( QString(_crashDumpPlainText).replace( QString::fromUtf8("#"), QString::fromUtf8("X") ) ); // github does not handle '#'
+    body.append( QString::fromUtf8("```\n\n") );
+    body.append( QString::fromUtf8("OpenGL\n---\n\n") );
+    body.append( QString::fromUtf8("```\n") );
+    body.append( QString::fromUtf8("RENDERER   : %1\n").arg(GLrendererInfo) );
+    body.append( QString::fromUtf8("VERSION    : %1\n").arg(GLversionInfo) );
+    body.append( QString::fromUtf8("VENDOR     : %1\n").arg(GLvendorInfo) );
+    body.append( QString::fromUtf8("SHADER     : %1\n").arg(GLshaderInfo) );
+    body.append( QString::fromUtf8("```\n") );
+
+    QString url = QString::fromUtf8("%1/new?body=%2").arg( QString::fromUtf8(NATRON_ISSUE_TRACKER_URL) ).arg(body);
+    QDesktopServices::openUrl( QUrl::fromUserInput(url) );
+
+    EXIT_APP(0, true);
 }
+#endif
 
 void
 CallbacksManager::onCrashDialogFinished()
@@ -927,7 +961,7 @@ CallbacksManager::onCrashDialogFinished()
     }
 
     if (doUpload) {
-        //uploadFileToRepository( _dialog->getOriginalDumpFilePath(), _dialog->getDescription(), _dialog->getGLrenderer(), _dialog->getGLversion(), _dialog->getGLvendor(), _dialog->getGLshader(), _dialog->getGLext() );
+        sendCrashReport( _dialog->getGLrenderer(), _dialog->getGLversion(), _dialog->getGLvendor(), _dialog->getGLshader(), _dialog->getGLext() );
     } else {
         _dialog->deleteLater();
         EXIT_APP(0, true);
