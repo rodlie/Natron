@@ -219,6 +219,11 @@ catDll libde265-
 catDll libx265
 catDll libdav1d
 
+if [ "${DISABLE_BREAKPAD:-}" != "1" ]; then
+    catDll libBreakdown
+    catDll libzip
+fi
+
 if [ "$BITS" = "32" ]; then
     catDll libgcc_s_dw2-
 else
@@ -260,7 +265,9 @@ catDll libpoppler-9
 catDll libpoppler-glib-
 catDll librevenge-0
 catDll librevenge-stream-
-catDll libzip
+if [ "${DISABLE_BREAKPAD:-}" = "1" ]; then
+    catDll libzip
+fi
 catDll libmad-0
 catDll libsox-
 
