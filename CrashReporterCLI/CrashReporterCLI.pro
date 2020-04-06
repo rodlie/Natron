@@ -41,6 +41,9 @@ TEMPLATE = app
 
 include(../global.pri)
 
+# we need breakdown to parse crash dumps
+PKGCONFIG += breakdown
+
 DEFINES *= REPORTER_CLI_ONLY
 
 #used by breakpad internals
