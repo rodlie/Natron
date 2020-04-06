@@ -22,7 +22,6 @@
 #include <vector>
 #include <QMutex>
 #include <QObject>
-#include <QNetworkReply>
 #include <QProcess>
 
 #ifndef REPORTER_CLI_ONLY
@@ -33,15 +32,12 @@
 
 class QLocalSocket;
 class QLocalServer;
-class QNetworkReply;
 
 class QString;
 
 #ifndef REPORTER_CLI_ONLY
 class CrashDialog;
-class QProgressDialog;
 class QVBoxLayout;
-class QTextEdit;
 class QDialogButtonBox;
 class QApplication;
 #else
@@ -51,24 +47,6 @@ class QCoreApplication;
 namespace google_breakpad {
 class CrashGenerationServer;
 }
-
-
-#ifndef REPORTER_CLI_ONLY
-class NetworkErrorDialog
-    : public QDialog
-{
-    QVBoxLayout* mainLayout;
-    QTextEdit* textArea;
-    QDialogButtonBox* buttons;
-
-public:
-
-    NetworkErrorDialog(const QString& errorMessage, QWidget* parent);
-
-    virtual ~NetworkErrorDialog();
-};
-
-#endif
 
 class CallbacksManager
     : public QObject
@@ -112,17 +90,11 @@ public:
 
 public Q_SLOTS:
 
-    void replyFinished(QNetworkReply* reply);
-
     void onDoDumpOnMainThread(const QString& filePath);
 
     void onDoExitOnMainThread(int exitCode, bool exitEvenIfDumpedReceived);
 
     void onCrashDialogFinished();
-
-    void onUploadProgress(qint64 bytesSent, qint64 bytesTotal);
-
-    void onProgressDialogCanceled();
 
     void onNatronProcessStdOutWrittenTo();
     void onNatronProcessStdErrWrittenTo();
@@ -143,6 +115,13 @@ Q_SIGNALS:
 private:
 
     void processCrashReport();
+    void saveCrashReport(bool openReport = true,
+                         bool quitWhenDone = true,
+                         const QString& GLrendererInfo = QString(),
+                         const QString& GLversionInfo = QString(),
+                         const QString& GLvendorInfo = QString(),
+                         const QString& GLshaderInfo = QString(),
+                         const QString& GLextInfo = QString() );
 
     /**
      * @brief To be called to start breakpad generation server right away
@@ -152,8 +131,6 @@ private:
     void initCrashGenerationServer();
 
     void createCrashGenerationServer();
-
-    void uploadFileToRepository(const QString& filepath, const QString& comments, const QString& contact, const QString& severity, const QString& GLrendererInfo, const QString& GLversionInfo, const QString& GLvendorInfo, const QString& GLshaderInfo, const QString& GLextInfo, const QString &features);
 
     static CallbacksManager *_instance;
 
@@ -174,12 +151,10 @@ private:
     QLocalSocket* _comPipeConnection;
 
     //Referenc
-    QNetworkReply* _uploadReply;
     bool _dumpReceived;
     bool _mustInitQAppAfterDump;
 #ifndef REPORTER_CLI_ONLY
     CrashDialog* _dialog;
-    QProgressDialog* _progressDialog;
 #endif
     QString _dumpFilePath;
     QString _dumpDirPath;
