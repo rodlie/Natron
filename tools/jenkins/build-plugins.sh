@@ -327,6 +327,11 @@ if [ "$BUILD_ARENA" = "1" ] && [ -d "$TMP_PATH/openfx-arena" ]; then
         make -C Bundle lodepng.h
     fi
 
+    # fix for frame range in BRAW
+    if [ -f "BlackmagicRAW/GenericReader.patch" ]; then
+        patch -p1 -dOpenFX-IO < BlackmagicRAW/GenericReader.patch
+    fi
+
     env \
         MINGW="${ISWIN:-}" \
         LICENSE="$NATRON_LICENSE" \
