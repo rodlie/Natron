@@ -327,11 +327,6 @@ if [ "$BUILD_ARENA" = "1" ] && [ -d "$TMP_PATH/openfx-arena" ]; then
         make -C Bundle lodepng.h
     fi
 
-    # fix for frame range in BRAW
-    if [ -f "BlackmagicRAW/GenericReader.patch" ]; then
-        patch -p1 -dOpenFX-IO < BlackmagicRAW/GenericReader.patch
-    fi
-
     env \
         MINGW="${ISWIN:-}" \
         LICENSE="$NATRON_LICENSE" \
@@ -343,6 +338,22 @@ if [ "$BUILD_ARENA" = "1" ] && [ -d "$TMP_PATH/openfx-arena" ]; then
         LDFLAGS_ADD="${BUILDID:-}" \
         CXXFLAGS_EXTRA="${CXXFLAGS_EXTRA}" \
         make -j"${MKJOBS}" ${MAKEFLAGS_VERBOSE:-}
+
+    # build BRAW as it's own bundle (or should we just include it in arena?)
+    if [ -f "BlackmagicRAW/GenericReader.patch" ]; then
+        # Needed for frame range detection, this was the only way I found to get proper frame range,
+        # or is there something I'm missing in the plug?
+        patch -p1 -dOpenFX-IO < BlackmagicRAW/GenericReader.patch
+    fi
+    env \
+        ${ARENA_FLAGS:-} \
+        CXX="$CXX" \
+        CONFIG="${COMPILE_TYPE}" \
+        OPTFLAG="${OPTFLAG}" \
+        BITS="${BITS}" \
+        LDFLAGS_ADD="${BUILDID:-}" \
+        CXXFLAGS_EXTRA="${CXXFLAGS_EXTRA}" \
+        make -C BlackmagicRAW ${MAKEFLAGS_VERBOSE:-}
 
     cp -a ./*/*-*-*/*.ofx.bundle "$TMP_BINARIES_PATH/OFX/Plugins/"
     cd "$TMP_PATH"
