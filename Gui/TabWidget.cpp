@@ -277,6 +277,7 @@ TabWidget::TabWidget(Gui* gui,
     const QSize smallButtonIconSize( TO_DPIX(NATRON_SMALL_BUTTON_ICON_SIZE), TO_DPIY(NATRON_SMALL_BUTTON_ICON_SIZE) );
 
     _imp->leftCornerButton = new Button(QIcon(pixL), QString(), _imp->header);
+    _imp->leftCornerButton->setObjectName( QString::fromUtf8("TabWidgetButtonLeftCorner") );
     _imp->leftCornerButton->setFixedSize(smallButtonSize);
     _imp->leftCornerButton->setIconSize(smallButtonIconSize);
     _imp->leftCornerButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr(LEFT_HAND_CORNER_BUTTON_TT), NATRON_NAMESPACE::WhiteSpaceNormal) );
@@ -292,6 +293,7 @@ TabWidget::TabWidget(Gui* gui,
     _imp->headerLayout->addWidget(_imp->tabBar);
     _imp->headerLayout->addStretch();
     _imp->floatButton = new Button(QIcon(pixM), QString(), _imp->header);
+    _imp->floatButton->setObjectName( QString::fromUtf8("TabWidgetButtonFloat") );
     _imp->floatButton->setFixedSize(smallButtonSize);
     _imp->floatButton->setIconSize(smallButtonIconSize);
     _imp->floatButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Float pane"), NATRON_NAMESPACE::WhiteSpaceNormal) );
@@ -301,6 +303,7 @@ TabWidget::TabWidget(Gui* gui,
     _imp->headerLayout->addWidget(_imp->floatButton);
 
     _imp->closeButton = new Button(QIcon(pixC), QString(), _imp->header);
+    _imp->closeButton->setObjectName( QString::fromUtf8("TabWidgetButtonClose") );
     _imp->closeButton->setFixedSize(smallButtonSize);
     _imp->closeButton->setIconSize(smallButtonIconSize);
     _imp->closeButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Close pane"), NATRON_NAMESPACE::WhiteSpaceNormal) );
