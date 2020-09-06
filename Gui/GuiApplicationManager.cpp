@@ -851,13 +851,12 @@ GuiApplicationManager::initGui(const CLArgs& args)
 {
     QSettings settings( QString::fromUtf8(NATRON_ORGANIZATION_NAME), QString::fromUtf8(NATRON_APPLICATION_NAME) );
 
-#ifdef __NATRON_UNIX__
-#ifndef __NATRON_OSX__
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
-    // workaround for issues with KDE4
+    // use plastique as the core qt4 style
     QApplication::setStyle( QString::fromUtf8("plastique") );
-#endif
-#endif
+#else
+    // use fusion as the core qt5 style
+    QApplication::setStyle( QString::fromUtf8("fusion") );
 #endif
 
     //load custom fonts
