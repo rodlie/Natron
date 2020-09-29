@@ -3,7 +3,7 @@ Name: Natron
 # The two actively maintained versions (that are merged into master)
 Version21: 2.1.10
 Version22: 2.2.10
-Version23: 2.3.15
+Version23: 2.3.16
 Version30: 3.0.0
 
 # The version for this branch of the sources
@@ -14,7 +14,7 @@ Release: 1%{?dist}
 License: GPLv2
 
 Group: System Environment/Base
-URL: http://natron.fr
+URL: http://natrongithub.github.io
 
 # https://github.com/NatronGitHub/Natron/releases/download/%{version}/Natron-%{version}.tar.xz
 Source0: %{name}-%{version}.tar.xz

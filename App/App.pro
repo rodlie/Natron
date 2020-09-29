@@ -1,7 +1,7 @@
 # ***** BEGIN LICENSE BLOCK *****
 # This file is part of Natron <https://natrongithub.github.io/>,
-# Copyright (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
-# Copyright (C) 2018-2020 The Natron developers
+# (C) 2018-2020 The Natron developers
+# (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
 #
 # Natron is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ TARGET = Natron
 # the list of currently maintained versions (those that have to be merged into the master branch)
 VERSION_21 = 2.1.10
 VERSION_22 = 2.2.10
-VERSION_23 = 2.3.15
+VERSION_23 = 2.3.16
 VERSION_30 = 3.0.0
 
 # The version for this branch
@@ -30,11 +30,10 @@ VERSION = $$VERSION_23
 
 TEMPLATE = app
 win32 {
-	CONFIG += console
-	RC_FILE += ../Natron.rc
-} else {
-	CONFIG += app
+    RC_FILE += ../Natron.rc
 }
+CONFIG += app
+
 CONFIG += moc
 CONFIG += boost boost-serialization-lib opengl qt cairo python shiboken pyside 
 CONFIG += static-gui static-engine static-host-support static-breakpadclient static-libmv static-openmvg static-ceres static-qhttpserver static-libtess

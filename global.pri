@@ -1,6 +1,7 @@
 # ***** BEGIN LICENSE BLOCK *****
 # This file is part of Natron <https://natrongithub.github.io/>,
-# Copyright (C) 2013-2018 INRIA and Alexandre Gauthier
+# (C) 2018-2020 The Natron developers
+# (C) 2013-2018 INRIA and Alexandre Gauthier
 #
 # Natron is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -268,6 +269,11 @@ macx {
   #// in /opt/local/libexec/llvm-5.0/include/c++/v1/__config
   #// and /opt/local/libexec/llvm-5.0/include/c++/v1/__locale
   DEFINES += _LIBCPP_DISABLE_AVAILABILITY
+
+  # The ObjC API changed with Catalina, use the old one for now
+  # (there is code to use the new API, but it is untested,
+  # search for OBJC_OLD_DISPATCH_PROTOTYPES in the sources).
+  DEFINES += "OBJC_OLD_DISPATCH_PROTOTYPES=1"
 }
 
 macx-clang-libc++ {
@@ -582,6 +588,8 @@ FC_DEFAULT_FONTS += "<dir>/System/Library/Assets/com_apple_MobileAsset_Font5</di
 # Windows
 win32 {
 FC_DEFAULT_FONTS += "<dir>WINDOWSFONTDIR</dir>"
+# Windows 10 introduced user fonts, and is the preferred (and default) place to install fonts
+FC_DEFAULT_FONTS += "<dir>~/AppData/Local/Microsoft/Windows/Fonts</dir>"
 FC_CACHEDIR += "<cachedir>LOCAL_APPDATA_FONTCONFIG_CACHE</cachedir>"
 }
 

@@ -438,7 +438,7 @@ if dobuild; then
 
     # check for dirs
     if [ ! -d "$SDK_HOME/include" ]; then
-        # see http://www.linuxfromscratch.org/lfs/view/development/chapter06/creatingdirs.html
+        # see http://www.linuxfromscratch.org/lfs/view/development/chapter08/creatingdirs.html
         mkdir -pv "$SDK_HOME"/{bin,include,lib,sbin,src}
         mkdir -pv "$SDK_HOME"/share/{color,dict,doc,info,locale,man}
         mkdir -v  "$SDK_HOME"/share/{misc,terminfo,zoneinfo}
@@ -578,6 +578,9 @@ build pcre # (required by glib)
 checkpoint
 
 build git # (requires curl and pcre)
+
+checkpoint
+
 build mariadb # (for the Qt mariadb plugin and the python mariadb adapter)
 build postgresql # (for the Qt postgresql plugin and the python postgresql adapter)
 
@@ -638,6 +641,9 @@ build librevenge
 build libcdr
 build openjpeg
 build libraw
+
+checkpoint
+
 build ilmbase
 build openexr
 build pixman
