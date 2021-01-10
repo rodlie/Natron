@@ -531,6 +531,7 @@ ViewerGL::toggleOverlays()
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
     _imp->overlay = !_imp->overlay;
+    getViewerTab()->saveVisibleState(QString::fromUtf8("overlay"), _imp->overlay);
     update();
 }
 

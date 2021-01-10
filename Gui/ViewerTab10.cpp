@@ -949,6 +949,7 @@ ViewerTab::loadVisibleState()
     QStringList widgets;
     widgets << QString::fromUtf8("player") << QString::fromUtf8("timeline") << QString::fromUtf8("infobar");
     widgets << QString::fromUtf8("left_toolbar") << QString::fromUtf8("right_toolbar") << QString::fromUtf8("top_toolbar");
+    widgets << QString::fromUtf8("overlay");
 
     for (int i = 0; i < widgets.size(); ++i) {
         if ( settings.value(widgets.at(i), true).toBool() ) {
@@ -966,20 +967,11 @@ ViewerTab::loadVisibleState()
             setRightToolbarVisible(false, false);
         } else if ( widgets.at(i) == QString::fromUtf8("top_toolbar") ) {
             setTopToolbarVisible(false, false);
+        } else if ( widgets.at(i) == QString::fromUtf8("overlay") ) {
+            _imp->viewer->toggleOverlays();
         }
     }
 
-    settings.endGroup();
-}
-
-void
-ViewerTab::saveVisibleState(const QString &key, const QVariant &value)
-{
-    QSettings settings;
-    settings.beginGroup( QString::fromStdString( getLabel() ) );
-    if (settings.value(key) != value) {
-        settings.setValue(key, value);
-    }
     settings.endGroup();
 }
 

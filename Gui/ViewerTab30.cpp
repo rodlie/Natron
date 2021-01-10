@@ -36,6 +36,7 @@
 #include <QVBoxLayout>
 #include <QCheckBox>
 #include <QToolBar>
+#include <QSettings>
 
 #include "Engine/Settings.h"
 #include "Engine/Node.h"
@@ -100,6 +101,17 @@ void
 ViewerTab::setUserRoIEnabled(bool b)
 {
     onEnableViewerRoIButtonToggle(b);
+}
+
+void
+ViewerTab::saveVisibleState(const QString &key, const QVariant &value)
+{
+    QSettings settings;
+    settings.beginGroup( QString::fromStdString( getLabel() ) );
+    if (settings.value(key) != value) {
+        settings.setValue(key, value);
+    }
+    settings.endGroup();
 }
 
 bool

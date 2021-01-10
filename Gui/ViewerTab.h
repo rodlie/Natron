@@ -162,9 +162,10 @@ private:
     void setDisplayChannels(int index, bool setBothInputs);
 
     void loadVisibleState();
-    void saveVisibleState(const QString & key, const QVariant & value);
 
 public:
+
+    void saveVisibleState(const QString & key, const QVariant & value);
 
     bool isAutoContrastEnabled() const;
 
