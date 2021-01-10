@@ -161,6 +161,9 @@ private:
 
     void setDisplayChannels(int index, bool setBothInputs);
 
+    void loadVisibleState();
+    void saveVisibleState(const QString & key, const QVariant & value);
+
 public:
 
     bool isAutoContrastEnabled() const;
@@ -382,12 +385,12 @@ public Q_SLOTS:
 
     void onTimelineBoundariesChanged(SequenceTime, SequenceTime);
 
-    void setLeftToolbarVisible(bool visible);
-    void setRightToolbarVisible(bool visible);
-    void setTopToolbarVisible(bool visible);
-    void setPlayerVisible(bool visible);
-    void setTimelineVisible(bool visible);
-    void setInfobarVisible(bool visible);
+    void setLeftToolbarVisible(bool visible, bool saveState = true);
+    void setRightToolbarVisible(bool visible, bool saveState = true);
+    void setTopToolbarVisible(bool visible, bool saveState = true);
+    void setPlayerVisible(bool visible, bool saveState = true);
+    void setTimelineVisible(bool visible, bool saveState = true);
+    void setInfobarVisible(bool visible, bool saveState = true);
 
 
     void toggleInfobarVisbility();

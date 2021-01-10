@@ -1105,6 +1105,8 @@ ViewerTab::ViewerTab(const std::list<NodeGuiPtr> & existingNodesContext,
             _imp->syncViewerButton->setChecked(true);
         }
     }
+
+    loadVisibleState();
 }
 
 NATRON_NAMESPACE_EXIT

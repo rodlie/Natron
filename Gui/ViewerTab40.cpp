@@ -404,7 +404,7 @@ ViewerTab::toggleTopToolbarVisibility()
 }
 
 void
-ViewerTab::setLeftToolbarVisible(bool visible)
+ViewerTab::setLeftToolbarVisible(bool visible, bool saveState)
 {
     QMutexLocker l(&_imp->visibleToolbarsMutex);
 
@@ -415,18 +415,26 @@ ViewerTab::setLeftToolbarVisible(bool visible)
             bar->setVisible(_imp->leftToolbarVisible);
         }
     }
+
+    if (saveState) {
+        saveVisibleState(QString::fromUtf8("left_toolbar"), visible);
+    }
 }
 
 void
-ViewerTab::setRightToolbarVisible(bool visible)
+ViewerTab::setRightToolbarVisible(bool visible, bool saveState)
 {
     QMutexLocker l(&_imp->visibleToolbarsMutex);
 
     _imp->rightToolbarVisible = visible;
+
+    if (saveState) {
+        saveVisibleState(QString::fromUtf8("right_toolbar"), visible);
+    }
 }
 
 void
-ViewerTab::setTopToolbarVisible(bool visible)
+ViewerTab::setTopToolbarVisible(bool visible, bool saveState)
 {
     QMutexLocker l(&_imp->visibleToolbarsMutex);
 
@@ -436,28 +444,40 @@ ViewerTab::setTopToolbarVisible(bool visible)
     for (std::list<ViewerTabPrivate::PluginViewerContext>::iterator it = _imp->currentNodeContext.begin(); it != _imp->currentNodeContext.end(); ++it) {
         it->currentContext->getContainerWidget()->setVisible(_imp->topToolbarVisible);
     }
+
+    if (saveState) {
+        saveVisibleState(QString::fromUtf8("top_toolbar"), visible);
+    }
 }
 
 void
-ViewerTab::setPlayerVisible(bool visible)
+ViewerTab::setPlayerVisible(bool visible, bool saveState)
 {
     QMutexLocker l(&_imp->visibleToolbarsMutex);
 
     _imp->playerVisible = visible;
     _imp->playerButtonsContainer->setVisible(_imp->playerVisible);
+
+    if (saveState) {
+        saveVisibleState(QString::fromUtf8("player"), visible);
+    }
 }
 
 void
-ViewerTab::setTimelineVisible(bool visible)
+ViewerTab::setTimelineVisible(bool visible, bool saveState)
 {
     QMutexLocker l(&_imp->visibleToolbarsMutex);
 
     _imp->timelineVisible = visible;
     _imp->timeLineGui->setVisible(_imp->timelineVisible);
+
+    if (saveState) {
+        saveVisibleState(QString::fromUtf8("timeline"), visible);
+    }
 }
 
 void
-ViewerTab::setInfobarVisible(bool visible)
+ViewerTab::setInfobarVisible(bool visible, bool saveState)
 {
     QMutexLocker l(&_imp->visibleToolbarsMutex);
 
@@ -478,6 +498,10 @@ ViewerTab::setInfobarVisible(bool visible)
         }
 
         _imp->infoWidget[i]->setVisible(_imp->infobarVisible);
+    }
+
+    if (saveState) {
+        saveVisibleState(QString::fromUtf8("infobar"), visible);
     }
 }
 
