@@ -183,6 +183,7 @@ SOURCES += \
     PropertiesBinWrapper.cpp \
     PyGuiApp.cpp \
     PythonPanels.cpp \
+    QtColorTriangle.cpp \
     QtEnumConvert.cpp \
     RenderStatsDialog.cpp \
     ResizableMessageBox.cpp \
@@ -324,6 +325,7 @@ HEADERS += \
     PyGuiApp.h \
     Pyside_Gui_Python.h \
     PythonPanels.h \
+    QtColorTriangle.h \
     QtEnumConvert.h \
     RegisteredTabs.h \
     RenderStatsDialog.h \
