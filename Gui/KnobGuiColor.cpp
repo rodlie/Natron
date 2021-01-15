@@ -34,7 +34,6 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QStyle>
-#include <QColorDialog>
 #include <QToolTip>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -63,6 +62,7 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/Button.h"
 #include "Gui/ClickableLabel.h"
 #include "Gui/ComboBox.h"
+#include "Gui/ColorDialog.h"
 #include "Gui/CurveGui.h"
 #include "Gui/DockablePanel.h"
 #include "Gui/GroupBoxLabel.h"
@@ -497,9 +497,8 @@ KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
 void
 KnobGuiColor::showColorDialog()
 {
-    QColorDialog dialog( _colorLabel->parentWidget() );
+    ColorDialog dialog( _colorLabel->parentWidget() );
 
-    dialog.setOption(QColorDialog::DontUseNativeDialog);
     KnobColorPtr knob = _knob.lock();
     const int nDims = knob->getDimension();
     double curR = knob->getValue(0);

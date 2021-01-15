@@ -38,7 +38,6 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QTreeWidgetItem>
 #include <QHeaderView>
 #include <QColor>
-#include <QColorDialog>
 #include <QCursor>
 #include <QMouseEvent>
 #include <QApplication>
@@ -66,6 +65,7 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/Button.h"
 #include "Gui/ClickableLabel.h"
 #include "Gui/ComboBox.h"
+#include "Gui/ColorDialog.h"
 #include "Gui/DockablePanel.h"
 #include "Gui/GuiAppInstance.h"
 #include "Gui/GuiApplicationManager.h"
@@ -1670,8 +1670,7 @@ RotoPanel::onItemDoubleClicked(QTreeWidgetItem* item,
         case COL_OVERLAY: {
             RotoDrawableItem* drawable = dynamic_cast<RotoDrawableItem*>( it->rotoItem.get() );
             if (drawable) {
-                QColorDialog dialog;
-                dialog.setOption(QColorDialog::DontUseNativeDialog);
+                ColorDialog dialog;
                 dialog.setOption(QColorDialog::ShowAlphaChannel);
                 _imp->dialogEdition = eColorDialogEditingOverlayColor;
                 double oc[4];
@@ -1713,8 +1712,7 @@ RotoPanel::onItemDoubleClicked(QTreeWidgetItem* item,
             double shapeColor[3];
             bool mustEvaluate = false;
             if (drawable) {
-                QColorDialog dialog;
-                dialog.setOption(QColorDialog::DontUseNativeDialog);
+                ColorDialog dialog;
                 _imp->dialogEdition = eColorDialogEditingShapeColor;
                 drawable->getColor(time, shapeColor);
                 QColor color;
