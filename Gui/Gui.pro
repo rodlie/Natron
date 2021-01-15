@@ -79,6 +79,7 @@ SOURCES += \
     Button.cpp \
     ChannelsComboBox.cpp \
     ClickableLabel.cpp \
+    ColorDialog.cpp \
     ColoredFrame.cpp \
     ComboBox.cpp \
     CurveEditor.cpp \
@@ -235,6 +236,7 @@ HEADERS += \
     Button.h \
     ChannelsComboBox.h \
     ClickableLabel.h \
+    ColorDialog.h \
     ColoredFrame.h \
     ComboBox.h \
     CurveEditor.h \
