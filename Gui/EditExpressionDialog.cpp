@@ -46,7 +46,6 @@ GCC_DIAG_UNUSED_PRIVATE_FIELD_OFF
 // /opt/local/include/QtGui/qmime.h:119:10: warning: private field 'type' is not used [-Wunused-private-field]
 #include <QKeyEvent>
 GCC_DIAG_UNUSED_PRIVATE_FIELD_ON
-#include <QColorDialog>
 #include <QGroupBox>
 #include <QtGui/QVector4D>
 #include <QStyleFactory>
