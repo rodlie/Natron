@@ -31,6 +31,7 @@
 #include <QtCore/QDebug>
 
 #include <QApplication>
+#include <QSettings>
 GCC_DIAG_UNUSED_PRIVATE_FIELD_OFF
 // /opt/local/include/QtGui/qmime.h:119:10: warning: private field 'type' is not used [-Wunused-private-field]
 #include <QtGui/QKeyEvent>
@@ -937,6 +938,41 @@ ViewerTab::setDisplayChannels(int i,
         break;
     }
     _imp->viewerNode->setDisplayChannels(channels, setBothInputs);
+}
+
+void
+ViewerTab::loadVisibleState()
+{
+    QSettings settings;
+    settings.beginGroup( QString::fromStdString( getLabel() ) );
+
+    QStringList items;
+    items << QString::fromUtf8("player") << QString::fromUtf8("timeline") << QString::fromUtf8("infobar");
+    items << QString::fromUtf8("left_toolbar") << QString::fromUtf8("right_toolbar") << QString::fromUtf8("top_toolbar");
+    items << QString::fromUtf8("overlay");
+
+    for (int i = 0; i < items.size(); ++i) {
+        if ( settings.value(items.at(i), true).toBool() ) {
+            continue; // skip if saved state is true (visible)
+        }
+        if ( items.at(i) == QString::fromUtf8("player") ) {
+            setPlayerVisible(false, false /* don't save state */);
+        } else if ( items.at(i) == QString::fromUtf8("timeline") ) {
+            setTimelineVisible(false, false /* don't save state */);
+        } else if ( items.at(i) == QString::fromUtf8("infobar") ) {
+            setInfobarVisible(false, false /* don't save state */);
+        } else if ( items.at(i) == QString::fromUtf8("left_toolbar") ) {
+            setLeftToolbarVisible(false, false /* don't save state */);
+        } if ( items.at(i) == QString::fromUtf8("right_toolbar") ) {
+            setRightToolbarVisible(false, false /* don't save state */);
+        } else if ( items.at(i) == QString::fromUtf8("top_toolbar") ) {
+            setTopToolbarVisible(false, false /* don't save state */);
+        } else if ( items.at(i) == QString::fromUtf8("overlay") ) {
+            _imp->viewer->toggleOverlays(false /* don't save state */);
+        }
+    }
+
+    settings.endGroup();
 }
 
 void

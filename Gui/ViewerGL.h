@@ -253,7 +253,7 @@ public Q_SLOTS:
 
     void clearColorBuffer(double r = 0., double g = 0., double b = 0., double a = 1.);
 
-    void toggleOverlays();
+    void toggleOverlays(bool saveState = true);
 
     void toggleWipe();
 

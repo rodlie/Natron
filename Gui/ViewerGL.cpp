@@ -526,12 +526,16 @@ ViewerGL::clearColorBuffer(double r,
 }
 
 void
-ViewerGL::toggleOverlays()
+ViewerGL::toggleOverlays(bool saveState)
 {
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
     _imp->overlay = !_imp->overlay;
     update();
+
+    if (saveState) {
+        getViewerTab()->saveVisibleState(QString::fromUtf8("overlay"), _imp->overlay);
+    }
 }
 
 void
