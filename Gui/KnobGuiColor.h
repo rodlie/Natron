@@ -36,6 +36,7 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QtCore/QObject>
 #include <QStyledItemDelegate>
 #include <QTextEdit>
+#include <QToolButton>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -51,6 +52,7 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/AnimatedCheckBox.h"
 #include "Gui/Label.h"
 #include "Gui/GuiFwd.h"
+#include "Gui/QtColorTriangle.h"
 
 NATRON_NAMESPACE_ENTER
 
@@ -130,6 +132,7 @@ public:
 public Q_SLOTS:
 
     void showColorDialog();
+    void updateColorTriangle();
 
     void setPickingEnabled(bool enabled);
 
@@ -186,6 +189,8 @@ private:
     KnobColorWPtr _knob;
     ColorPickerLabel *_colorLabel;
     Button *_colorDialogButton;
+    QToolButton *_colorPopupButton;
+    QtColorTriangle *_colorTriangle;
     std::vector<double> _lastColor;
     bool _useSimplifiedUI;
 };
