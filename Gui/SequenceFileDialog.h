@@ -579,7 +579,7 @@ private:
     Label* _filterLabel;
     FileDialogLineEdit* _filterLineEdit;
     Button* _filterDropDown;
-    ComboBox* _fileExtensionCombo;
+    //ComboBox* _fileExtensionCombo;
     QHBoxLayout* _buttonsLayout;
     QHBoxLayout* _centerLayout;
     QVBoxLayout* _favoriteLayout;
