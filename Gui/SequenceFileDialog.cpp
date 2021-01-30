@@ -612,6 +612,8 @@ SequenceFileDialog::SequenceFileDialog( QWidget* parent, // necessary to transmi
         enableSequenceMode(false);
     }
     _selectionLineEdit->setFocus();
+
+    setDefaultFilter();
 }
 
 SequenceFileDialog::~SequenceFileDialog()
@@ -1900,11 +1902,13 @@ SequenceFileDialog::showFilterMenu()
 
     for (int i = 0; i < filters.size(); ++i) {
         QString filter = filters[i];
+        if ( filter.isEmpty() ) { continue; }
         if ( !filter.contains( QString::fromUtf8("*") ) ) {
             filter.prepend( QString::fromUtf8("*.") );
         }
         QAction *filterAction = new QAction(filter, this);
-        QObject::connect( filterAction, SIGNAL(triggered()), this, SLOT(handleFilterSlot()) );
+        QObject::connect( filterAction, SIGNAL(triggered()),
+                          this, SLOT(handleFilterSlot()) );
         actions.append(filterAction);
     }
 
@@ -1922,8 +1926,19 @@ SequenceFileDialog::handleFilterSlot()
     if (!action) { return; }
 
     QString filter = action->text();
-    if (filter.isEmpty()) { return; }
+    if ( filter.isEmpty() ) { return; }
 
+    _filterLineEdit->setText(filter);
+    applyFilter(filter);
+}
+
+void
+SequenceFileDialog::setDefaultFilter()
+{
+    QString filter = QString::fromUtf8("*.*");
+    if (_filters.size() > 0) {
+        filter = QString::fromUtf8("*.%1").arg( _filters.at(0) );
+    }
     _filterLineEdit->setText(filter);
     applyFilter(filter);
 }

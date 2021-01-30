@@ -415,6 +415,7 @@ public Q_SLOTS:
     ///apply a filter
     ///and refreshes the current directory.
     void handleFilterSlot();
+    void setDefaultFilter();
     void applyFilter(QString filter);
 
     ///show hidden files slot
