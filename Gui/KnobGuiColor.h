@@ -49,6 +49,7 @@ CLANG_DIAG_ON(uninitialized)
 
 #include "Gui/CurveSelection.h"
 #include "Gui/KnobGuiValue.h"
+#include "Gui/KnobGuiColorHSV.h"
 #include "Gui/AnimatedCheckBox.h"
 #include "Gui/Label.h"
 #include "Gui/GuiFwd.h"
@@ -174,6 +175,7 @@ private:
     virtual void getIncrements(std::vector<double>* increments) const OVERRIDE FINAL;
     virtual void getDecimals(std::vector<int>* decimals) const OVERRIDE FINAL;
     virtual void addExtraWidgets(QHBoxLayout* containerLayout) OVERRIDE FINAL;
+    virtual void addExtraWidgets(QVBoxLayout* containerLayout) OVERRIDE FINAL;
     virtual void updateExtraGui(const std::vector<double>& values) OVERRIDE FINAL;
 
     void updateLabel(double r, double g, double b, double a);
@@ -191,6 +193,7 @@ private:
     Button *_colorDialogButton;
     QToolButton *_colorPopupButton;
     QtColorTriangle *_colorTriangle;
+    KnobGuiColorHSV *_hsvWidget;
     std::vector<double> _lastColor;
     bool _useSimplifiedUI;
 };

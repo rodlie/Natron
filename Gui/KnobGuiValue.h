@@ -125,6 +125,7 @@ protected:
     virtual void getDecimals(std::vector<int>* /*decimals*/) const {}
 
     virtual void addExtraWidgets(QHBoxLayout* /*containerLayout*/) {}
+    virtual void addExtraWidgets(QVBoxLayout* /*containerLayout*/) {}
 
     virtual void _hide() OVERRIDE;
     virtual void _show() OVERRIDE;

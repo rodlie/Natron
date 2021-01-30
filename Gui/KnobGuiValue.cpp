@@ -220,11 +220,23 @@ KnobGuiValue::createWidget(QHBoxLayout* layout)
     connectKnobSignalSlots();
 
     _imp->container = new QWidget( layout->parentWidget() );
-    QHBoxLayout *containerLayout = new QHBoxLayout(_imp->container);
-    layout->addWidget(_imp->container);
+
+    QWidget *containerH = new QWidget(_imp->container);
+    QHBoxLayout *containerLayout = new QHBoxLayout(containerH);
+    //layout->addWidget(_imp->container);
 
     containerLayout->setContentsMargins(0, 0, 0, 0);
     containerLayout->setSpacing(3);
+
+    QWidget *containerV = new QWidget(_imp->container);
+    QVBoxLayout *containerVLayout = new QVBoxLayout(containerV);
+    //layout->addWidget(containerV);
+    containerVLayout->setContentsMargins(0, 0, 0, 0);
+    containerVLayout->setSpacing(3);
+    containerVLayout->addWidget(containerH);
+
+    layout->addWidget(containerV);
+
 
     if (getKnobsCountOnSameLine() > 1) {
         disableSlider();
@@ -502,6 +514,8 @@ KnobGuiValue::createWidget(QHBoxLayout* layout)
     }
 
     addExtraWidgets(containerLayout);
+    addExtraWidgets(containerVLayout);
+
 } // createWidget
 
 void

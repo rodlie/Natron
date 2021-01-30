@@ -211,6 +211,7 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     , _colorDialogButton(0)
     , _colorPopupButton(0)
     , _colorTriangle(0)
+    , _hsvWidget(0)
     , _lastColor()
     , _useSimplifiedUI(true)
 {
@@ -315,30 +316,17 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     QObject::connect( _colorDialogButton, SIGNAL(clicked()), this, SLOT(showColorDialog()) );
     containerLayout->addWidget(_colorDialogButton);
 
-    QPixmap colorPopupPix;
-    appPTR->getIcon(NATRON_PIXMAP_COLORTRIANGLE, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorPopupPix);
-    _colorPopupButton = new QToolButton( containerLayout->widget() );
-    _colorPopupButton->setIcon( QIcon(colorPopupPix) );
-    _colorPopupButton->setFixedSize(medSize);
-    _colorPopupButton->setIconSize(medIconSize);
-    _colorPopupButton->setPopupMode(QToolButton::InstantPopup);
-    _colorPopupButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color popup."), NATRON_NAMESPACE::WhiteSpaceNormal) );
-    _colorPopupButton->setFocusPolicy(Qt::NoFocus);
-    _colorPopupButton->setStyleSheet( QString::fromUtf8("QToolButton::menu-indicator { image: none; }") ); // QTBUG-2036
-
-    _colorTriangle = new QtColorTriangle( containerLayout->widget() );
-    _colorTriangle->setMinimumSize( QSize(175, 175) ); // should be a setting?
-    QObject::connect( _colorTriangle, SIGNAL(colorChanged(QColor)), this, SLOT(onDialogCurrentColorChanged(QColor)) );
-
-    QWidgetAction *colorPopupAction = new QWidgetAction( containerLayout->widget() );
-    colorPopupAction->setDefaultWidget(_colorTriangle);
-    _colorPopupButton->addAction(colorPopupAction);
-    containerLayout->addWidget(_colorPopupButton);
-
     if (_useSimplifiedUI) {
         KnobGuiValue::_hide();
         enableRightClickMenu(_colorLabel, -1);
     }
+}
+
+void KnobGuiColor::addExtraWidgets(QVBoxLayout *containerLayout)
+{
+    _hsvWidget = new KnobGuiColorHSV( containerLayout->widget() );
+    QObject::connect( _hsvWidget, SIGNAL(colorChanged(QColor)), this, SLOT(onDialogCurrentColorChanged(QColor)) );
+    containerLayout->addWidget(_hsvWidget);
 }
 
 void
@@ -397,6 +385,7 @@ KnobGuiColor::_hide()
     }
     _colorLabel->hide();
     _colorDialogButton->hide();
+    _hsvWidget->hide();
 }
 
 void
@@ -407,6 +396,7 @@ KnobGuiColor::_show()
     }
     _colorLabel->show();
     _colorDialogButton->show();
+    _hsvWidget->show();
 }
 
 void
@@ -628,9 +618,10 @@ KnobGuiColor::updateColorTriangle()
                       Image::clamp<qreal>(isSimple ? curB : Color::to_func_srgb(curB), 0., 1.),
                       Image::clamp<qreal>(curA, 0., 1.) );
 
-    _colorTriangle->blockSignals(true);
+    /*_colorTriangle->blockSignals(true);
     _colorTriangle->setColor(curColor);
-    _colorTriangle->blockSignals(false);
+    _colorTriangle->blockSignals(false);*/
+    _hsvWidget->setColor(curColor);
 }
 
 bool
