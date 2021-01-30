@@ -228,7 +228,7 @@ SequenceFileDialog::SequenceFileDialog( QWidget* parent, // necessary to transmi
     , _filterLabel(0)
     , _filterLineEdit(0)
     , _filterDropDown(0)
-    //, _fileExtensionCombo(0)
+    , _fileExtensionCombo(0)
     , _buttonsLayout(0)
     , _centerLayout(0)
     , _favoriteLayout(0)
@@ -486,13 +486,13 @@ SequenceFileDialog::SequenceFileDialog( QWidget* parent, // necessary to transmi
     _filterLineLayout->setContentsMargins(0, 0, 0, 0);
     _filterLineWidget->setLayout(_filterLineLayout);
 
-    //if (_dialogMode == eFileDialogModeOpen) {
+    if (_dialogMode == eFileDialogModeOpen) {
         _filterLabel = new Label(tr("Filter:"), _filterLineWidget);
         _filterLineLayout->addWidget(_filterLabel);
-    /*} else if (_dialogMode == eFileDialogModeSave) {
+    } else if (_dialogMode == eFileDialogModeSave) {
         _filterLabel = new Label(tr("File type:"), _filterLineWidget);
         _filterLineLayout->addWidget(_filterLabel);
-    }*/
+    }
 
     _filterWidget = new QWidget(_filterLineWidget);
     _filterLayout = new QHBoxLayout(_filterWidget);
@@ -501,7 +501,7 @@ SequenceFileDialog::SequenceFileDialog( QWidget* parent, // necessary to transmi
     _filterLayout->setSpacing(0);
 
 
-    /*if (_dialogMode == eFileDialogModeSave) {
+    if (_dialogMode == eFileDialogModeSave) {
         _fileExtensionCombo = new ComboBox(_filterWidget);
         for (int i = 0; i < _filters.size(); ++i) {
             _fileExtensionCombo->addItem( _filters[i] );
@@ -514,7 +514,7 @@ SequenceFileDialog::SequenceFileDialog( QWidget* parent, // necessary to transmi
                 _fileExtensionCombo->setCurrentIndex(idx);
             }
         }
-    }*/
+    }
 
     if (_dialogMode != eFileDialogModeDir) {
         _filterLineEdit = new FileDialogLineEdit(_filterWidget);
@@ -639,8 +639,7 @@ FileDialogLineEdit::keyPressEvent(QKeyEvent* e)
 void
 SequenceFileDialog::onFileExtensionComboChanged(int index)
 {
-    qDebug() << "onFileExtensionComboChanged" << index;
-    //setFileExtensionOnLineEdit( _fileExtensionCombo->itemText(index) );
+    setFileExtensionOnLineEdit( _fileExtensionCombo->itemText(index) );
 }
 
 QByteArray
@@ -788,7 +787,6 @@ SequenceFileDialog::restoreState(const QByteArray & state,
 void
 SequenceFileDialog::setFileExtensionOnLineEdit(const QString & ext)
 {
-    qDebug() << "setFileExtensionOnLineEdit" << ext;
     assert(_dialogMode == eFileDialogModeSave);
 
     QString str  = _selectionLineEdit->text();
@@ -963,7 +961,7 @@ SequenceFileDialog::onSelectionChanged()
 
     proxyAndSetLineEditText(absolutePath);
 
-    /*if ( !item->isDir() ) {
+    if ( !item->isDir() ) {
         if (_dialogMode == eFileDialogModeSave) {
             QString extension = item->fileExtension();
             for (int i = 0; i < _fileExtensionCombo->count(); ++i) {
@@ -973,7 +971,7 @@ SequenceFileDialog::onSelectionChanged()
                 }
             }
         }
-    }*/
+    }
 
     ///refrsh preview if any
     if ( _preview && _preview->viewerUI && _preview->viewerUI->isVisible() ) {
@@ -1498,14 +1496,8 @@ SequenceFileDialog::openSelectedFiles()
             } else {
                 ///check if str contains already the selected file extension, otherwise append it
                 {
-                    QString ext = _filterLineEdit->text();
-                    if ( ext.startsWith( QString::fromUtf8("*.") ) ) {
-                        ext.remove(0, 2);
-                    }
-                    if ( !_filters.contains(ext) ) {
-                        ext = QString();
-                    }
-                    if ( !ext.isEmpty() ) {
+                    QString ext = _fileExtensionCombo->getCurrentIndexText();
+                    if ( ext != QString::fromUtf8("*") ) {
                         int lastSepPos = str.lastIndexOf( QLatin1Char('/') );
                         if (lastSepPos == -1) {
                             lastSepPos = str.lastIndexOf( QString::fromUtf8("//") );
@@ -2824,18 +2816,17 @@ SequenceFileDialog::appendFilesFromDirRecursively(QDir* currentDir,
 void
 SequenceFileDialog::onSelectionLineEditing(const QString & text)
 {
-    qDebug() << "onSelectionLineEditing" << text;
     if (_dialogMode != eFileDialogModeSave) {
         return;
     }
-    /*QString textCpy = text;
+    QString textCpy = text;
     QString extension = QtCompat::removeFileExtension(textCpy);
     for (int i = 0; i < _fileExtensionCombo->count(); ++i) {
         if (_fileExtensionCombo->itemText(i) == extension) {
             _fileExtensionCombo->setCurrentIndex_no_emit(i);
             break;
         }
-    }*/
+    }
 }
 
 void
