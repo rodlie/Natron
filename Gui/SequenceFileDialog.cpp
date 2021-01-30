@@ -465,6 +465,21 @@ SequenceFileDialog::SequenceFileDialog( QWidget* parent, // necessary to transmi
     _selectionLineEdit = new FileDialogLineEdit(_selectionWidget);
     _selectionLayout->addWidget(_selectionLineEdit);
 
+    if (_dialogMode == eFileDialogModeSave) {
+        _fileExtensionCombo = new ComboBox(_selectionWidget);
+        for (int i = 0; i < _filters.size(); ++i) {
+            _fileExtensionCombo->addItem( _filters[i] );
+        }
+        _selectionLayout->addWidget(_fileExtensionCombo);
+        QObject::connect( _fileExtensionCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(onFileExtensionComboChanged(int)) );
+        if (isSequenceDialog) {
+            int idx = _fileExtensionCombo->itemIndex( QString::fromUtf8("jpg") );
+            if (idx >= 0) {
+                _fileExtensionCombo->setCurrentIndex(idx);
+            }
+        }
+    }
+
     if ( (mode == SequenceFileDialog::eFileDialogModeOpen) || (mode == SequenceFileDialog::eFileDialogModeDir) ) {
         _openButton = new Button(tr("Open"), _selectionWidget);
     } else {
@@ -486,35 +501,14 @@ SequenceFileDialog::SequenceFileDialog( QWidget* parent, // necessary to transmi
     _filterLineLayout->setContentsMargins(0, 0, 0, 0);
     _filterLineWidget->setLayout(_filterLineLayout);
 
-    if (_dialogMode == eFileDialogModeOpen) {
-        _filterLabel = new Label(tr("Filter:"), _filterLineWidget);
-        _filterLineLayout->addWidget(_filterLabel);
-    } else if (_dialogMode == eFileDialogModeSave) {
-        _filterLabel = new Label(tr("File type:"), _filterLineWidget);
-        _filterLineLayout->addWidget(_filterLabel);
-    }
+    _filterLabel = new Label(tr("Filter:"), _filterLineWidget);
+    _filterLineLayout->addWidget(_filterLabel);
 
     _filterWidget = new QWidget(_filterLineWidget);
     _filterLayout = new QHBoxLayout(_filterWidget);
     _filterWidget->setLayout(_filterLayout);
     _filterLayout->setContentsMargins(0, 0, 0, 0);
     _filterLayout->setSpacing(0);
-
-
-    if (_dialogMode == eFileDialogModeSave) {
-        _fileExtensionCombo = new ComboBox(_filterWidget);
-        for (int i = 0; i < _filters.size(); ++i) {
-            _fileExtensionCombo->addItem( _filters[i] );
-        }
-        _filterLineLayout->addWidget(_fileExtensionCombo);
-        QObject::connect( _fileExtensionCombo, SIGNAL(currentIndexChanged(int)), this, SLOT(onFileExtensionComboChanged(int)) );
-        if (isSequenceDialog) {
-            int idx = _fileExtensionCombo->itemIndex( QString::fromUtf8("jpg") );
-            if (idx >= 0) {
-                _fileExtensionCombo->setCurrentIndex(idx);
-            }
-        }
-    }
 
     if (_dialogMode != eFileDialogModeDir) {
         _filterLineEdit = new FileDialogLineEdit(_filterWidget);
