@@ -1894,52 +1894,35 @@ SequenceFileDialog::showFilterMenu()
     position.ry() += _filterLineEdit->height();
     QList<QAction *> actions;
 
-    //QFont font(appFont,appFontSize);
-    QFontMetrics fm( font() );
-    QAction *startSlash = new QAction(QString::fromUtf8("*/"), this);
-    QObject::connect( startSlash, SIGNAL(triggered()), this, SLOT(starSlashFilterSlot()) );
-    actions.append(startSlash);
+    QStringList filters = _filters;
+    filters << QString::fromUtf8("*.*") << QString::fromUtf8("*/");
+    filters << QString::fromUtf8("*") << QString::fromUtf8(".*");
 
-    QAction *empty = new QAction(QString::fromUtf8("*"), this);
-    QObject::connect( empty, SIGNAL(triggered()), this, SLOT(emptyFilterSlot()) );
-    actions.append(empty);
-
-    QAction *dotStar = new QAction(QString::fromUtf8(".*"), this);
-    QObject::connect( dotStar, SIGNAL(triggered()), this, SLOT(dotStarFilterSlot()) );
-    actions.append(dotStar);
-
+    for (int i = 0; i < filters.size(); ++i) {
+        QString filter = filters[i];
+        if ( !filter.contains( QString::fromUtf8("*") ) ) {
+            filter.prepend( QString::fromUtf8("*.") );
+        }
+        QAction *filterAction = new QAction(filter, this);
+        QObject::connect( filterAction, SIGNAL(triggered()), this, SLOT(handleFilterSlot()) );
+        actions.append(filterAction);
+    }
 
     if (actions.count() > 0) {
         Menu menu(_filterLineEdit);
-        //menu.setFont(font);
         menu.addActions(actions);
-        //  menu.setFixedSize( _filterLineEdit->width(),menu.sizeHint().height() );
         menu.exec(position);
     }
 }
 
 void
-SequenceFileDialog::dotStarFilterSlot()
+SequenceFileDialog::handleFilterSlot()
 {
-    QString filter( QString::fromUtf8(".*") );
+    QAction *action = qobject_cast<QAction *>( sender() );
+    if (!action) { return; }
 
-    _filterLineEdit->setText(filter);
-    applyFilter(filter);
-}
-
-void
-SequenceFileDialog::starSlashFilterSlot()
-{
-    QString filter = QString::fromUtf8("*/");
-
-    _filterLineEdit->setText(filter);
-    applyFilter(filter);
-}
-
-void
-SequenceFileDialog::emptyFilterSlot()
-{
-    QString filter = QString::fromUtf8("*");
+    QString filter = action->text();
+    if (filter.isEmpty()) { return; }
 
     _filterLineEdit->setText(filter);
     applyFilter(filter);
