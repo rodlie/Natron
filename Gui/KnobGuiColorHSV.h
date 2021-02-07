@@ -64,9 +64,9 @@ private:
     QSlider *slideS;
     QSlider *slideV;
 
-    ScaleSliderQWidget *_sliderH;
+    /*ScaleSliderQWidget *_sliderH;
     ScaleSliderQWidget *_sliderS;
-    ScaleSliderQWidget *_sliderV;
+    ScaleSliderQWidget *_sliderV;*/
 
     QtColorTriangle *triangle;
 

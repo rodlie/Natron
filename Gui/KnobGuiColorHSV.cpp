@@ -14,19 +14,16 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
   , slideH(NULL)
   , slideS(NULL)
   , slideV(NULL)
-  , _sliderH(NULL)
+  /*, _sliderH(NULL)
   , _sliderS(NULL)
-  , _sliderV(NULL)
+  , _sliderV(NULL)*/
   , triangle(NULL)
 {
-    qDebug() << "XXXXXXXXXXXXXX 01";
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(5,5,5,5);
     mainLayout->setSpacing(0);
 
     triangle = new QtColorTriangle(this);
-    //triangle->setMinimumHeight(192);
-    //triangle->setMaximumHeight(192);
     triangle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QWidget *hsvWidget = new QWidget(this);
@@ -39,8 +36,6 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     QWidget *vWidget = new QWidget(this);
     QHBoxLayout *vLayout = new QHBoxLayout(vWidget);
 
-    qDebug() << "XXXXXXXXXXXXXX 02";
-
     hLayout->setContentsMargins(0,0,0,0);
     sLayout->setContentsMargins(0,0,0,0);
     vLayout->setContentsMargins(0,0,0,0);
@@ -48,8 +43,6 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     slideH = new QSlider(this);
     slideS = new QSlider(this);
     slideV = new QSlider(this);
-
-    qDebug() << "XXXXXXXXXXXXXX 03";
 
     slideH->setRange(0,1000);
     slideS->setRange(0,1000);
@@ -66,8 +59,6 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     spinH = new QDoubleSpinBox(this);
     spinS = new QDoubleSpinBox(this);
     spinV = new QDoubleSpinBox(this);
-
-    qDebug() << "XXXXXXXXXXXXXX 04";
 
     spinH->setDecimals(3);
     spinS->setDecimals(3);
@@ -96,8 +87,6 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     QLabel *labelS = new QLabel(this);
     QLabel *labelV = new QLabel(this);
 
-    qDebug() << "XXXXXXXXXXXXXX 05";
-
     labelH->setText( QString::fromUtf8("H") );
     labelS->setText( QString::fromUtf8("S") );
     labelV->setText( QString::fromUtf8("V") );
@@ -119,7 +108,7 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     vLayout->addWidget(slideV);
     vLayout->addWidget(spinV);
 
-    _sliderH = new ScaleSliderQWidget(0,
+    /*_sliderH = new ScaleSliderQWidget(0,
                                       1,
                                       0,
                                       true,
@@ -146,7 +135,7 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
 
     hsvLayout->addWidget(_sliderH);
     hsvLayout->addWidget(_sliderS);
-    hsvLayout->addWidget(_sliderV);
+    hsvLayout->addWidget(_sliderV);*/
     hsvLayout->addWidget(hWidget);
     hsvLayout->addWidget(sWidget);
     hsvLayout->addWidget(vWidget);
@@ -195,7 +184,6 @@ void KnobGuiColorHSV::setH(qreal h)
     spinH->setValue(h);
     int slideValue = h*1000;
     slideH->setValue(slideValue);
-    qDebug() << "!!!" << h << slideValue << slideH->value();
     spinH->blockSignals(false);
     slideH->blockSignals(false);
 }
