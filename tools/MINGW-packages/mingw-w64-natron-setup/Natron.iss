@@ -72,6 +72,7 @@ Source: "{src}\Resources\OpenColorIO-Configs\*"; DestDir: "{app}\Resources\OpenC
 Source: "{src}\Resources\pixmaps\*"; DestDir: "{app}\Resources\pixmaps\"; Components: natron; Flags: ignoreversion recursesubdirs createallsubdirs external
 Source: "{src}\Resources\poppler\*"; DestDir: "{app}\Resources\poppler\"; Components: arena; Flags: ignoreversion recursesubdirs createallsubdirs external
 Source: "{src}\Resources\stylesheets\*"; DestDir: "{app}\Resources\stylesheets\"; Components: natron; Flags: ignoreversion recursesubdirs createallsubdirs external
+Source: "{src}\Resources\symbols\*"; DestDir: "{app}\Resources\symbols\"; Components: natron; Flags: ignoreversion recursesubdirs createallsubdirs external
 
 Source: "{src}\bin\mesa\opengl32.dll"; DestDir: "{app}\bin\"; Components: sgl; Flags: ignoreversion external
 
