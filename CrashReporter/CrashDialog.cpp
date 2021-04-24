@@ -105,7 +105,7 @@ CrashDialog::CrashDialog(const QString &filePath)
     _iconLabel->setPixmap(pix);
     _gridLayout->addWidget(_iconLabel, 0, 0, 1, 2, Qt::AlignHCenter | Qt::AlignVCenter);
 
-    QString infoStr = QString::fromUtf8("<h3>%1</h3><p>%2</p>").arg( tr("Natron quit unexpectedly") ).arg( tr("Click Report to see more detailed information and send a report to Natron.") );
+    QString infoStr = QString::fromUtf8("<h3>%1</h3><p>%2</p>").arg( tr("Natron quit unexpectedly") ).arg( tr("Click 'View' to see more detailed information about the crash.") );
     _infoLabel = new QLabel(infoStr, _mainFrame);
     _infoLabel->setTextFormat(Qt::RichText);
     _infoLabel->setAlignment(Qt::AlignCenter);
@@ -117,7 +117,7 @@ CrashDialog::CrashDialog(const QString &filePath)
     _buttonsFrame->setFrameShape(QFrame::Box);
     _buttonsLayout = new QHBoxLayout(_buttonsFrame);
 
-    _sendButton = new QPushButton(tr("Report..."), _buttonsFrame);
+    _sendButton = new QPushButton(tr("View"), _buttonsFrame);
     _sendButton->setFocusPolicy(Qt::TabFocus);
     QObject::connect( _sendButton, SIGNAL(clicked(bool)), this, SLOT(onSendClicked()) );
     _buttonsLayout->addWidget(_sendButton);
