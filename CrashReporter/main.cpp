@@ -25,6 +25,9 @@
 
 
 #ifdef Q_OS_WIN
+#include <windows.h>
+#include <QSettings> // for console settings
+
 // g++ knows nothing about wmain
 // https://sourceforge.net/p/mingw-w64/wiki2/Unicode%20apps/
 extern "C" {
@@ -37,6 +40,19 @@ int main(int argc, char *argv[])
 
     try {
 #ifdef Q_OS_WIN
+         // Setup Windows console output
+         bool hasConsole = false;
+         QSettings settings( QString::fromUtf8(NATRON_ORGANIZATION_NAME), QString::fromUtf8(NATRON_APPLICATION_NAME) );
+         bool enableConsoleWindow = settings.value( QString::fromUtf8("enableConsoleWindow"), false ).toBool();
+         if (enableConsoleWindow) { // output to console window
+             hasConsole = ( AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole() );
+         } else { // output to parent console
+             hasConsole = AttachConsole(ATTACH_PARENT_PROCESS);
+         }
+         if (hasConsole) {
+             freopen("CONOUT$", "w", stdout);
+             freopen("CONOUT$", "w", stderr);
+         }
          manager.initW(argc, argv);
 #else
         manager.init(argc, argv);
