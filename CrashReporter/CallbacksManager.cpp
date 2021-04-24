@@ -772,35 +772,35 @@ CallbacksManager::saveCrashReport(bool openReport,
 
     // generate HTML
     QString body;
-    body.append( QString::fromUtf8("System Information\n---\n\n") );
-    body.append( QString::fromUtf8(" * **Platform**: `%1`\n").arg( linuxVersion.isEmpty()? QString::fromStdString(report.platform) : linuxVersion ) );
-    body.append( QString::fromUtf8(" * **Natron**: `%1` @ https://github.com/NatronGitHub/Natron/commit/%2 *(%3)*\n").arg( getVersionString() ).arg(gitHash).arg(gitBranch) );
+    body.append( QString::fromUtf8("<ul>\n<li><strong>Platform:</strong> %1</li>\n").arg( linuxVersion.isEmpty()? QString::fromStdString(report.platform) : linuxVersion ) );
+    body.append( QString::fromUtf8("<li><strong>Natron:</strong> %1 @ <a target=\"_blank\" href=\"https://github.com/NatronGitHub/Natron/commit/%2\">%2</a> (%3)</li>\n").arg( getVersionString() ).arg(gitHash).arg(gitBranch) );
     if ( !IOGitHash.isEmpty() ) {
-        body.append( QString::fromUtf8(" * **openfx-io**: https://github.com/NatronGitHub/openfx-io/commit/%1\n").arg(IOGitHash) );
+        body.append( QString::fromUtf8("<li><strong>openfx-io:</strong> @ <a target=\"_blank\" href=\"https://github.com/NatronGitHub/openfx-io/commit/%1\">%1</a></li>\n").arg(IOGitHash) );
     }
     if ( !MiscGitHash.isEmpty() ) {
-        body.append( QString::fromUtf8(" * **openfx-misc**: https://github.com/NatronGitHub/openfx-misc/commit/%1\n").arg(MiscGitHash) );
+        body.append( QString::fromUtf8("<li><strong>openfx-misc:</strong> @ <a target=\"_blank\" href=\"https://github.com/NatronGitHub/openfx-misc/commit/%1\">%1</a></li>\n").arg(MiscGitHash) );
     }
     if ( !ArenaGitHash.isEmpty() ) {
-        body.append( QString::fromUtf8(" * **openfx-arena**: https://github.com/NatronGitHub/openfx-arena/commit/%1\n").arg(ArenaGitHash) );
+        body.append( QString::fromUtf8("<li><strong>openfx-arena:</strong> @ <a target=\"_blank\" href=\"https://github.com/NatronGitHub/openfx-arena/commit/%1\">%1</a></li>\n").arg(ArenaGitHash) );
     }
     if ( !GLversionInfo.isEmpty() ) {
-        body.append( QString::fromUtf8(" * **OpenGL**: `%1`\n").arg(GLversionInfo) );
+        body.append( QString::fromUtf8("<li><strong>OpenGL version:</strong> %1</li>\n").arg(GLversionInfo) );
         if ( !GLrendererInfo.isEmpty() ) {
-            body.append( QString::fromUtf8("   * **Renderer**: `%1`\n").arg(GLrendererInfo) );
+            body.append( QString::fromUtf8("<li><strong>OpenGL renderer:</strong> %1</li>\n").arg(GLrendererInfo) );
         }
         if ( !GLvendorInfo.isEmpty() ) {
-            body.append( QString::fromUtf8("   * **Vendor**: `%1`\n").arg(GLvendorInfo) );
+            body.append( QString::fromUtf8("<li><strong>OpenGL vendor:</strong> %1</li>\n").arg(GLvendorInfo) );
         }
         if ( !GLshaderInfo.isEmpty() ) {
-            body.append( QString::fromUtf8("   * **Shader**:  `%1`\n\n").arg(GLshaderInfo) );
+            body.append( QString::fromUtf8("<li><strong>OpenGL shader:</strong> %1</li>\n").arg(GLshaderInfo) );
         }
     }
+    body.append( QString::fromUtf8("</ul>\n"));
 
     QString html = QString::fromUtf8("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n");
     html.append( QString::fromUtf8("<html>\n<head>\n<title>Natron Crash Report</title>\n</head>\n<body>\n<h1>Natron Crash Report</h1>\n") );
-    html.append( QString::fromUtf8("<pre>\n%1\n%2\n</pre>\n").arg(body).arg( QString::fromStdString( Breakdown::generateCrashResultPlainText(report) ) ) );
-    html.append( QString::fromUtf8("</body>\n</html>") );
+    html.append( QString::fromUtf8("%1<pre>\n%2</pre>\n").arg(body).arg( QString::fromStdString( Breakdown::generateCrashResultPlainText(report) ) ) );
+    html.append( QString::fromUtf8("</body>\n</html>\n") );
 
     // save HTML
     QString filename = QString(_dumpFilePath).replace( QString::fromUtf8(".dmp"), QString::fromUtf8(".html") );
@@ -811,11 +811,13 @@ CallbacksManager::saveCrashReport(bool openReport,
     }
 
     // open HTML
-    if (QFile::exists(filename) && openReport) {
 #ifndef REPORTER_CLI_ONLY
+    if (QFile::exists(filename) && openReport) {
         QDesktopServices::openUrl( QUrl::fromLocalFile(filename) );
-#endif
     }
+#else
+    Q_UNUSED(openReport)
+#endif
 
     // quit when done
     if (quitWhenDone) {
