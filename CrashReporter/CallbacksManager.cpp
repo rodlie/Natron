@@ -775,13 +775,13 @@ CallbacksManager::saveCrashReport(bool openReport,
     body.append( QString::fromUtf8("<ul>\n<li><strong>Platform:</strong> %1</li>\n").arg( linuxVersion.isEmpty()? QString::fromStdString(report.platform) : linuxVersion ) );
     body.append( QString::fromUtf8("<li><strong>Natron:</strong> %1 @ <a target=\"_blank\" href=\"https://github.com/NatronGitHub/Natron/commit/%2\">%2</a> (%3)</li>\n").arg( getVersionString() ).arg(gitHash).arg(gitBranch) );
     if ( !IOGitHash.isEmpty() ) {
-        body.append( QString::fromUtf8("<li><strong>openfx-io:</strong> @ <a target=\"_blank\" href=\"https://github.com/NatronGitHub/openfx-io/commit/%1\">%1</a></li>\n").arg(IOGitHash) );
+        body.append( QString::fromUtf8("<li><strong>openfx-io:</strong> <a target=\"_blank\" href=\"https://github.com/NatronGitHub/openfx-io/commit/%1\">%1</a></li>\n").arg(IOGitHash) );
     }
     if ( !MiscGitHash.isEmpty() ) {
-        body.append( QString::fromUtf8("<li><strong>openfx-misc:</strong> @ <a target=\"_blank\" href=\"https://github.com/NatronGitHub/openfx-misc/commit/%1\">%1</a></li>\n").arg(MiscGitHash) );
+        body.append( QString::fromUtf8("<li><strong>openfx-misc:</strong> <a target=\"_blank\" href=\"https://github.com/NatronGitHub/openfx-misc/commit/%1\">%1</a></li>\n").arg(MiscGitHash) );
     }
     if ( !ArenaGitHash.isEmpty() ) {
-        body.append( QString::fromUtf8("<li><strong>openfx-arena:</strong> @ <a target=\"_blank\" href=\"https://github.com/NatronGitHub/openfx-arena/commit/%1\">%1</a></li>\n").arg(ArenaGitHash) );
+        body.append( QString::fromUtf8("<li><strong>openfx-arena:</strong> <a target=\"_blank\" href=\"https://github.com/NatronGitHub/openfx-arena/commit/%1\">%1</a></li>\n").arg(ArenaGitHash) );
     }
     if ( !GLversionInfo.isEmpty() ) {
         body.append( QString::fromUtf8("<li><strong>OpenGL version:</strong> %1</li>\n").arg(GLversionInfo) );

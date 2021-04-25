@@ -20,7 +20,7 @@
 # The binary name needs to be Natron as this is what the user lauches
 # It is renamed during deployment
 TARGET = NatronCrashReporter
-VERSION = 2.3.0
+VERSION = 2.4.0
 TEMPLATE = app
 
 # NatronCrashReporter is built as an app to make debugging easier:
@@ -31,7 +31,6 @@ TEMPLATE = app
 #  $ ln -s ../../../../../../App/build/Debug/Natron.app/Contents/MacOS/Natron Natron-bin
 
 win32 {
-    CONFIG += console
     RC_FILE += ../Natron.rc
 } else {
     CONFIG += app
