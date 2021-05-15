@@ -27,6 +27,7 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QtCore/QObject>
 #include <QColorDialog>
 #include "QtColorTriangle.h"
+#include <QLineEdit>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -45,11 +46,14 @@ public:
 
 private:
     QtColorTriangle *triangle;
+    QLineEdit *hex;
     bool blockTriangle;
+    bool blockHex;
     void init();
 
 private Q_SLOTS:
     void handleTriangleColorChanged(const QColor &color);
+    void handleHexColorChanged(const QString &name);
     void handleCurrentColorChanged(const QColor &color);
 };
 

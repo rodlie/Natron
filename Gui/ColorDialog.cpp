@@ -23,6 +23,7 @@ CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QVBoxLayout>
 #include <QTabWidget>
+#include <QLabel>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -31,7 +32,9 @@ NATRON_NAMESPACE_ENTER
 ColorDialog::ColorDialog(QWidget *parent)
     : QColorDialog(parent)
     , triangle(NULL)
+    , hex(NULL)
     , blockTriangle(false)
+    , blockHex(false)
 {
     init();
 }
@@ -39,7 +42,9 @@ ColorDialog::ColorDialog(QWidget *parent)
 ColorDialog::ColorDialog(const QColor &initial, QWidget *parent)
     : QColorDialog(initial, parent)
     , triangle(NULL)
+    , hex(NULL)
     , blockTriangle(false)
+    , blockHex(false)
 {
     init();
 }
@@ -71,6 +76,17 @@ ColorDialog::init()
     triangle = new QtColorTriangle(this);
     triangle->setColor( currentColor() );
 
+    // add hex
+    QWidget *hexWidget = new QWidget(this);
+    QHBoxLayout *hexLayout = new QHBoxLayout(hexWidget);
+    hexLayout->setContentsMargins(0, 0, 0, 0);
+    QLabel *hexLabel = new QLabel(this);
+    hexLabel->setText( tr("Hex code :") );
+    hex = new QLineEdit(this);
+    hexLayout->addWidget(hexLabel);
+    hexLayout->addWidget(hex);
+    leftLayout->addWidget(hexWidget);
+
     // add tab widget
     QTabWidget *tab = new QTabWidget(this);
     tab->setMinimumSize( QSize(250, 250) );
@@ -83,6 +99,9 @@ ColorDialog::init()
 
     QObject::connect( this, SIGNAL( currentColorChanged(QColor) ),
                       this, SLOT( handleCurrentColorChanged(QColor) ) );
+
+    QObject::connect( hex, SIGNAL(textChanged(QString)),
+                      this, SLOT(handleHexColorChanged(QString)));
 }
 
 void
@@ -90,6 +109,16 @@ ColorDialog::handleTriangleColorChanged(const QColor &color)
 {
     blockTriangle = true; // block triangle color update
     setCurrentColor(color);
+}
+
+void
+ColorDialog::handleHexColorChanged(const QString &name)
+{
+    if ( name.isEmpty() || !QColor::isValidColor(name) ) {
+        return;
+    }
+    blockHex = true;
+    setCurrentColor( QColor(name) );
 }
 
 void
@@ -102,6 +131,14 @@ ColorDialog::handleCurrentColorChanged(const QColor &color)
         triangle->blockSignals(true);
         triangle->setColor(color);
         triangle->blockSignals(false);
+    }
+    // hex
+    if (blockHex) {
+        blockHex = false;
+    } else {
+        hex->blockSignals(true);
+        hex->setText( color.name() );
+        hex->blockSignals(false);
     }
 }
 
