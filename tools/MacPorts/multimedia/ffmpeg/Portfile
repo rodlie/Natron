@@ -6,6 +6,9 @@ PortGroup           muniversal 1.0
 PortGroup           compiler_blacklist_versions 1.0
 PortGroup           active_variants 1.1
 
+# For 'TARGET_OS_OSX', 'TARGET_CPU_ARM64' macros
+PortGroup           legacysupport 1.1
+
 # https://trac.macports.org/ticket/59246
 # https://trac.macports.org/ticket/59308
 PortGroup           xcode_workaround 1.0
@@ -14,7 +17,7 @@ name                ffmpeg
 conflicts           ffmpeg-devel
 # Please increase the revision of mpv whenever ffmpeg's version is updated.
 epoch               1
-version             4.3.1
+version             4.4
 revision            0
 license             LGPL-2.1+
 categories          multimedia
@@ -57,9 +60,9 @@ master_sites        ${homepage}releases/
 
 use_xz              yes
 
-checksums           rmd160  57b83bb12fe61eea9caa94557e57b24653837c51 \
-                    sha256  ad009240d46e307b4e03a213a0f49c11b650e445b1f8be0dda2a9212b34d2ffb \
-                    size    9379424
+checksums           rmd160  0169ae4eb185de3a851a9926bc0b3289512c4be0 \
+                    sha256  06b10a183ce5371f915c6bb15b7b1fffbe046e8275099c96affc29e17645d909 \
+                    size    9557868
 
 depends_build       port:pkgconfig \
                     port:gmake \
@@ -94,7 +97,7 @@ patchfiles          patch-libavcodec-audiotoolboxenc.c.diff
 
 # work around vec_xl intrinsic does not exist on older PowerPC processors
 # https://trac.ffmpeg.org/ticket/8750
-patchfiles-append     patch-ffmpeg-powerpc-yuv2rgb-altivec-fix.diff
+patchfiles-append   patch-ffmpeg-powerpc-yuv2rgb-altivec-fix.diff
 
 #
 # enable auto configure of asm optimizations
@@ -110,6 +113,10 @@ if {[lsearch [get_canonical_archs] i386] != -1} {
     # clang-139 hits https://trac.macports.org/ticket/38141
     compiler.blacklist-append {clang < 422.1.7}
 }
+
+# warning: unknown warning option '-Werror=partial-availability'; did you mean '-Werror=availability'? [-Wunknown-warning-option]
+# warning: unknown warning option '-Wno-bool-operation'; did you mean '-Wno-bool-conversion'? [-Wunknown-warning-option]
+compiler.blacklist-append {clang < 800}
 
 # gcc > 4.2 is required, https://trac.ffmpeg.org/ticket/1464
 # WARNING: gcc 4.2 is outdated and may miscompile FFmpeg. Please use a newer compiler.
@@ -143,6 +150,7 @@ configure.args      --enable-swscale \
                     --enable-fontconfig \
                     --enable-libfreetype \
                     --enable-libfribidi \
+                    --disable-libaom \
                     --disable-libjack \
                     --disable-libopencore-amrnb \
                     --disable-libopencore-amrwb \
@@ -279,7 +287,10 @@ platform darwin 8 {
 
 configure.universal_args-delete --disable-dependency-tracking
 
-if {[variant_isset universal]} {
+if {![info exists universal_possible]} {
+    set universal_possible [expr {${os.universal_supported} && [llength ${configure.universal_archs}] >= 2}]
+}
+if {${universal_possible} && [variant_isset universal]} {
     # the following is inspired by the icu Portfile
     # if we can't run executables for the target arch, mark it as a cross-compile
     foreach arch ${configure.universal_archs} {
@@ -325,7 +336,7 @@ variant x11 {
     configure.args-append   --enable-xlib
 }
 
-variant natronmini requires highbitdepth conflicts x11 description {Minimal FFmpeg for Natron, without bluray, subtitles, network, display support.} {
+variant natronmini requires highbitdepth aom conflicts x11 description {Minimal FFmpeg for Natron, without bluray, subtitles, network, display support.} {
 
     depends_lib-delete \
                     port:libiconv \
@@ -407,6 +418,12 @@ variant darwinssl description {Enable https support using Apple built-in TLS lib
     configure.args-delete   --disable-securetransport
     configure.args-delete   --enable-gnutls
     depends_lib-delete      port:gnutls
+}
+
+variant aom description {Enable Alliance for Open Media AV1 Codec} {
+    depends_lib-append      port:aom
+    configure.args-delete   --disable-libaom
+    configure.args-append   --enable-libaom
 }
 
 variant highbitdepth description {Build using libvpx with 10/12-bit output} {}

@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -2119,7 +2119,7 @@ AppManager::loadPythonGroups()
 
 
         if (gotInfos) {
-            qDebug() << "Loading " << moduleName;
+            qDebug() << "Loading" << moduleName;
             QStringList grouping = QString::fromUtf8( pluginGrouping.c_str() ).split( QChar::fromLatin1('/') );
             Plugin* p = registerPlugin(modulePath, grouping, QString::fromUtf8( pluginID.c_str() ), QString::fromUtf8( pluginLabel.c_str() ), QString::fromUtf8( iconFilePath.c_str() ), QStringList(), false, false, 0, false, version, 0, false);
 
@@ -4170,6 +4170,22 @@ std::string
 NATRON_PYTHON_NAMESPACE::makeNameScriptFriendly(const std::string& str)
 {
     return makeNameScriptFriendlyInternal(str, false);
+}
+
+bool
+NATRON_PYTHON_NAMESPACE::isKeyword(const std::string& str)
+{
+    const char* const kw[] = { "False", "None", "True", "and", "as", "assert",
+        "async", "await", "break", "class", "continue", "def", "del", "elif",
+        "else", "except", "finally", "for", "from", "global", "if", "import",
+        "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return",
+        "try", "while", "with", "yield", NULL };
+    for (const char* const *k = kw; *k != NULL; ++k) {
+        if (str == *k) {
+            return true;
+        }
+    }
+    return false;
 }
 
 #if !defined(NDEBUG) && !defined(DEBUG_PYTHON_GIL)

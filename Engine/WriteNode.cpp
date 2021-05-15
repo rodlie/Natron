@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -1257,6 +1257,22 @@ WriteNode::knobChanged(KnobI* k,
 
     return ret;
 } // WriteNode::knobChanged
+
+
+SequentialPreferenceEnum
+WriteNode::getSequentialPreference() const
+{
+    NodePtr writer = _imp->embeddedPlugin.lock();
+
+    if (writer) {
+        EffectInstancePtr effect = writer->getEffectInstance();
+        if (effect) {
+            return effect->getSequentialPreference();
+        }
+    }
+    return EffectInstance::getSequentialPreference();
+}
+
 
 bool
 WriteNode::isViewAware() const

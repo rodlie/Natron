@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -48,6 +48,10 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QFileOpenEvent>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
+
+#ifdef DEBUG
+#include "Global/FloatingPointExceptions.h"
+#endif
 
 #include "Engine/LibraryBinary.h"
 #include "Engine/CreateNodeArgs.h"
@@ -289,7 +293,14 @@ void
 GuiApplicationManager::initializeQApp(int &argc,
                                       char** argv)
 {
-    QApplication* app = new Application(this, argc, argv);
+    QApplication* app;
+    {
+#ifdef DEBUG
+        boost_adaptbx::floating_point::exception_trapping trap(boost_adaptbx::floating_point::exception_trapping::division_by_zero |
+                                                               boost_adaptbx::floating_point::exception_trapping::overflow);
+#endif
+        app = new Application(this, argc, argv);
+    }
     QDesktopWidget* desktop = app->desktop();
     int dpiX = desktop->logicalDpiX();
     int dpiY = desktop->logicalDpiY();

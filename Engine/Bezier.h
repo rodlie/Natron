@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -243,6 +243,7 @@ private:
                                  double flx, double fly, double frx, double fry,
                                  bool isLeft,
                                  bool moveBoth,
+                                 bool breakTangents,
                                  bool onlyFeather);
 
 public:
@@ -292,6 +293,7 @@ public:
                                     double time,
                                     double lx, double ly, double rx, double ry,
                                     double flx, double fly, double frx, double fry,
+                                    bool breakTangents,
                                     bool onlyFeather);
 
 

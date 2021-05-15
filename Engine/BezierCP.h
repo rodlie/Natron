@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -96,6 +96,8 @@ public:
 
     void setRightBezierPointAtTime(bool useGuiCurves, double time, double x, double y);
 
+    void setBroken(bool broken);
+
     void setStaticPosition(bool useGuiCurves, double x, double y);
 
     void setLeftBezierStaticPosition(bool useGuiCurves, double x, double y);
@@ -122,10 +124,12 @@ public:
 
     bool getPositionAtTime(bool useGuiCurves, double time, ViewIdx view, double* x, double* y) const;
 
-    bool getLeftBezierPointAtTime(bool useGuiCurves, double time, ViewIdx view, double* x, double* y) const;
+    bool getLeftBezierPointAtTime(bool useGuiCurves, double time, ViewIdx view, double* x, double* y, bool reAlign = true) const;
 
-    bool getRightBezierPointAtTime(bool useGuiCurves, double time, ViewIdx view, double *x, double *y) const;
+    bool getRightBezierPointAtTime(bool useGuiCurves, double time, ViewIdx view, double *x, double *y, bool reAlign = true) const;
 
+    bool getBroken() const;
+    
     bool hasKeyFrameAtTime(bool useGuiCurves, double time) const;
 
     void getKeyframeTimes(bool useGuiCurves, std::set<double>* times) const;

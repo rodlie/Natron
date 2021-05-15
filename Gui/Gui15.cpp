@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -429,12 +429,15 @@ Gui::buildTabFocusOrderPropertiesBin()
 }
 
 void
-Gui::setVisibleProjectSettingsPanel()
+Gui::setVisibleProjectSettingsPanel(bool minimized)
 {
     if ( _imp->_projectGui->getPanel()->isClosed() ) {
         _imp->_projectGui->getPanel()->setClosed(false);
     } else {
         addVisibleDockablePanel( _imp->_projectGui->getPanel() );
+    }
+    if (minimized) {
+        _imp->_projectGui->getPanel()->restoreMinimizedState(true);
     }
     if ( !_imp->_projectGui->isVisible() ) {
         _imp->_projectGui->setVisible(true);

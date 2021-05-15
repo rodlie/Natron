@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -36,6 +36,7 @@
 
 #include <QtCore/QThread>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDebug>
 
 #include "Engine/Bezier.h"
 #include "Engine/KnobTypes.h"
@@ -44,6 +45,8 @@
 
 NATRON_NAMESPACE_ENTER
 
+// Was eKeyframeTypeLinear until Natron 2.3.15.
+#define BEZIER_KEYFRAME_INTERPOLATION_TYPE eKeyframeTypeSmooth
 
 ////////////////////////////////////ControlPoint////////////////////////////////////
 
@@ -112,7 +115,7 @@ BezierCP::setPositionAtTime(bool useGuiCurves,
 {
     {
         KeyFrame k(time, x);
-        k.setInterpolation(eKeyframeTypeLinear);
+        k.setInterpolation(BEZIER_KEYFRAME_INTERPOLATION_TYPE);
         if (!useGuiCurves) {
             _imp->curveX->addKeyFrame(k);
         }
@@ -120,7 +123,7 @@ BezierCP::setPositionAtTime(bool useGuiCurves,
     }
     {
         KeyFrame k(time, y);
-        k.setInterpolation(eKeyframeTypeLinear);
+        k.setInterpolation(BEZIER_KEYFRAME_INTERPOLATION_TYPE);
         if (!useGuiCurves) {
             _imp->curveY->addKeyFrame(k);
         }
@@ -176,9 +179,10 @@ BezierCP::setRightBezierStaticPosition(bool useGuiCurves,
 bool
 BezierCP::getLeftBezierPointAtTime(bool useGuiCurves,
                                    double time,
-                                   ViewIdx /*view*/,
+                                   ViewIdx view,
                                    double* x,
-                                   double* y) const
+                                   double* y,
+                                   bool reAlign) const
 {
     KeyFrame k;
     bool ret = false;
@@ -212,6 +216,30 @@ BezierCP::getLeftBezierPointAtTime(bool useGuiCurves,
         ret = false;
     }
 
+    // If the CP does not have broken tangents, realign the Bezier points.
+    // Fixes https://github.com/NatronGitHub/Natron/issues/202
+    if (reAlign && !_imp->broken) {
+        double px, py, qx, qy;
+        getPositionAtTime(useGuiCurves, time, view, &px, &py);
+        getRightBezierPointAtTime(useGuiCurves, time, view, &qx, &qy, false);
+        // The vector between the two bezier points
+        double vx = qx - *x;
+        double vy = qy - *y;
+        double v = std::sqrt(vx * vx + vy *vy);
+        if (v > 0.) {
+            // The normal vector
+            double nx = vy / v;
+            double ny = -vx / v;
+            // The (signed) distance from the position to the segment
+            double d = nx * (px - *x) + ny * (py - *y);
+            // displace the key point in the normal direction.
+            *x += d * nx;
+            *y += d * ny;
+            // Verify that d is now zero
+            // d = nx * (px - *x) + ny * (py - *y);
+            // qDebug() << 'd' << d;
+        }
+    }
 
     return ret;
 } // BezierCP::getLeftBezierPointAtTime
@@ -219,9 +247,10 @@ BezierCP::getLeftBezierPointAtTime(bool useGuiCurves,
 bool
 BezierCP::getRightBezierPointAtTime(bool useGuiCurves,
                                     double time,
-                                    ViewIdx /*view*/,
+                                    ViewIdx view,
                                     double *x,
-                                    double *y) const
+                                    double *y,
+                                    bool reAlign) const
 {
     KeyFrame k;
     bool ret = false;
@@ -255,6 +284,30 @@ BezierCP::getRightBezierPointAtTime(bool useGuiCurves,
         ret =  false;
     }
 
+    // If the CP does not have broken tangents, realign the Bezier points.
+    // Fixes https://github.com/NatronGitHub/Natron/issues/202
+    if (reAlign && !_imp->broken) {
+        double px, py, qx, qy;
+        getPositionAtTime(useGuiCurves, time, view, &px, &py);
+        getLeftBezierPointAtTime(useGuiCurves, time, view, &qx, &qy, false);
+        // The vector between the two bezier points
+        double vx = qx - *x;
+        double vy = qy - *y;
+        double v = std::sqrt(vx * vx + vy *vy);
+        if (v > 0.) {
+            // The normal vector
+            double nx = vy / v;
+            double ny = -vx / v;
+            // The (signed) distance from the position to the segment
+            double d = nx * (px - *x) + ny * (py - *y);
+            // displace the key point in the normal direction.
+            *x += d * nx;
+            *y += d * ny;
+            // Verify that d is now zero
+            // d = nx * (px - *x) + ny * (py - *y);
+            // qDebug() << 'd' << d;
+        }
+    }
 
     return ret;
 } // BezierCP::getRightBezierPointAtTime
@@ -267,7 +320,7 @@ BezierCP::setLeftBezierPointAtTime(bool useGuiCurves,
 {
     {
         KeyFrame k(time, x);
-        k.setInterpolation(eKeyframeTypeLinear);
+        k.setInterpolation(BEZIER_KEYFRAME_INTERPOLATION_TYPE);
         if (!useGuiCurves) {
             _imp->curveLeftBezierX->addKeyFrame(k);
         } else {
@@ -276,7 +329,7 @@ BezierCP::setLeftBezierPointAtTime(bool useGuiCurves,
     }
     {
         KeyFrame k(time, y);
-        k.setInterpolation(eKeyframeTypeLinear);
+        k.setInterpolation(BEZIER_KEYFRAME_INTERPOLATION_TYPE);
         if (!useGuiCurves) {
             _imp->curveLeftBezierY->addKeyFrame(k);
         } else {
@@ -293,7 +346,7 @@ BezierCP::setRightBezierPointAtTime(bool useGuiCurves,
 {
     {
         KeyFrame k(time, x);
-        k.setInterpolation(eKeyframeTypeLinear);
+        k.setInterpolation(BEZIER_KEYFRAME_INTERPOLATION_TYPE);
         if (!useGuiCurves) {
             _imp->curveRightBezierX->addKeyFrame(k);
         }
@@ -301,12 +354,24 @@ BezierCP::setRightBezierPointAtTime(bool useGuiCurves,
     }
     {
         KeyFrame k(time, y);
-        k.setInterpolation(eKeyframeTypeLinear);
+        k.setInterpolation(BEZIER_KEYFRAME_INTERPOLATION_TYPE);
         if (!useGuiCurves) {
             _imp->curveRightBezierY->addKeyFrame(k);
         }
         _imp->guiCurveRightBezierY->addKeyFrame(k);
     }
+}
+
+void
+BezierCP::setBroken(bool broken)
+{
+    _imp->broken = broken;
+}
+
+bool
+BezierCP::getBroken() const
+{
+    return _imp->broken;
 }
 
 void

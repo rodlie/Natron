@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -499,10 +499,14 @@ ProjectGui::load<boost::archive::xml_iarchive>(bool isAutosave,  boost::archive:
 
     ///now restore opened settings panels
     const std::list<std::string> & openedPanels = obj.getOpenedPanels();
+    const std::list<std::string> & openedPanelsMinimized = obj.getOpenedPanelsMinimized();
+    const std::list<std::string> & openedPanelsHideUnmodified = obj.getOpenedPanelsHideUnmodified();
     //reverse the iterator to fill the layout bottom up
     for (std::list<std::string>::const_reverse_iterator it = openedPanels.rbegin(); it != openedPanels.rend(); ++it) {
+        bool isMinimized = ( std::find(openedPanelsMinimized.begin(), openedPanelsMinimized.end(), *it) != openedPanelsMinimized.end() );
+        bool hideUnmodified = ( std::find(openedPanelsHideUnmodified.begin(), openedPanelsHideUnmodified.end(), *it) != openedPanelsHideUnmodified.end() );
         if (*it == kNatronProjectSettingsPanelSerializationName) {
-            _gui->setVisibleProjectSettingsPanel();
+            _gui->setVisibleProjectSettingsPanel(isMinimized);
         } else {
             NodePtr node = getInternalProject()->getNodeByFullySpecifiedName(*it);
             if (node) {
@@ -511,7 +515,7 @@ ProjectGui::load<boost::archive::xml_iarchive>(bool isAutosave,  boost::archive:
                 NodeGui* nodeGui = dynamic_cast<NodeGui*>( nodeGui_i.get() );
                 assert(nodeGui);
                 if (nodeGui) {
-                    nodeGui->setVisibleSettingsPanel(true);
+                    nodeGui->setVisibleSettingsPanel(true, isMinimized, hideUnmodified);
                 }
             }
         }

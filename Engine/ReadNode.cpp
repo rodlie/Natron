@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -196,7 +196,8 @@ ReadNode::isBundledReader(const std::string& pluginID,
                  boost::iequals(pluginID, PLUGINID_OFX_READORA) ||
                  boost::iequals(pluginID, PLUGINID_OFX_READCDR) ||
                  boost::iequals(pluginID, PLUGINID_OFX_READPNG) ||
-                 boost::iequals(pluginID, PLUGINID_OFX_READPDF) );
+                 boost::iequals(pluginID, PLUGINID_OFX_READPDF) ||
+                 boost::iequals(pluginID, PLUGINID_OFX_READBRAW) );
     }
 
     return (pluginID == PLUGINID_OFX_READOIIO ||
@@ -209,7 +210,8 @@ ReadNode::isBundledReader(const std::string& pluginID,
             pluginID == PLUGINID_OFX_READORA ||
             pluginID == PLUGINID_OFX_READCDR ||
             pluginID == PLUGINID_OFX_READPNG ||
-            pluginID == PLUGINID_OFX_READPDF);
+            pluginID == PLUGINID_OFX_READPDF ||
+            pluginID == PLUGINID_OFX_READBRAW);
 }
 
 bool

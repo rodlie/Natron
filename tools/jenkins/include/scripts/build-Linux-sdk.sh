@@ -108,7 +108,7 @@ EOF
     PATH=\"\$SDK/bin:\$QTDIR/bin:\$GCC/bin:\$FFMPEG/bin:\$LIBRAW_PATH:\$PATH\" \\
     WORKSPACE=/home \\
     GIT_URL=https://github.com/NatronGitHub/Natron.git \\
-    GIT_BRANCH=RB-2.3 \\
+    GIT_BRANCH=RB-2.4 \\
     GIT_COMMIT= \\
     RELEASE_TAG=  \\
     SNAPSHOT_BRANCH= \\
@@ -779,6 +779,7 @@ build harfbuzz
 build fribidi # (for libass and ffmpeg)
 build pango
 build libcroco # (requires glib and libxml2)
+build xmlto # (required by shared-mime-info)
 build shared-mime-info # (required by gdk-pixbuf)
 build gdk-pixbuf
 build librsvg # (without vala support)
@@ -833,6 +834,9 @@ build libass # (for ffmpeg)
 build libbluray # (for ffmpeg)
 build openh264 # (for ffmpeg)
 build snappy # (for ffmpeg)
+checkpoint
+build dav1d # (for ffmpeg)
+build aom # (for ffmpeg)
 build ffmpeg
 build ruby # (necessary for qtwebkit)
 build breakpad

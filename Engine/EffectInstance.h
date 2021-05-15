@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -89,6 +89,7 @@
 #define PLUGINID_OFX_READPNG      "fr.inria.openfx.ReadPNG"
 #define PLUGINID_OFX_WRITEPNG     "fr.inria.openfx.WritePNG"
 #define PLUGINID_OFX_READPDF      "fr.inria.openfx.ReadPDF"
+#define PLUGINID_OFX_READBRAW     "net.sf.openfx.BlackmagicRAW"
 
 #define PLUGINID_NATRON_VIEWER    (NATRON_ORGANIZATION_DOMAIN_TOPLEVEL "." NATRON_ORGANIZATION_DOMAIN_SUB ".built-in.Viewer")
 #define PLUGINID_NATRON_DISKCACHE (NATRON_ORGANIZATION_DOMAIN_TOPLEVEL "." NATRON_ORGANIZATION_DOMAIN_SUB ".built-in.DiskCache")
@@ -291,6 +292,7 @@ public:
      **/
     const std::string & getScriptName() const WARN_UNUSED_RETURN;
     virtual std::string getScriptName_mt_safe() const OVERRIDE FINAL WARN_UNUSED_RETURN;
+    virtual std::string getFullyQualifiedName() const OVERRIDE FINAL WARN_UNUSED_RETURN;
     virtual void onScriptNameChanged(const std::string& /*fullyQualifiedName*/) {}
 
     /**

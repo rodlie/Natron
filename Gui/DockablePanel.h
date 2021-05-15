@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -91,6 +91,7 @@ public:
     QVBoxLayout* getContainer() const;
     bool isClosed() const;
     bool isFloating() const;
+    bool isHideUnmodified() const;
 
     /*Creates a new button and inserts it in the header
        at position headerPosition. You can then take
@@ -137,6 +138,10 @@ public:
 
 
     FloatingWidget* getFloatingWindow() const;
+
+    void restoreHideUnmodifiedState(bool hideUnmodified);
+    void restoreMinimizedState(bool minimized);
+
 public:
 
 

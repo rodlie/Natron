@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -416,7 +416,7 @@ NodeGui::restoreStateAfterCreation()
 }
 
 void
-NodeGui::ensurePanelCreated()
+NodeGui::ensurePanelCreated(bool minimized, bool hideUnmodified)
 {
     if (_panelCreated) {
         return;
@@ -468,6 +468,14 @@ NodeGui::ensurePanelCreated()
             panel->onChildCreated(*it);
         }
         panel->setRedrawOnSelectionChanged(true);
+    }
+
+    if (hideUnmodified) {
+        _settingsPanel->restoreHideUnmodifiedState(true);
+    }
+
+    if (minimized) {
+        _settingsPanel->restoreMinimizedState(true);
     }
 
     const std::list<ViewerTab*>& viewers = getDagGui()->getGui()->getViewersList();
@@ -2087,10 +2095,10 @@ NodeGui::initializeKnobs()
 }
 
 void
-NodeGui::setVisibleSettingsPanel(bool b)
+NodeGui::setVisibleSettingsPanel(bool b, bool m, bool h)
 {
     if (!_panelCreated) {
-        ensurePanelCreated();
+        ensurePanelCreated(m, h);
     }
     if (_settingsPanel) {
         _settingsPanel->setClosed(!b);
@@ -3419,8 +3427,8 @@ NodeGui::setName(const QString & newName)
     try {
         node->setScriptName(stdName);
     } catch (const std::exception& e) {
-        //Dialogs::errorDialog(tr("Rename").toStdString(), tr("Could not set node script-name to ").toStdString() + stdName + ": " + e.what());
-        //return;
+        Dialogs::errorDialog(tr("Rename").toStdString(), tr("Could not set node script-name to ").toStdString() + stdName + ": " + e.what());
+        return;
     }
 
     _settingNameFromGui = true;

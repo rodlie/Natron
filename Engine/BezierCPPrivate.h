@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -51,6 +51,7 @@ struct BezierCPPrivate
     CurvePtr guiCurveX, guiCurveY;
     double x, y; //< used when there is no keyframe
     double guiX, guiY;
+    bool broken; //< true if both tangents are independent
 
     ///the animation curves for the derivatives
     ///They do not need to be protected as Curve is a thread-safe class.
@@ -70,6 +71,7 @@ struct BezierCPPrivate
         , y(0)
         , guiX(0)
         , guiY(0)
+        , broken(false)
         , curveLeftBezierX()
         , curveRightBezierX()
         , curveLeftBezierY()

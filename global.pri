@@ -1,6 +1,6 @@
 # ***** BEGIN LICENSE BLOCK *****
 # This file is part of Natron <https://natrongithub.github.io/>,
-# (C) 2018-2020 The Natron developers
+# (C) 2018-2021 The Natron developers
 # (C) 2013-2018 INRIA and Alexandre Gauthier
 #
 # Natron is free software: you can redistribute it and/or modify
@@ -59,6 +59,10 @@ run-without-python {
     	#     register PyObject *obj,     /* Object */
     	#     ^~~~~~~~~
         QMAKE_CXXFLAGS += -Wno-deprecated-register
+        # Silence clang-10 warnings about deprecated copy (there are too many of these)
+        QMAKE_CXXFLAGS += -Wno-deprecated-copy
+        # Do not warn about unknown warnings (including the one just above on clang <=9)
+        QMAKE_CXXFLAGS += -Wno-unknown-warning-option
     }
     #QMAKE_CFLAGS_WARN_ON += -pedantic
     #QMAKE_CXXFLAGS_WARN_ON += -pedantic
@@ -370,7 +374,7 @@ win32-g++ {
     CONFIG += link_pkgconfig
 
     expat:     PKGCONFIG += expat
-    cairo:     PKGCONFIG += cairo
+    cairo:     PKGCONFIG += cairo fontconfig
     equals(QT_MAJOR_VERSION, 5) {
         shiboken:  INCLUDEPATH += $$system(python2 -c \"from distutils.sysconfig import get_python_lib; print(get_python_lib())\")/PySide2/include/shiboken
     	pyside:    INCLUDEPATH += $$system(python2 -c \"from distutils.sysconfig import get_python_lib; print(get_python_lib())\")/PySide2/include/PySide2
@@ -395,19 +399,16 @@ unix {
      QT_CONFIG -= no-pkg-config
      CONFIG += link_pkgconfig
      expat:     PKGCONFIG += expat
+     # Linking cairo dynamically is OK even on Linux, where it links to X11,
+     # since we need X11 for OpenGL rendering anyway.
+     cairo:     PKGCONFIG += cairo fontconfig
 
      # GLFW will require a link to X11 on linux and OpenGL framework on OS X
      linux-*|freebsd-* {
           LIBS += -lGL -lX11
-         # link with static cairo on linux, to avoid linking to X11 libraries in NatronRenderer
-         cairo {
-             PKGCONFIG += pixman-1 freetype2 fontconfig
-             LIBS +=  $$system(pkg-config --variable=libdir cairo)/libcairo.a
-         }
          QMAKE_LFLAGS += '-Wl,-rpath,\'\$$ORIGIN/../lib\',-z,origin'
      } else {
          LIBS += -framework OpenGL
-         cairo:     PKGCONFIG += cairo
      }
      linux-* {
          LIBS += -ldl

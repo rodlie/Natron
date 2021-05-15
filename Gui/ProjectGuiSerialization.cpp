@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -149,11 +149,23 @@ ProjectGuiSerialization::initialize(const ProjectGui* projectGui)
 
             EffectInstance* isEffect = dynamic_cast<EffectInstance*>(holder);
             Project* isProject = dynamic_cast<Project*>(holder);
+            bool isMinimized = (*it)->isMinimized();
+            bool hideUnmodified = (*it)->isHideUnmodified();
 
             if (isProject) {
                 _openedPanelsOrdered.push_back(kNatronProjectSettingsPanelSerializationName);
+                if (isMinimized) {
+                    _openedPanelsMinimizedOrdered.push_back(kNatronProjectSettingsPanelSerializationName);
+                }
             } else if (isEffect) {
-                _openedPanelsOrdered.push_back( isEffect->getNode()->getFullyQualifiedName() );
+                std::string nodeName = isEffect->getNode()->getFullyQualifiedName();
+                _openedPanelsOrdered.push_back(nodeName);
+                if (isMinimized) {
+                    _openedPanelsMinimizedOrdered.push_back(nodeName);
+                }
+                if (hideUnmodified) {
+                    _openedPanelsHideUnmodifiedOrdered.push_back(nodeName);
+                }
             }
         }
     }
