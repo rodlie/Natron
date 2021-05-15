@@ -3,17 +3,12 @@
 
 #include <QWidget>
 #include <QColor>
-#include <QSpinBox>
-#include <QDoubleSpinBox>
-#include <QSlider>
 
 #include "Global/Macros.h"
-//#include "Global/GlobalDefines.h"
 
 #include "Gui/QtColorTriangle.h"
 #include "Gui/ScaleSliderQWidget.h"
 #include "Gui/SpinBox.h"
-//#include "Gui/SpinBoxValidator.h"
 
 NATRON_NAMESPACE_ENTER
 
@@ -26,9 +21,6 @@ public:
 
 Q_SIGNALS:
     void colorChanged(const QColor &color);
-    /*void colorRChanged(const QColor &color);
-    void colorGChanged(const QColor &color);
-    void colorBChanged(const QColor &color);*/
 
 public Q_SLOTS:
     const QColor getColor();
@@ -38,35 +30,13 @@ public Q_SLOTS:
     void setV(qreal v);
 
 private:
-    /*QSpinBox *spinR;
-    QSpinBox *spinG;
-    QSpinBox *spinB;
-
-    QSlider *slideR;
-    QSlider *slideG;
-    QSlider *slideB;
-
-    QSpinBox *spinC;
-    QSpinBox *spinM;
-    QSpinBox *spinY;
-    QSpinBox *spinK;
-
-    QSlider *slideC;
-    QSlider *slideM;
-    QSlider *slideY;
-    QSlider *slideK;*/
-
     SpinBox *spinH;
     SpinBox *spinS;
     SpinBox *spinV;
 
-    QSlider *slideH;
-    QSlider *slideS;
-    QSlider *slideV;
-
-    /*ScaleSliderQWidget *_sliderH;
-    ScaleSliderQWidget *_sliderS;
-    ScaleSliderQWidget *_sliderV;*/
+    ScaleSliderQWidget *slideH;
+    ScaleSliderQWidget *slideS;
+    ScaleSliderQWidget *slideV;
 
     QtColorTriangle *triangle;
 
@@ -74,22 +44,13 @@ private Q_SLOTS:
     void handleColorChanged(const QColor &color,
                             bool doEmit = true);
 
-    /*void handleColorRChanged(int value);
-    void handleColorGChanged(int value);
-    void handleColorBChanged(int value);
-
-    void handleColorCChanged(int value);
-    void handleColorMChanged(int value);
-    void handleColorYChanged(int value);
-    void handleColorKChanged(int value);*/
-
     void handleColorHChanged(double value);
     void handleColorSChanged(double value);
     void handleColorVChanged(double value);
 
-    void handleSliderHMoved(int value);
-    void handleSliderSMoved(int value);
-    void handleSliderVMoved(int value);
+    void handleSliderHMoved(double value);
+    void handleSliderSMoved(double value);
+    void handleSliderVMoved(double value);
 };
 
 NATRON_NAMESPACE_EXIT
