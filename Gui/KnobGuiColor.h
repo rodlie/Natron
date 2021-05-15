@@ -53,7 +53,6 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/AnimatedCheckBox.h"
 #include "Gui/Label.h"
 #include "Gui/GuiFwd.h"
-#include "Gui/QtColorTriangle.h"
 
 NATRON_NAMESPACE_ENTER
 
@@ -192,7 +191,6 @@ private:
     ColorPickerLabel *_colorLabel;
     Button *_colorDialogButton;
     QToolButton *_colorPopupButton;
-    QtColorTriangle *_colorTriangle;
     KnobGuiColorHSV *_hsvWidget;
     std::vector<double> _lastColor;
     bool _useSimplifiedUI;

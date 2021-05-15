@@ -210,7 +210,6 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     , _colorLabel(0)
     , _colorDialogButton(0)
     , _colorPopupButton(0)
-    , _colorTriangle(0)
     , _hsvWidget(0)
     , _lastColor()
     , _useSimplifiedUI(true)
@@ -618,9 +617,6 @@ KnobGuiColor::updateColorTriangle()
                       Image::clamp<qreal>(isSimple ? curB : Color::to_func_srgb(curB), 0., 1.),
                       Image::clamp<qreal>(curA, 0., 1.) );
 
-    /*_colorTriangle->blockSignals(true);
-    _colorTriangle->setColor(curColor);
-    _colorTriangle->blockSignals(false);*/
     _hsvWidget->setColor(curColor);
 }
 

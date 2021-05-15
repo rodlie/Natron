@@ -56,9 +56,9 @@ private:
     QSlider *slideY;
     QSlider *slideK;*/
 
-    QDoubleSpinBox *spinH;
-    QDoubleSpinBox *spinS;
-    QDoubleSpinBox *spinV;
+    SpinBox *spinH;
+    SpinBox *spinS;
+    SpinBox *spinV;
 
     QSlider *slideH;
     QSlider *slideS;

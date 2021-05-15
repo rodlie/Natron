@@ -24,6 +24,7 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     mainLayout->setSpacing(0);
 
     triangle = new QtColorTriangle(this);
+    triangle->setMinimumSize(120, 120);
     triangle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QWidget *hsvWidget = new QWidget(this);
@@ -56,25 +57,29 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     slideS->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     slideV->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    spinH = new QDoubleSpinBox(this);
-    spinS = new QDoubleSpinBox(this);
-    spinV = new QDoubleSpinBox(this);
+    spinH = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    spinS = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);;
+    spinV = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);;
 
-    spinH->setDecimals(3);
-    spinS->setDecimals(3);
-    spinV->setDecimals(3);
+    spinH->decimals(3);
+    spinS->decimals(3);
+    spinV->decimals(3);
 
-    spinH->setSingleStep(0.01);
-    spinS->setSingleStep(0.01);
-    spinV->setSingleStep(0.01);
+    spinH->setIncrement(0.01);
+    spinS->setIncrement(0.01);
+    spinV->setIncrement(0.01);
 
-    spinH->setRange(0,1);
-    spinS->setRange(0,1);
-    spinV->setRange(0,1);
+    spinH->setMaximum(1);
+    spinH->setMinimum(0);
 
-    spinH->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-    spinS->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-    spinV->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    spinS->setMaximum(1);
+    spinS->setMinimum(0);
+    spinV->setMaximum(1);
+    spinV->setMinimum(0);
+
+    //spinH->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    //spinS->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    //spinV->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
 
     /*spinH->setMinimumWidth(70);
     spinH->setMaximumWidth(70);
