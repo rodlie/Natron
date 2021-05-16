@@ -41,7 +41,7 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
   , triangle(NULL)
 {
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
-    mainLayout->setContentsMargins(5, 5, 5, 5);
+    mainLayout->setContentsMargins(5, 5, 5, 10);
     mainLayout->setSpacing(0);
 
     triangle = new QtColorTriangle(this);
