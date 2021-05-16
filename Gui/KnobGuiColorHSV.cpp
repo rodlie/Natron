@@ -153,12 +153,14 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
              this, SLOT( handleSliderVMoved(double) ) );
 }
 
-const QColor KnobGuiColorHSV::getColor()
+const QColor
+KnobGuiColorHSV::getColor()
 {
     return triangle->color();
 }
 
-void KnobGuiColorHSV::setColor(const QColor &color)
+void
+KnobGuiColorHSV::setColor(const QColor &color)
 {
     triangle->blockSignals(true);
     triangle->setColor(color);
@@ -166,7 +168,8 @@ void KnobGuiColorHSV::setColor(const QColor &color)
     handleColorChanged(color, false);
 }
 
-void KnobGuiColorHSV::setH(qreal h)
+void
+KnobGuiColorHSV::setH(qreal h)
 {
     double value = h;
     if (value < 0.) {
@@ -180,7 +183,8 @@ void KnobGuiColorHSV::setH(qreal h)
     slideH->blockSignals(false);
 }
 
-void KnobGuiColorHSV::setS(qreal s)
+void
+KnobGuiColorHSV::setS(qreal s)
 {
     double value = s;
     if (value < 0.) {
@@ -194,7 +198,8 @@ void KnobGuiColorHSV::setS(qreal s)
     slideS->blockSignals(false);
 }
 
-void KnobGuiColorHSV::setV(qreal v)
+void
+KnobGuiColorHSV::setV(qreal v)
 {
     double value = v;
     if (value < 0.) {
@@ -208,7 +213,8 @@ void KnobGuiColorHSV::setV(qreal v)
     slideV->blockSignals(false);
 }
 
-void KnobGuiColorHSV::handleColorChanged(const QColor &color, bool doEmit)
+void
+KnobGuiColorHSV::handleColorChanged(const QColor &color, bool doEmit)
 {
     setH( color.toHsv().hueF() );
     setS( color.toHsv().saturationF() );
@@ -218,40 +224,46 @@ void KnobGuiColorHSV::handleColorChanged(const QColor &color, bool doEmit)
     }
 }
 
-void KnobGuiColorHSV::handleColorHChanged(double value)
+void
+KnobGuiColorHSV::handleColorHChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( value, spinS->value(), spinV->value() );
     triangle->setColor(color);
 }
 
-void KnobGuiColorHSV::handleColorSChanged(double value)
+void
+KnobGuiColorHSV::handleColorSChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), value, spinV->value() );
     triangle->setColor(color);
 }
 
-void KnobGuiColorHSV::handleColorVChanged(double value)
+void
+KnobGuiColorHSV::handleColorVChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), spinS->value(), value );
     triangle->setColor(color);
 }
 
-void KnobGuiColorHSV::handleSliderHMoved(double value)
+void
+KnobGuiColorHSV::handleSliderHMoved(double value)
 {
     spinH->setValue(value);
     handleColorHChanged(value);
 }
 
-void KnobGuiColorHSV::handleSliderSMoved(double value)
+void
+KnobGuiColorHSV::handleSliderSMoved(double value)
 {
     spinS->setValue(value);
     handleColorSChanged(value);
 }
 
-void KnobGuiColorHSV::handleSliderVMoved(double value)
+void
+KnobGuiColorHSV::handleSliderVMoved(double value)
 {
     spinV->setValue(value);
     handleColorSChanged(value);
