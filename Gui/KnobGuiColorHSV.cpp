@@ -283,7 +283,7 @@ void
 KnobGuiColorHSV::handleSliderVMoved(double value)
 {
     spinV->setValue(value);
-    handleColorSChanged(value);
+    handleColorVChanged(value);
 }
 
 NATRON_NAMESPACE_EXIT
