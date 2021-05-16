@@ -32,6 +32,7 @@ CLANG_DIAG_ON(uninitialized)
 
 #include "Gui/ScaleSliderQWidget.h"
 #include "Gui/SpinBox.h"
+#include "Engine/Lut.h"
 
 NATRON_NAMESPACE_ENTER
 
@@ -48,6 +49,7 @@ Q_SIGNALS:
 public Q_SLOTS:
     const QColor getColor();
     void setColor(const QColor &color);
+    void setRealColor(double r, double g, double b, double a);
     void setH(qreal h);
     void setS(qreal s);
     void setV(qreal v);

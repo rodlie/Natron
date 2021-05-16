@@ -23,6 +23,7 @@ CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QDebug>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -107,11 +108,11 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     spinS->setIncrement(0.01);
     spinV->setIncrement(0.01);
 
-    spinH->setMaximum(1.);
+    //spinH->setMaximum(1.);
     spinH->setMinimum(0.);
-    spinS->setMaximum(1.);
+    //spinS->setMaximum(1.);
     spinS->setMinimum(0.);
-    spinV->setMaximum(1.);
+    //spinV->setMaximum(1.);
     spinV->setMinimum(0.);
 
     Label *labelH = new Label(QString::fromUtf8("H"), this);
@@ -119,21 +120,23 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     Label *labelV = new Label(QString::fromUtf8("V"), this);
 
     hLayout->addWidget(labelH);
-    hLayout->addWidget(slideH);
     hLayout->addWidget(spinH);
+    hLayout->addWidget(slideH);
+
     sLayout->addWidget(labelS);
-    sLayout->addWidget(slideS);
     sLayout->addWidget(spinS);
+    sLayout->addWidget(slideS);
+
     vLayout->addWidget(labelV);
-    vLayout->addWidget(slideV);
     vLayout->addWidget(spinV);
+    vLayout->addWidget(slideV);
 
     hsvLayout->addWidget(hWidget);
     hsvLayout->addWidget(sWidget);
     hsvLayout->addWidget(vWidget);
 
-    mainLayout->addWidget(hsvWidget);
     mainLayout->addWidget(triangle);
+    mainLayout->addWidget(hsvWidget);
 
     QObject::connect( triangle, SIGNAL( colorChanged(QColor) ),
                       this, SLOT( handleColorChanged(QColor) ) );
@@ -162,10 +165,23 @@ KnobGuiColorHSV::getColor()
 void
 KnobGuiColorHSV::setColor(const QColor &color)
 {
+    qDebug() << "setColor" << color;
     triangle->blockSignals(true);
     triangle->setColor(color);
     triangle->blockSignals(false);
     handleColorChanged(color, false);
+}
+
+// testing, ignore for now
+void KnobGuiColorHSV::setRealColor(double r, double g, double b, double a)
+{
+    Q_UNUSED(a)
+    qDebug() << "set real color" << r << g << b << a;
+    float h = 0.;
+    float s = 0.;
+    float v = 0.;
+    Color::rgb_to_hsv(r, g, b, &h, &s, &v);
+    qDebug() << "hsv value?" << h << s << v;
 }
 
 void
@@ -216,6 +232,7 @@ KnobGuiColorHSV::setV(qreal v)
 void
 KnobGuiColorHSV::handleColorChanged(const QColor &color, bool doEmit)
 {
+    qDebug() << "handle color changed" << color << color.toHsv().hueF() << color.toHsv().saturationF() << color.toHsv().valueF();
     setH( color.toHsv().hueF() );
     setS( color.toHsv().saturationF() );
     setV( color.toHsv().valueF() );
