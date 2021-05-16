@@ -135,22 +135,22 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     mainLayout->addWidget(hsvWidget);
     mainLayout->addWidget(triangle);
 
-    connect( triangle, SIGNAL( colorChanged(QColor) ),
-             this, SLOT( handleColorChanged(QColor) ) );
+    QObject::connect( triangle, SIGNAL( colorChanged(QColor) ),
+                      this, SLOT( handleColorChanged(QColor) ) );
 
-    connect( spinH, SIGNAL( valueChanged(double) ),
-             this, SLOT( handleColorHChanged(double) ) );
-    connect( spinS, SIGNAL( valueChanged(double) ),
-             this, SLOT( handleColorSChanged(double) ) );
-    connect( spinV, SIGNAL( valueChanged(double) ),
-             this, SLOT( handleColorVChanged(double) ) );
+    QObject::connect( spinH, SIGNAL( valueChanged(double) ),
+                      this, SLOT( handleColorHChanged(double) ) );
+    QObject::connect( spinS, SIGNAL( valueChanged(double) ),
+                      this, SLOT( handleColorSChanged(double) ) );
+    QObject::connect( spinV, SIGNAL( valueChanged(double) ),
+                      this, SLOT( handleColorVChanged(double) ) );
 
-    connect( slideH, SIGNAL( positionChanged(double) ),
-             this, SLOT( handleSliderHMoved(double) ) );
-    connect( slideS, SIGNAL( positionChanged(double) ),
-             this, SLOT( handleSliderSMoved(double) ) );
-    connect( slideV, SIGNAL( positionChanged(double) ),
-             this, SLOT( handleSliderVMoved(double) ) );
+    QObject::connect( slideH, SIGNAL( positionChanged(double) ),
+                      this, SLOT( handleSliderHMoved(double) ) );
+    QObject::connect( slideS, SIGNAL( positionChanged(double) ),
+                      this, SLOT( handleSliderSMoved(double) ) );
+    QObject::connect( slideV, SIGNAL( positionChanged(double) ),
+                      this, SLOT( handleSliderVMoved(double) ) );
 }
 
 const QColor
