@@ -165,7 +165,7 @@ KnobGuiColorHSV::getColor()
 void
 KnobGuiColorHSV::setColor(const QColor &color)
 {
-    qDebug() << "setColor" << color;
+    //qDebug() << "setColor" << color;
     triangle->blockSignals(true);
     triangle->setColor(color);
     triangle->blockSignals(false);
@@ -232,7 +232,7 @@ KnobGuiColorHSV::setV(qreal v)
 void
 KnobGuiColorHSV::handleColorChanged(const QColor &color, bool doEmit)
 {
-    qDebug() << "handle color changed" << color << color.toHsv().hueF() << color.toHsv().saturationF() << color.toHsv().valueF();
+    //qDebug() << "handle color changed" << color << color.toHsv().hueF() << color.toHsv().saturationF() << color.toHsv().valueF();
     setH( color.toHsv().hueF() );
     setS( color.toHsv().saturationF() );
     setV( color.toHsv().valueF() );

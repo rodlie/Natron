@@ -196,6 +196,7 @@ private:
     Button *_hsvWidgetButton;
     std::vector<double> _lastColor;
     bool _useSimplifiedUI;
+    bool _blockTriangle;
 };
 
 NATRON_NAMESPACE_EXIT

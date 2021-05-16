@@ -214,6 +214,7 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     , _hsvWidgetButton(0)
     , _lastColor()
     , _useSimplifiedUI(true)
+    , _blockTriangle(false)
 {
     KnobColorPtr k = _knob.lock();
     assert(k);
@@ -489,6 +490,9 @@ KnobGuiColor::setEnabledExtraGui(bool enabled)
 void
 KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
 {
+    KnobGuiColorHSV *triangle = qobject_cast<KnobGuiColorHSV*>( sender() );
+    _blockTriangle = (triangle);
+
     KnobColorPtr knob = _knob.lock();
     bool isSimple = _useSimplifiedUI;
     int nDims = knob->getDimension();
@@ -611,6 +615,10 @@ KnobGuiColor::showColorTriangle()
 void
 KnobGuiColor::updateColorTriangle()
 {
+    if (_blockTriangle) {
+        return;
+    }
+
     KnobColorPtr knob = _knob.lock();
     const int nDims = knob->getDimension();
     double curR = knob->getValue(0);
