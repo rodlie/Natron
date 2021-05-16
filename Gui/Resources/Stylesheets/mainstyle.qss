@@ -321,6 +321,10 @@ QToolButton:focus {
     border: 1px solid %1;
 }
 
+QToolButton::menu-indicator {
+    image: none;
+}
+
 ViewerToolButton[isSelected="true"]
 {
     border: 1px solid %1;
