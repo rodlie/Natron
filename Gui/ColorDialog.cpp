@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2021 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -61,11 +61,17 @@ ColorDialog::init()
 
     // get native qcolordialog layout
     QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>( layout() );
-    if (!mainLayout) { return; }
+    if (!mainLayout) {
+        return;
+    }
     QHBoxLayout* topLayout = qobject_cast<QHBoxLayout*>( mainLayout->itemAt(0)->layout() );
-    if (!topLayout) { return; }
+    if (!topLayout) {
+        return;
+    }
     QVBoxLayout* leftLayout = qobject_cast<QVBoxLayout*>( topLayout->takeAt(0)->layout() );
-    if (!leftLayout) { return; }
+    if (!leftLayout) {
+        return;
+    }
 
     // create a container for left layout (basic)
     QWidget *basic = new QWidget(this);
@@ -76,7 +82,7 @@ ColorDialog::init()
     triangle = new QtColorTriangle(this);
     triangle->setColor( currentColor() );
 
-    // add hex
+    // add hex edit
     QWidget *hexWidget = new QWidget(this);
     QHBoxLayout *hexLayout = new QHBoxLayout(hexWidget);
     hexLayout->setContentsMargins(0, 0, 0, 0);
@@ -100,8 +106,8 @@ ColorDialog::init()
     QObject::connect( this, SIGNAL( currentColorChanged(QColor) ),
                       this, SLOT( handleCurrentColorChanged(QColor) ) );
 
-    QObject::connect( hex, SIGNAL(textChanged(QString)),
-                      this, SLOT(handleHexColorChanged(QString)));
+    QObject::connect( hex, SIGNAL( textChanged(QString) ),
+                      this, SLOT( handleHexColorChanged(QString) ) );
 }
 
 void
@@ -117,7 +123,7 @@ ColorDialog::handleHexColorChanged(const QString &name)
     if ( name.isEmpty() || !QColor::isValidColor(name) ) {
         return;
     }
-    blockHex = true;
+    blockHex = true; // block hex color update
     setCurrentColor( QColor(name) );
 }
 
@@ -133,9 +139,9 @@ ColorDialog::handleCurrentColorChanged(const QColor &color)
         triangle->blockSignals(false);
     }
     // hex
-    if (blockHex) {
+    if (blockHex) { // ignore color since hex triggered this
         blockHex = false;
-    } else {
+    } else { // set hex color
         hex->blockSignals(true);
         hex->setText( color.name() );
         hex->blockSignals(false);

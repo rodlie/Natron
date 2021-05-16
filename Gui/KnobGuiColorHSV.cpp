@@ -1,8 +1,30 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * This file is part of Natron <https://natrongithub.github.io/>,
+ * (C) 2018-2021 The Natron developers
+ * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
+ *
+ * Natron is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * Natron is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Natron.  If not, see <http://www.gnu.org/licenses/gpl-2.0.html>
+ * ***** END LICENSE BLOCK ***** */
+
 #include "KnobGuiColorHSV.h"
 
+CLANG_DIAG_OFF(deprecated)
+CLANG_DIAG_OFF(uninitialized)
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QDebug>
+CLANG_DIAG_ON(deprecated)
+CLANG_DIAG_ON(uninitialized)
 
 #include "Gui/Label.h"
 
@@ -18,12 +40,13 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
   , triangle(NULL)
 {
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
-    mainLayout->setContentsMargins(5,5,5,5);
+    mainLayout->setContentsMargins(5, 5, 5, 5);
     mainLayout->setSpacing(0);
 
     triangle = new QtColorTriangle(this);
     triangle->setMinimumSize(120, 120);
-    triangle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    triangle->setMaximumSize(120, 120);
+    triangle->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QWidget *hsvWidget = new QWidget(this);
     QVBoxLayout *hsvLayout = new QVBoxLayout(hsvWidget);
@@ -35,9 +58,9 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     QWidget *vWidget = new QWidget(this);
     QHBoxLayout *vLayout = new QHBoxLayout(vWidget);
 
-    hLayout->setContentsMargins(0,0,0,0);
-    sLayout->setContentsMargins(0,0,0,0);
-    vLayout->setContentsMargins(0,0,0,0);
+    hLayout->setContentsMargins(0, 0, 0, 0);
+    sLayout->setContentsMargins(0, 0, 0, 0);
+    vLayout->setContentsMargins(0, 0, 0, 0);
 
     slideH = new ScaleSliderQWidget(0.,
                                     1.,
@@ -92,8 +115,8 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     spinV->setMinimum(0.);
 
     Label *labelH = new Label(QString::fromUtf8("H"), this);
-    Label *labelS = new Label(QString::fromUtf8("S"), this);;
-    Label *labelV = new Label(QString::fromUtf8("V"), this);;
+    Label *labelS = new Label(QString::fromUtf8("S"), this);
+    Label *labelV = new Label(QString::fromUtf8("V"), this);
 
     hLayout->addWidget(labelH);
     hLayout->addWidget(slideH);
@@ -112,22 +135,22 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
     mainLayout->addWidget(hsvWidget);
     mainLayout->addWidget(triangle);
 
-    connect(triangle, SIGNAL(colorChanged(QColor)),
-            this, SLOT(handleColorChanged(QColor)));
+    connect( triangle, SIGNAL( colorChanged(QColor) ),
+             this, SLOT( handleColorChanged(QColor) ) );
 
-    connect(spinH, SIGNAL(valueChanged(double)),
-            this, SLOT(handleColorHChanged(double)));
-    connect(spinS, SIGNAL(valueChanged(double)),
-            this, SLOT(handleColorSChanged(double)));
-    connect(spinV, SIGNAL(valueChanged(double)),
-            this, SLOT(handleColorVChanged(double)));
+    connect( spinH, SIGNAL( valueChanged(double) ),
+             this, SLOT( handleColorHChanged(double) ) );
+    connect( spinS, SIGNAL( valueChanged(double) ),
+             this, SLOT( handleColorSChanged(double) ) );
+    connect( spinV, SIGNAL( valueChanged(double) ),
+             this, SLOT( handleColorVChanged(double) ) );
 
-    connect(slideH, SIGNAL(positionChanged(double)),
-            this, SLOT(handleSliderHMoved(double)));
-    connect(slideS, SIGNAL(positionChanged(double)),
-            this, SLOT(handleSliderSMoved(double)));
-    connect(slideV, SIGNAL(positionChanged(double)),
-            this, SLOT(handleSliderVMoved(double)));
+    connect( slideH, SIGNAL( positionChanged(double) ),
+             this, SLOT( handleSliderHMoved(double) ) );
+    connect( slideS, SIGNAL( positionChanged(double) ),
+             this, SLOT( handleSliderSMoved(double) ) );
+    connect( slideV, SIGNAL( positionChanged(double) ),
+             this, SLOT( handleSliderVMoved(double) ) );
 }
 
 const QColor KnobGuiColorHSV::getColor()
@@ -137,7 +160,6 @@ const QColor KnobGuiColorHSV::getColor()
 
 void KnobGuiColorHSV::setColor(const QColor &color)
 {
-    qDebug() << "set color" << color;
     triangle->blockSignals(true);
     triangle->setColor(color);
     triangle->blockSignals(false);
@@ -146,11 +168,9 @@ void KnobGuiColorHSV::setColor(const QColor &color)
 
 void KnobGuiColorHSV::setH(qreal h)
 {
-    qDebug() << "set H" << h;
     double value = h;
     if (value < 0.) {
         value = 0.;
-        qDebug() << "adjusted H to 0";
     }
     spinH->blockSignals(true);
     slideH->blockSignals(true);
@@ -162,11 +182,9 @@ void KnobGuiColorHSV::setH(qreal h)
 
 void KnobGuiColorHSV::setS(qreal s)
 {
-    qDebug() << "set S" << s;
     double value = s;
     if (value < 0.) {
         value = 0.;
-        qDebug() << "adjusted S to 0";
     }
     spinS->blockSignals(true);
     slideS->blockSignals(true);
@@ -178,11 +196,9 @@ void KnobGuiColorHSV::setS(qreal s)
 
 void KnobGuiColorHSV::setV(qreal v)
 {
-    qDebug() << "set V" << v;
     double value = v;
     if (value < 0.) {
         value = 0.;
-        qDebug() << "adjusted V to 0";
     }
     spinV->blockSignals(true);
     slideV->blockSignals(true);
@@ -194,16 +210,16 @@ void KnobGuiColorHSV::setV(qreal v)
 
 void KnobGuiColorHSV::handleColorChanged(const QColor &color, bool doEmit)
 {
-    qDebug() << "handle color changed" << color << color.toHsv().hueF() << color.toHsv().saturationF() << color.toHsv().valueF();
     setH( color.toHsv().hueF() );
     setS( color.toHsv().saturationF() );
     setV( color.toHsv().valueF() );
-    if (doEmit) {  Q_EMIT colorChanged(color); }
+    if (doEmit) {
+        Q_EMIT colorChanged(color);
+    }
 }
 
 void KnobGuiColorHSV::handleColorHChanged(double value)
 {
-    qDebug() << "handle color H changed" << value;
     QColor color = triangle->color();
     color.setHsvF( value, spinS->value(), spinV->value() );
     triangle->setColor(color);
@@ -211,7 +227,6 @@ void KnobGuiColorHSV::handleColorHChanged(double value)
 
 void KnobGuiColorHSV::handleColorSChanged(double value)
 {
-    qDebug() << "handle color S changed" << value;
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), value, spinV->value() );
     triangle->setColor(color);
@@ -219,7 +234,6 @@ void KnobGuiColorHSV::handleColorSChanged(double value)
 
 void KnobGuiColorHSV::handleColorVChanged(double value)
 {
-    qDebug() << "handle color V changed" << value;
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), spinS->value(), value );
     triangle->setColor(color);
@@ -227,21 +241,18 @@ void KnobGuiColorHSV::handleColorVChanged(double value)
 
 void KnobGuiColorHSV::handleSliderHMoved(double value)
 {
-    qDebug() << "handle slider H moved" << value;
     spinH->setValue(value);
     handleColorHChanged(value);
 }
 
 void KnobGuiColorHSV::handleSliderSMoved(double value)
 {
-    qDebug() << "handle slider S moved" << value;
     spinS->setValue(value);
     handleColorSChanged(value);
 }
 
 void KnobGuiColorHSV::handleSliderVMoved(double value)
 {
-    qDebug() << "handle slider V moved" << value;
     spinV->setValue(value);
     handleColorSChanged(value);
 }
