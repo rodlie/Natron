@@ -210,11 +210,11 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     , _colorLabel(0)
     , _colorDialogButton(0)
     , _colorPopupButton(0)
-    , _hsvWidget(0)
-    , _hsvWidgetButton(0)
+    , _colorTriangleWidget(0)
+    , _colorTriangleButton(0)
     , _lastColor()
     , _useSimplifiedUI(true)
-    , _blockTriangle(false)
+    , _blockColorTriangle(false)
 {
     KnobColorPtr k = _knob.lock();
     assert(k);
@@ -319,13 +319,13 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
 
     QPixmap colorTrianglePix;
     appPTR->getIcon(NATRON_PIXMAP_COLORTRIANGLE, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorTrianglePix);
-    _hsvWidgetButton = new Button( QIcon(colorTrianglePix), QString(), containerLayout->widget() );
-    _hsvWidgetButton->setFixedSize(medSize);
-    _hsvWidgetButton->setIconSize(medIconSize);
-    _hsvWidgetButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color triangle."), NATRON_NAMESPACE::WhiteSpaceNormal) );
-    _hsvWidgetButton->setFocusPolicy(Qt::NoFocus);
-    QObject::connect( _hsvWidgetButton, SIGNAL(clicked()), this, SLOT(showColorTriangle()) );
-    containerLayout->addWidget(_hsvWidgetButton);
+    _colorTriangleButton = new Button( QIcon(colorTrianglePix), QString(), containerLayout->widget() );
+    _colorTriangleButton->setFixedSize(medSize);
+    _colorTriangleButton->setIconSize(medIconSize);
+    _colorTriangleButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color triangle."), NATRON_NAMESPACE::WhiteSpaceNormal) );
+    _colorTriangleButton->setFocusPolicy(Qt::NoFocus);
+    QObject::connect( _colorTriangleButton, SIGNAL(clicked()), this, SLOT(showColorTriangle()) );
+    containerLayout->addWidget(_colorTriangleButton);
 
     if (_useSimplifiedUI) {
         KnobGuiValue::_hide();
@@ -335,10 +335,10 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
 
 void KnobGuiColor::addExtraWidgets(QVBoxLayout *containerLayout)
 {
-    _hsvWidget = new KnobGuiColorHSV( containerLayout->widget() );
-    QObject::connect( _hsvWidget, SIGNAL(colorChanged(QColor)), this, SLOT(onDialogCurrentColorChanged(QColor)) );
-    containerLayout->addWidget(_hsvWidget);
-    _hsvWidget->hide();
+    _colorTriangleWidget = new KnobGuiColorHSV( containerLayout->widget() );
+    QObject::connect( _colorTriangleWidget, SIGNAL(colorChanged(QColor)), this, SLOT(onDialogCurrentColorChanged(QColor)) );
+    containerLayout->addWidget(_colorTriangleWidget);
+    _colorTriangleWidget->hide();
 }
 
 void
@@ -397,7 +397,7 @@ KnobGuiColor::_hide()
     }
     _colorLabel->hide();
     _colorDialogButton->hide();
-    //_hsvWidget->hide();
+    //_colorTriangleWidget->hide();
 }
 
 void
@@ -408,7 +408,7 @@ KnobGuiColor::_show()
     }
     _colorLabel->show();
     _colorDialogButton->show();
-    //_hsvWidget->show();
+    //_colorTriangleWidget->show();
 }
 
 void
@@ -452,8 +452,8 @@ KnobGuiColor::onDimensionsFolded()
     Q_EMIT dimensionSwitchToggled(false);
 
     // hide triangle if we fold the knob
-    if ( _hsvWidget && _hsvWidget->isVisible() ) {
-        _hsvWidget->hide();
+    if ( _colorTriangleWidget && _colorTriangleWidget->isVisible() ) {
+        _colorTriangleWidget->hide();
     }
 }
 
@@ -496,7 +496,7 @@ void
 KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
 {
     KnobGuiColorHSV *triangle = qobject_cast<KnobGuiColorHSV*>( sender() );
-    _blockTriangle = (triangle);
+    _blockColorTriangle = (triangle);
 
     KnobColorPtr knob = _knob.lock();
     bool isSimple = _useSimplifiedUI;
@@ -611,11 +611,11 @@ KnobGuiColor::showColorDialog()
 void
 KnobGuiColor::showColorTriangle()
 {
-    if (!_hsvWidget) {
+    if (!_colorTriangleWidget) {
         return;
     }
-    bool show = !_hsvWidget->isVisible();
-    _hsvWidget->setVisible(show);
+    bool show = !_colorTriangleWidget->isVisible();
+    _colorTriangleWidget->setVisible(show);
 
     // expand knob if showing the triangle
     if (show) {
@@ -626,7 +626,7 @@ KnobGuiColor::showColorTriangle()
 void
 KnobGuiColor::updateColorTriangle()
 {
-    if (_blockTriangle) {
+    if (_blockColorTriangle) {
         return;
     }
 
@@ -657,7 +657,7 @@ KnobGuiColor::updateColorTriangle()
                       Image::clamp<qreal>(isSimple ? curB : Color::to_func_srgb(curB), 0., 1.),
                       Image::clamp<qreal>(curA, 0., 1.) );
 
-    _hsvWidget->setColor(curColor);
+    _colorTriangleWidget->setColor(curColor);
 }
 
 bool

@@ -192,11 +192,11 @@ private:
     ColorPickerLabel *_colorLabel;
     Button *_colorDialogButton;
     QToolButton *_colorPopupButton;
-    KnobGuiColorHSV *_hsvWidget;
-    Button *_hsvWidgetButton;
+    KnobGuiColorHSV *_colorTriangleWidget;
+    Button *_colorTriangleButton;
     std::vector<double> _lastColor;
     bool _useSimplifiedUI;
-    bool _blockTriangle;
+    bool _blockColorTriangle;
 };
 
 NATRON_NAMESPACE_EXIT
