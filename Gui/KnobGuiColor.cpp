@@ -450,6 +450,11 @@ KnobGuiColor::onDimensionsFolded()
         sb->setUseLineColor(false, Qt::red);
     }
     Q_EMIT dimensionSwitchToggled(false);
+
+    // hide triangle if we fold the knob
+    if ( _hsvWidget && _hsvWidget->isVisible() ) {
+        _hsvWidget->hide();
+    }
 }
 
 void
@@ -609,7 +614,13 @@ KnobGuiColor::showColorTriangle()
     if (!_hsvWidget) {
         return;
     }
-    _hsvWidget->setVisible( !_hsvWidget->isVisible() );
+    bool show = !_hsvWidget->isVisible();
+    _hsvWidget->setVisible(show);
+
+    // expand knob if showing the triangle
+    if (show) {
+        onDimensionSwitchClicked(true);
+    }
 }
 
 void
@@ -647,7 +658,6 @@ KnobGuiColor::updateColorTriangle()
                       Image::clamp<qreal>(curA, 0., 1.) );
 
     _hsvWidget->setColor(curColor);
-    //_hsvWidget->setRealColor(curR, curG, curB, curA);
 }
 
 bool
