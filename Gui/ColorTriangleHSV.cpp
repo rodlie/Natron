@@ -17,13 +17,12 @@
  * along with Natron.  If not, see <http://www.gnu.org/licenses/gpl-2.0.html>
  * ***** END LICENSE BLOCK ***** */
 
-#include "KnobGuiColorHSV.h"
+#include "ColorTriangleHSV.h"
 
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QDebug>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -31,20 +30,22 @@ CLANG_DIAG_ON(uninitialized)
 
 NATRON_NAMESPACE_ENTER
 
-KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
-  , spinH(NULL)
-  , spinS(NULL)
-  , spinV(NULL)
-  , slideH(NULL)
-  , slideS(NULL)
-  , slideV(NULL)
-  , triangle(NULL)
+ColorTriangleHSV::ColorTriangleHSV(QWidget *parent) : QWidget(parent)
+  , spinH(0)
+  , spinS(0)
+  , spinV(0)
+  , slideH(0)
+  , slideS(0)
+  , slideV(0)
+  , triangle(0)
 {
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(5, 5, 5, 10);
     mainLayout->setSpacing(0);
 
     triangle = new QtColorTriangle(this);
+
+    // force 120x120 size on triangle
     triangle->setMinimumSize(120, 120);
     triangle->setMaximumSize(120, 120);
     triangle->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -157,35 +158,22 @@ KnobGuiColorHSV::KnobGuiColorHSV(QWidget *parent) : QWidget(parent)
 }
 
 const QColor
-KnobGuiColorHSV::getColor()
+ColorTriangleHSV::getColor()
 {
     return triangle->color();
 }
 
 void
-KnobGuiColorHSV::setColor(const QColor &color)
+ColorTriangleHSV::setColor(const QColor &color)
 {
-    //qDebug() << "setColor" << color;
     triangle->blockSignals(true);
     triangle->setColor(color);
     triangle->blockSignals(false);
     handleColorChanged(color, false);
 }
 
-// testing, ignore for now
-void KnobGuiColorHSV::setRealColor(double r, double g, double b, double a)
-{
-    Q_UNUSED(a)
-    qDebug() << "set real color" << r << g << b << a;
-    float h = 0.;
-    float s = 0.;
-    float v = 0.;
-    Color::rgb_to_hsv(r, g, b, &h, &s, &v);
-    qDebug() << "hsv value?" << h << s << v;
-}
-
 void
-KnobGuiColorHSV::setH(qreal h)
+ColorTriangleHSV::setH(qreal h)
 {
     double value = h;
     if (value < 0.) {
@@ -200,7 +188,7 @@ KnobGuiColorHSV::setH(qreal h)
 }
 
 void
-KnobGuiColorHSV::setS(qreal s)
+ColorTriangleHSV::setS(qreal s)
 {
     double value = s;
     if (value < 0.) {
@@ -215,7 +203,7 @@ KnobGuiColorHSV::setS(qreal s)
 }
 
 void
-KnobGuiColorHSV::setV(qreal v)
+ColorTriangleHSV::setV(qreal v)
 {
     double value = v;
     if (value < 0.) {
@@ -230,9 +218,8 @@ KnobGuiColorHSV::setV(qreal v)
 }
 
 void
-KnobGuiColorHSV::handleColorChanged(const QColor &color, bool doEmit)
+ColorTriangleHSV::handleColorChanged(const QColor &color, bool doEmit)
 {
-    //qDebug() << "handle color changed" << color << color.toHsv().hueF() << color.toHsv().saturationF() << color.toHsv().valueF();
     setH( color.toHsv().hueF() );
     setS( color.toHsv().saturationF() );
     setV( color.toHsv().valueF() );
@@ -242,7 +229,7 @@ KnobGuiColorHSV::handleColorChanged(const QColor &color, bool doEmit)
 }
 
 void
-KnobGuiColorHSV::handleColorHChanged(double value)
+ColorTriangleHSV::handleColorHChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( value, spinS->value(), spinV->value() );
@@ -250,7 +237,7 @@ KnobGuiColorHSV::handleColorHChanged(double value)
 }
 
 void
-KnobGuiColorHSV::handleColorSChanged(double value)
+ColorTriangleHSV::handleColorSChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), value, spinV->value() );
@@ -258,7 +245,7 @@ KnobGuiColorHSV::handleColorSChanged(double value)
 }
 
 void
-KnobGuiColorHSV::handleColorVChanged(double value)
+ColorTriangleHSV::handleColorVChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), spinS->value(), value );
@@ -266,21 +253,21 @@ KnobGuiColorHSV::handleColorVChanged(double value)
 }
 
 void
-KnobGuiColorHSV::handleSliderHMoved(double value)
+ColorTriangleHSV::handleSliderHMoved(double value)
 {
     spinH->setValue(value);
     handleColorHChanged(value);
 }
 
 void
-KnobGuiColorHSV::handleSliderSMoved(double value)
+ColorTriangleHSV::handleSliderSMoved(double value)
 {
     spinS->setValue(value);
     handleColorSChanged(value);
 }
 
 void
-KnobGuiColorHSV::handleSliderVMoved(double value)
+ColorTriangleHSV::handleSliderVMoved(double value)
 {
     spinV->setValue(value);
     handleColorVChanged(value);
@@ -289,4 +276,4 @@ KnobGuiColorHSV::handleSliderVMoved(double value)
 NATRON_NAMESPACE_EXIT
 
 NATRON_NAMESPACE_USING
-#include "moc_KnobGuiColorHSV.cpp"
+#include "moc_ColorTriangleHSV.cpp"

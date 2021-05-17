@@ -44,6 +44,10 @@
 ** 
 ****************************************************************************/
 
+/*
+    This widget is maintained in Natron under the GNU Lesser General Public 2.1 license.
+*/
+
 #ifndef QTCOLORTRIANGLE_H
 #define QTCOLORTRIANGLE_H
 #include <QImage>

@@ -335,10 +335,11 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
 
 void KnobGuiColor::addExtraWidgets(QVBoxLayout *containerLayout)
 {
-    _colorTriangleWidget = new KnobGuiColorHSV( containerLayout->widget() );
+    // add color triangle
+    _colorTriangleWidget = new ColorTriangleHSV( containerLayout->widget() );
     QObject::connect( _colorTriangleWidget, SIGNAL(colorChanged(QColor)), this, SLOT(onDialogCurrentColorChanged(QColor)) );
     containerLayout->addWidget(_colorTriangleWidget);
-    _colorTriangleWidget->hide();
+    _colorTriangleWidget->hide(); // default hide
 }
 
 void
@@ -495,7 +496,7 @@ KnobGuiColor::setEnabledExtraGui(bool enabled)
 void
 KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
 {
-    KnobGuiColorHSV *triangle = qobject_cast<KnobGuiColorHSV*>( sender() );
+    ColorTriangleHSV *triangle = qobject_cast<ColorTriangleHSV*>( sender() );
     _blockColorTriangle = (triangle);
 
     KnobColorPtr knob = _knob.lock();

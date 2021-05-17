@@ -31,8 +31,8 @@ NATRON_NAMESPACE_ENTER
 
 ColorDialog::ColorDialog(QWidget *parent)
     : QColorDialog(parent)
-    , triangle(NULL)
-    , hex(NULL)
+    , triangle(0)
+    , hex(0)
     , blockTriangle(false)
     , blockHex(false)
 {
@@ -41,8 +41,8 @@ ColorDialog::ColorDialog(QWidget *parent)
 
 ColorDialog::ColorDialog(const QColor &initial, QWidget *parent)
     : QColorDialog(initial, parent)
-    , triangle(NULL)
-    , hex(NULL)
+    , triangle(0)
+    , hex(0)
     , blockTriangle(false)
     , blockHex(false)
 {
@@ -78,11 +78,11 @@ ColorDialog::init()
     leftLayout->setParent(NULL); // remove from existing layout
     basic->setLayout(leftLayout); // add left layout to basic
 
-    // add qtcolortriangle
+    // add color triangle
     triangle = new QtColorTriangle(this);
     triangle->setColor( currentColor() );
 
-    // add hex edit
+    // add hex editor
     QWidget *hexWidget = new QWidget(this);
     QHBoxLayout *hexLayout = new QHBoxLayout(hexWidget);
     hexLayout->setContentsMargins(0, 0, 0, 0);

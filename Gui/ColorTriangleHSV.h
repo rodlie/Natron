@@ -17,8 +17,8 @@
  * along with Natron.  If not, see <http://www.gnu.org/licenses/gpl-2.0.html>
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef Gui_KnobGuiColorHSV_h
-#define Gui_KnobGuiColorHSV_h
+#ifndef Gui_ColorTriangleHSV_h
+#define Gui_ColorTriangleHSV_h
 
 #include "Global/Macros.h"
 
@@ -26,22 +26,20 @@ CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QWidget>
 #include <QColor>
-#include "Gui/QtColorTriangle.h"
+#include "Gui/QtColorTriangle.h" // from Qt Solutions
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
 #include "Gui/ScaleSliderQWidget.h"
 #include "Gui/SpinBox.h"
-#include "Engine/Lut.h"
 
 NATRON_NAMESPACE_ENTER
 
-class KnobGuiColorHSV : public QWidget
+class ColorTriangleHSV : public QWidget
 {
     Q_OBJECT
 public:
-
-    explicit KnobGuiColorHSV(QWidget *parent = NULL);
+    explicit ColorTriangleHSV(QWidget *parent = NULL);
 
 Q_SIGNALS:
     void colorChanged(const QColor &color);
@@ -49,7 +47,6 @@ Q_SIGNALS:
 public Q_SLOTS:
     const QColor getColor();
     void setColor(const QColor &color);
-    void setRealColor(double r, double g, double b, double a);
     void setH(qreal h);
     void setS(qreal s);
     void setV(qreal v);
@@ -58,21 +55,16 @@ private:
     SpinBox *spinH;
     SpinBox *spinS;
     SpinBox *spinV;
-
     ScaleSliderQWidget *slideH;
     ScaleSliderQWidget *slideS;
     ScaleSliderQWidget *slideV;
-
     QtColorTriangle *triangle;
 
 private Q_SLOTS:
-    void handleColorChanged(const QColor &color,
-                            bool doEmit = true);
-
+    void handleColorChanged(const QColor &color, bool doEmit = true);
     void handleColorHChanged(double value);
     void handleColorSChanged(double value);
     void handleColorVChanged(double value);
-
     void handleSliderHMoved(double value);
     void handleSliderSMoved(double value);
     void handleSliderVMoved(double value);
@@ -80,4 +72,4 @@ private Q_SLOTS:
 
 NATRON_NAMESPACE_EXIT
 
-#endif // Gui_KnobGuiColorHSV_h
+#endif // Gui_ColorTriangleHSV_h

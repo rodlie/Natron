@@ -26,7 +26,7 @@ CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QtCore/QObject>
 #include <QColorDialog>
-#include "QtColorTriangle.h"
+#include "Gui/QtColorTriangle.h" // from Qt Solutions
 #include <QLineEdit>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)

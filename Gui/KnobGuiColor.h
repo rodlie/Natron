@@ -49,7 +49,7 @@ CLANG_DIAG_ON(uninitialized)
 
 #include "Gui/CurveSelection.h"
 #include "Gui/KnobGuiValue.h"
-#include "Gui/KnobGuiColorHSV.h"
+#include "Gui/ColorTriangleHSV.h"
 #include "Gui/AnimatedCheckBox.h"
 #include "Gui/Label.h"
 #include "Gui/GuiFwd.h"
@@ -192,7 +192,7 @@ private:
     ColorPickerLabel *_colorLabel;
     Button *_colorDialogButton;
     QToolButton *_colorPopupButton;
-    KnobGuiColorHSV *_colorTriangleWidget;
+    ColorTriangleHSV *_colorTriangleWidget;
     Button *_colorTriangleButton;
     std::vector<double> _lastColor;
     bool _useSimplifiedUI;

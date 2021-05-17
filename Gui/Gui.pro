@@ -81,6 +81,7 @@ SOURCES += \
     ClickableLabel.cpp \
     ColorDialog.cpp \
     ColoredFrame.cpp \
+    ColorTriangleHSV.cpp \
     ComboBox.cpp \
     CurveEditor.cpp \
     CurveEditorUndoRedo.cpp \
@@ -130,7 +131,6 @@ SOURCES += \
     KnobGuiButton.cpp \
     KnobGuiChoice.cpp \
     KnobGuiColor.cpp \
-    KnobGuiColorHSV.cpp \
     KnobGuiContainerHelper.cpp \
     KnobGuiFactory.cpp \
     KnobGuiFile.cpp \
@@ -239,6 +239,7 @@ HEADERS += \
     ClickableLabel.h \
     ColorDialog.h \
     ColoredFrame.h \
+    ColorTriangleHSV.h \
     ComboBox.h \
     CurveEditor.h \
     CurveEditorUndoRedo.h \
@@ -282,7 +283,6 @@ HEADERS += \
     KnobGuiButton.h \
     KnobGuiChoice.h \
     KnobGuiColor.h \
-    KnobGuiColorHSV.h \
     KnobGuiContainerHelper.h \
     KnobGuiContainerI.h \
     KnobGuiFactory.h \
