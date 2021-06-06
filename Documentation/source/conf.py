@@ -187,6 +187,53 @@ html_context = {
 htmlhelp_basename = 'Natrondoc'
 
 
+# -- Options for LaTeX output --------------------------------------------------
+
+mypreamble=ur'''\renewcommand{\code}[1]{\texttt{\footnotesize{}#1}}
+'''
+latex_elements = {
+# The paper size ('letterpaper' or 'a4paper').
+'papersize': 'a4paper',
+
+# The font size ('10pt', '11pt' or '12pt').
+'pointsize': '10pt',
+
+# Additional stuff for the LaTeX preamble.
+'preamble': mypreamble
+}
+
+# Grouping the document tree into LaTeX files. List of tuples
+# (source start file, target name, title, author, documentclass [howto/manual]).
+latex_documents = [
+  ('index', 'Natron.tex', u'Natron Documentation',
+   u'The Natron documentation authors', 'manual'),
+]
+
+#geometry = 'margin=1in,marginparwidth=0.5in'
+geometry = 'margin=0.5in,marginparwidth=0.5in'
+# The name of an image file (relative to this directory) to place at the top of
+# the title page.
+#latex_logo = None
+latex_logo = '../../Gui/Resources/Images/natronIcon.pdf'
+
+# For "manual" documents, if this is true, then toplevel headings are parts,
+# not chapters.
+latex_use_parts = True
+#latex_toplevel_sectioning = 'part'
+
+# If true, show page references after internal links.
+#latex_show_pagerefs = False
+
+# If true, show URL addresses after external links.
+#latex_show_urls = False
+
+# Documents to append as an appendix to all manuals.
+#latex_appendices = []
+
+# If false, no module index is generated.
+#latex_domain_indices = True
+
+
 # -- Options for manual page output --------------------------------------------
 
 # One entry per manual page. List of tuples
