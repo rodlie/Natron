@@ -316,22 +316,27 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     QObject::connect( _colorDialogButton, SIGNAL(clicked()), this, SLOT(showColorDialog()) );
     containerLayout->addWidget(_colorDialogButton);
 
+    // add color triangle popup
     QPixmap colorTrianglePix;
     appPTR->getIcon(NATRON_PIXMAP_COLORTRIANGLE, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorTrianglePix);
+
     _colorTriangleButton = new QToolButton( containerLayout->widget() );
     _colorTriangleButton->setIcon( QIcon(colorTrianglePix) );
     _colorTriangleButton->setFixedSize(medSize);
     _colorTriangleButton->setIconSize(medIconSize);
+    _colorTriangleButton->setPopupMode(QToolButton::InstantPopup);
     _colorTriangleButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color triangle."), NATRON_NAMESPACE::WhiteSpaceNormal) );
     _colorTriangleButton->setFocusPolicy(Qt::NoFocus);
-    QObject::connect( _colorTriangleButton, SIGNAL(clicked()), this, SLOT(showColorTriangle()) );
-    containerLayout->addWidget(_colorTriangleButton);
+    _colorTriangleButton->setStyleSheet( QString::fromUtf8("QToolButton::menu-indicator { image: none; }") ); // QTBUG-2036
 
-    // add color triangle
     _colorTriangleWidget = new ColorTriangleHSV( containerLayout->widget() );
-    QObject::connect( _colorTriangleWidget, SIGNAL(colorChanged(QColor)), this, SLOT(onDialogCurrentColorChanged(QColor)) );
-    containerLayout->addWidget(_colorTriangleWidget);
-    _colorTriangleWidget->hide(); // default hide
+    QObject::connect( _colorTriangleWidget, SIGNAL( colorChanged(QColor) ),
+                      this, SLOT( onDialogCurrentColorChanged(QColor) ) );
+
+    QWidgetAction *colorPopupAction = new QWidgetAction( containerLayout->widget() );
+    colorPopupAction->setDefaultWidget(_colorTriangleWidget);
+    _colorTriangleButton->addAction(colorPopupAction);
+    containerLayout->addWidget(_colorTriangleButton);
 
     if (_useSimplifiedUI) {
         KnobGuiValue::_hide();
@@ -395,7 +400,6 @@ KnobGuiColor::_hide()
     }
     _colorLabel->hide();
     _colorDialogButton->hide();
-    //_colorTriangleWidget->hide();
 }
 
 void
@@ -406,7 +410,6 @@ KnobGuiColor::_show()
     }
     _colorLabel->show();
     _colorDialogButton->show();
-    //_colorTriangleWidget->show();
 }
 
 void
@@ -448,11 +451,6 @@ KnobGuiColor::onDimensionsFolded()
         sb->setUseLineColor(false, Qt::red);
     }
     Q_EMIT dimensionSwitchToggled(false);
-
-    // hide triangle if we fold the knob
-    if ( _colorTriangleWidget && _colorTriangleWidget->isVisible() ) {
-        _colorTriangleWidget->hide();
-    }
 }
 
 void
@@ -605,21 +603,6 @@ KnobGuiColor::showColorDialog()
     }
     //knob->evaluateValueChange(0, knob->getCurrentTime(), ViewIdx(0), eValueChangedReasonNatronGuiEdited);
 } // showColorDialog
-
-void
-KnobGuiColor::showColorTriangle()
-{
-    if (!_colorTriangleWidget) {
-        return;
-    }
-    bool show = !_colorTriangleWidget->isVisible();
-    _colorTriangleWidget->setVisible(show);
-
-    // expand knob if showing the triangle
-    if (show) {
-        onDimensionSwitchClicked(true);
-    }
-}
 
 void
 KnobGuiColor::updateColorTriangle()

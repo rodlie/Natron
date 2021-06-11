@@ -132,7 +132,6 @@ public:
 public Q_SLOTS:
 
     void showColorDialog();
-    void showColorTriangle();
     void updateColorTriangle();
 
     void setPickingEnabled(bool enabled);
