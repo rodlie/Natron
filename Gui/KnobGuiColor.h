@@ -175,7 +175,6 @@ private:
     virtual void getIncrements(std::vector<double>* increments) const OVERRIDE FINAL;
     virtual void getDecimals(std::vector<int>* decimals) const OVERRIDE FINAL;
     virtual void addExtraWidgets(QHBoxLayout* containerLayout) OVERRIDE FINAL;
-    virtual void addExtraWidgets(QVBoxLayout* containerLayout) OVERRIDE FINAL;
     virtual void updateExtraGui(const std::vector<double>& values) OVERRIDE FINAL;
 
     void updateLabel(double r, double g, double b, double a);
@@ -191,9 +190,8 @@ private:
     KnobColorWPtr _knob;
     ColorPickerLabel *_colorLabel;
     Button *_colorDialogButton;
-    QToolButton *_colorPopupButton;
     ColorTriangleHSV *_colorTriangleWidget;
-    Button *_colorTriangleButton;
+    QToolButton *_colorTriangleButton;
     std::vector<double> _lastColor;
     bool _useSimplifiedUI;
     bool _blockColorTriangle;

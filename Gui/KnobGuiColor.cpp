@@ -209,7 +209,6 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     , _knob( boost::dynamic_pointer_cast<KnobColor>(knob) )
     , _colorLabel(0)
     , _colorDialogButton(0)
-    , _colorPopupButton(0)
     , _colorTriangleWidget(0)
     , _colorTriangleButton(0)
     , _lastColor()
@@ -319,7 +318,8 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
 
     QPixmap colorTrianglePix;
     appPTR->getIcon(NATRON_PIXMAP_COLORTRIANGLE, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorTrianglePix);
-    _colorTriangleButton = new Button( QIcon(colorTrianglePix), QString(), containerLayout->widget() );
+    _colorTriangleButton = new QToolButton( containerLayout->widget() );
+    _colorTriangleButton->setIcon( QIcon(colorTrianglePix) );
     _colorTriangleButton->setFixedSize(medSize);
     _colorTriangleButton->setIconSize(medIconSize);
     _colorTriangleButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color triangle."), NATRON_NAMESPACE::WhiteSpaceNormal) );
@@ -327,19 +327,16 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     QObject::connect( _colorTriangleButton, SIGNAL(clicked()), this, SLOT(showColorTriangle()) );
     containerLayout->addWidget(_colorTriangleButton);
 
-    if (_useSimplifiedUI) {
-        KnobGuiValue::_hide();
-        enableRightClickMenu(_colorLabel, -1);
-    }
-}
-
-void KnobGuiColor::addExtraWidgets(QVBoxLayout *containerLayout)
-{
     // add color triangle
     _colorTriangleWidget = new ColorTriangleHSV( containerLayout->widget() );
     QObject::connect( _colorTriangleWidget, SIGNAL(colorChanged(QColor)), this, SLOT(onDialogCurrentColorChanged(QColor)) );
     containerLayout->addWidget(_colorTriangleWidget);
     _colorTriangleWidget->hide(); // default hide
+
+    if (_useSimplifiedUI) {
+        KnobGuiValue::_hide();
+        enableRightClickMenu(_colorLabel, -1);
+    }
 }
 
 void
