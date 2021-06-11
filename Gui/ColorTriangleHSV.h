@@ -27,6 +27,7 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QWidget>
 #include <QColor>
 #include "Gui/QtColorTriangle.h" // from Qt Solutions
+#include <QMouseEvent>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -68,6 +69,16 @@ private Q_SLOTS:
     void handleSliderHMoved(double value);
     void handleSliderSMoved(double value);
     void handleSliderVMoved(double value);
+
+    // https://bugreports.qt.io/browse/QTBUG-47406
+    void mousePressEvent(QMouseEvent *e)
+    {
+        e->accept();
+    }
+    void mouseReleaseEvent(QMouseEvent *e)
+    {
+        e->accept();
+    }
 };
 
 NATRON_NAMESPACE_EXIT

@@ -325,9 +325,9 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     _colorTriangleButton->setFixedSize(medSize);
     _colorTriangleButton->setIconSize(medIconSize);
     _colorTriangleButton->setPopupMode(QToolButton::InstantPopup);
+    _colorTriangleButton->setArrowType(Qt::NoArrow);
     _colorTriangleButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color triangle."), NATRON_NAMESPACE::WhiteSpaceNormal) );
     _colorTriangleButton->setFocusPolicy(Qt::NoFocus);
-    _colorTriangleButton->setStyleSheet( QString::fromUtf8("QToolButton::menu-indicator { image: none; }") ); // QTBUG-2036
 
     _colorTriangleWidget = new ColorTriangleHSV( containerLayout->widget() );
     QObject::connect( _colorTriangleWidget, SIGNAL( colorChanged(QColor) ),
