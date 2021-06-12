@@ -329,7 +329,7 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     _colorTriangleButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color triangle."), NATRON_NAMESPACE::WhiteSpaceNormal) );
     _colorTriangleButton->setFocusPolicy(Qt::NoFocus);
 
-    _colorTriangleWidget = new ColorTriangleHSV( containerLayout->widget() );
+    _colorTriangleWidget = new ColorTriangleHSVWidget( containerLayout->widget() );
     QObject::connect( _colorTriangleWidget, SIGNAL( colorChanged(QColor) ),
                       this, SLOT( onDialogCurrentColorChanged(QColor) ) );
 
@@ -491,7 +491,7 @@ KnobGuiColor::setEnabledExtraGui(bool enabled)
 void
 KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
 {
-    ColorTriangleHSV *triangle = qobject_cast<ColorTriangleHSV*>( sender() );
+    ColorTriangleHSVWidget *triangle = qobject_cast<ColorTriangleHSVWidget*>( sender() );
     _blockColorTriangle = (triangle);
 
     KnobColorPtr knob = _knob.lock();
