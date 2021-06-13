@@ -132,7 +132,7 @@ public:
 public Q_SLOTS:
 
     void showColorDialog();
-    void updateColorTriangle();
+    void updateColorSelector();
 
     void setPickingEnabled(bool enabled);
 
@@ -189,11 +189,11 @@ private:
     KnobColorWPtr _knob;
     ColorPickerLabel *_colorLabel;
     Button *_colorDialogButton;
-    ColorSelectorWidget *_colorSelectorWidget;
-    QToolButton *_colorTriangleButton;
+    ColorSelectorWidget *_colorSelector;
+    QToolButton *_colorSelectorButton;
     std::vector<double> _lastColor;
     bool _useSimplifiedUI;
-    bool _blockColorTriangle;
+    bool _blockColorSelector;
 };
 
 NATRON_NAMESPACE_EXIT

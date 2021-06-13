@@ -209,11 +209,11 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     , _knob( boost::dynamic_pointer_cast<KnobColor>(knob) )
     , _colorLabel(0)
     , _colorDialogButton(0)
-    , _colorSelectorWidget(0)
-    , _colorTriangleButton(0)
+    , _colorSelector(0)
+    , _colorSelectorButton(0)
     , _lastColor()
     , _useSimplifiedUI(true)
-    , _blockColorTriangle(false)
+    , _blockColorSelector(false)
 {
     KnobColorPtr k = _knob.lock();
     assert(k);
@@ -316,29 +316,29 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     QObject::connect( _colorDialogButton, SIGNAL(clicked()), this, SLOT(showColorDialog()) );
     containerLayout->addWidget(_colorDialogButton);
 
-    // add color triangle popup
+    // add color selector popup
     QPixmap colorTrianglePix;
     appPTR->getIcon(NATRON_PIXMAP_COLORTRIANGLE, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorTrianglePix);
 
-    _colorTriangleButton = new QToolButton( containerLayout->widget() );
-    _colorTriangleButton->setIcon( QIcon(colorTrianglePix) );
-    _colorTriangleButton->setFixedSize(medSize);
-    _colorTriangleButton->setIconSize(medIconSize);
-    _colorTriangleButton->setPopupMode(QToolButton::InstantPopup);
-    _colorTriangleButton->setArrowType(Qt::NoArrow);
-    _colorTriangleButton->setStyleSheet( QString::fromUtf8("QToolButton { border: none; } QToolButton:pressed { padding-left: 0px; top: 0px; left: 0px; }") );
-    _colorTriangleButton->setAutoRaise(false);
-    _colorTriangleButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open HSV Color Selector"), NATRON_NAMESPACE::WhiteSpaceNormal) );
-    _colorTriangleButton->setFocusPolicy(Qt::NoFocus);
+    _colorSelectorButton = new QToolButton( containerLayout->widget() );
+    _colorSelectorButton->setIcon( QIcon(colorTrianglePix) );
+    _colorSelectorButton->setFixedSize(medSize);
+    _colorSelectorButton->setIconSize(medIconSize);
+    _colorSelectorButton->setPopupMode(QToolButton::InstantPopup);
+    _colorSelectorButton->setArrowType(Qt::NoArrow);
+    _colorSelectorButton->setStyleSheet( QString::fromUtf8("QToolButton { border: none; } QToolButton:pressed { padding-left: 0px; top: 0px; left: 0px; }") );
+    _colorSelectorButton->setAutoRaise(false);
+    _colorSelectorButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open Color Selector"), NATRON_NAMESPACE::WhiteSpaceNormal) );
+    _colorSelectorButton->setFocusPolicy(Qt::NoFocus);
 
-    _colorSelectorWidget = new ColorSelectorWidget( containerLayout->widget() );
-    QObject::connect( _colorSelectorWidget, SIGNAL( colorChanged(QColor) ),
+    _colorSelector = new ColorSelectorWidget( containerLayout->widget() );
+    QObject::connect( _colorSelector, SIGNAL( colorChanged(QColor) ),
                       this, SLOT( onDialogCurrentColorChanged(QColor) ) );
 
     QWidgetAction *colorPopupAction = new QWidgetAction( containerLayout->widget() );
-    colorPopupAction->setDefaultWidget(_colorSelectorWidget);
-    _colorTriangleButton->addAction(colorPopupAction);
-    containerLayout->addWidget(_colorTriangleButton);
+    colorPopupAction->setDefaultWidget(_colorSelector);
+    _colorSelectorButton->addAction(colorPopupAction);
+    containerLayout->addWidget(_colorSelectorButton);
 
     if (_useSimplifiedUI) {
         KnobGuiValue::_hide();
@@ -432,7 +432,7 @@ KnobGuiColor::updateExtraGui(const std::vector<double>& values)
         a = values[3];
     }
     updateLabel(r, g, b, a);
-    updateColorTriangle();
+    updateColorSelector();
 }
 
 void
@@ -493,8 +493,8 @@ KnobGuiColor::setEnabledExtraGui(bool enabled)
 void
 KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
 {
-    ColorSelectorWidget *triangle = qobject_cast<ColorSelectorWidget*>( sender() );
-    _blockColorTriangle = (triangle);
+    ColorSelectorWidget *selector = qobject_cast<ColorSelectorWidget*>( sender() );
+    _blockColorSelector = (selector);
 
     KnobColorPtr knob = _knob.lock();
     bool isSimple = _useSimplifiedUI;
@@ -607,9 +607,9 @@ KnobGuiColor::showColorDialog()
 } // showColorDialog
 
 void
-KnobGuiColor::updateColorTriangle()
+KnobGuiColor::updateColorSelector()
 {
-    if (_blockColorTriangle) {
+    if (_blockColorSelector) {
         return;
     }
 
@@ -640,7 +640,7 @@ KnobGuiColor::updateColorTriangle()
                       Image::clamp<qreal>(isSimple ? curB : Color::to_func_srgb(curB), 0., 1.),
                       Image::clamp<qreal>(curA, 0., 1.) );
 
-    _colorSelectorWidget->setColor(curColor);
+    _colorSelector->setColor(curColor);
 }
 
 bool
