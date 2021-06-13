@@ -120,6 +120,10 @@ ColorTriangleHSVWidget::ColorTriangleHSVWidget(QWidget *parent) : QWidget(parent
     Label *labelS = new Label(QString::fromUtf8("S"), this);
     Label *labelV = new Label(QString::fromUtf8("V"), this);
 
+    labelH->setMinimumWidth(10);
+    labelS->setMinimumWidth(10);
+    labelV->setMinimumWidth(10);
+
     hLayout->addWidget(labelH);
     hLayout->addWidget(spinH);
     hLayout->addWidget(slideH);

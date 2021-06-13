@@ -328,7 +328,7 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     _colorTriangleButton->setArrowType(Qt::NoArrow);
     _colorTriangleButton->setStyleSheet( QString::fromUtf8("QToolButton { border: none; } QToolButton:pressed { padding-left: 0px; top: 0px; left: 0px; }") );
     _colorTriangleButton->setAutoRaise(false);
-    _colorTriangleButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color triangle."), NATRON_NAMESPACE::WhiteSpaceNormal) );
+    _colorTriangleButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open HSV Color Selector"), NATRON_NAMESPACE::WhiteSpaceNormal) );
     _colorTriangleButton->setFocusPolicy(Qt::NoFocus);
 
     _colorTriangleWidget = new ColorTriangleHSVWidget( containerLayout->widget() );
