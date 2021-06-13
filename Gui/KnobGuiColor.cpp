@@ -41,6 +41,7 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QHeaderView>
 #include <QApplication>
 #include <QScrollArea>
+#include <QWidgetAction>
 GCC_DIAG_UNUSED_PRIVATE_FIELD_OFF
 // /opt/local/include/QtGui/qmime.h:119:10: warning: private field 'type' is not used [-Wunused-private-field]
 #include <QKeyEvent>
@@ -208,8 +209,11 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     , _knob( boost::dynamic_pointer_cast<KnobColor>(knob) )
     , _colorLabel(0)
     , _colorDialogButton(0)
+    , _colorSelector(0)
+    , _colorSelectorButton(0)
     , _lastColor()
     , _useSimplifiedUI(true)
+    , _blockColorSelector(false)
 {
     KnobColorPtr k = _knob.lock();
     assert(k);
@@ -302,15 +306,41 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
         containerLayout->addSpacing( TO_DPIX(5) );
     }
 
-    QPixmap buttonPix;
-    appPTR->getIcon(NATRON_PIXMAP_COLORWHEEL, NATRON_MEDIUM_BUTTON_ICON_SIZE, &buttonPix);
-    _colorDialogButton = new Button( QIcon(buttonPix), QString(), containerLayout->widget() );
+    QPixmap colorDialogPix;
+    appPTR->getIcon(NATRON_PIXMAP_COLORWHEEL, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorDialogPix);
+    _colorDialogButton = new Button( QIcon(colorDialogPix), QString(), containerLayout->widget() );
     _colorDialogButton->setFixedSize(medSize);
     _colorDialogButton->setIconSize(medIconSize);
     _colorDialogButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color dialog."), NATRON_NAMESPACE::WhiteSpaceNormal) );
     _colorDialogButton->setFocusPolicy(Qt::NoFocus);
     QObject::connect( _colorDialogButton, SIGNAL(clicked()), this, SLOT(showColorDialog()) );
     containerLayout->addWidget(_colorDialogButton);
+
+    // add color selector popup
+    QPixmap colorTrianglePix;
+    appPTR->getIcon(NATRON_PIXMAP_COLORTRIANGLE, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorTrianglePix);
+
+    _colorSelectorButton = new QToolButton( containerLayout->widget() );
+    _colorSelectorButton->setIcon( QIcon(colorTrianglePix) );
+    _colorSelectorButton->setFixedSize(medSize);
+    _colorSelectorButton->setIconSize(medIconSize);
+    _colorSelectorButton->setPopupMode(QToolButton::InstantPopup);
+    _colorSelectorButton->setArrowType(Qt::NoArrow);
+    _colorSelectorButton->setAutoRaise(false);
+    _colorSelectorButton->setStyleSheet( QString::fromUtf8("QToolButton { border: none; }"
+                                                           "QToolButton:menu-indicator { image: none; }"
+                                                           "QToolButton:pressed { padding-left: 0px; top: 0px; left: 0px; }") );
+    _colorSelectorButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open Color Selector"), NATRON_NAMESPACE::WhiteSpaceNormal) );
+    _colorSelectorButton->setFocusPolicy(Qt::NoFocus);
+
+    _colorSelector = new ColorSelectorWidget( containerLayout->widget() );
+    QObject::connect( _colorSelector, SIGNAL( colorChanged(QColor) ),
+                      this, SLOT( onDialogCurrentColorChanged(QColor) ) );
+
+    QWidgetAction *colorPopupAction = new QWidgetAction( containerLayout->widget() );
+    colorPopupAction->setDefaultWidget(_colorSelector);
+    _colorSelectorButton->addAction(colorPopupAction);
+    containerLayout->addWidget(_colorSelectorButton);
 
     if (_useSimplifiedUI) {
         KnobGuiValue::_hide();
@@ -404,6 +434,7 @@ KnobGuiColor::updateExtraGui(const std::vector<double>& values)
         a = values[3];
     }
     updateLabel(r, g, b, a);
+    updateColorSelector();
 }
 
 void
@@ -464,6 +495,9 @@ KnobGuiColor::setEnabledExtraGui(bool enabled)
 void
 KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
 {
+    ColorSelectorWidget *selector = qobject_cast<ColorSelectorWidget*>( sender() );
+    _blockColorSelector = (selector);
+
     KnobColorPtr knob = _knob.lock();
     bool isSimple = _useSimplifiedUI;
     int nDims = knob->getDimension();
@@ -574,6 +608,43 @@ KnobGuiColor::showColorDialog()
     }
     //knob->evaluateValueChange(0, knob->getCurrentTime(), ViewIdx(0), eValueChangedReasonNatronGuiEdited);
 } // showColorDialog
+
+void
+KnobGuiColor::updateColorSelector()
+{
+    if (_blockColorSelector) {
+        return;
+    }
+
+    KnobColorPtr knob = _knob.lock();
+    const int nDims = knob->getDimension();
+    double curR = knob->getValue(0);
+
+    assert(nDims == 1 || nDims == 3 || nDims == 4);
+    if (nDims != 1 && nDims != 3 && nDims != 4) {
+        throw std::logic_error("A color Knob can only have dimension 1, 3 or 4");
+    }
+
+    double curG = curR;
+    double curB = curR;
+    double curA = 1.;
+    if (nDims > 1) {
+        curG = knob->getValue(1);
+        curB = knob->getValue(2);
+    }
+    if (nDims > 3) {
+        curA = knob->getValue(3);
+    }
+
+    bool isSimple = _useSimplifiedUI;
+    QColor curColor;
+    curColor.setRgbF( Image::clamp<qreal>(isSimple ? curR : Color::to_func_srgb(curR), 0., 1.),
+                      Image::clamp<qreal>(isSimple ? curG : Color::to_func_srgb(curG), 0., 1.),
+                      Image::clamp<qreal>(isSimple ? curB : Color::to_func_srgb(curB), 0., 1.),
+                      Image::clamp<qreal>(curA, 0., 1.) );
+
+    _colorSelector->setColor(curColor);
+}
 
 bool
 KnobGuiColor::isAutoFoldDimensionsEnabled() const
