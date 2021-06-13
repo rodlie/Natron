@@ -404,6 +404,7 @@ KnobGuiColor::_hide()
     }
     _colorLabel->hide();
     _colorDialogButton->hide();
+    _colorSelectorButton->hide();
 }
 
 void
@@ -414,6 +415,7 @@ KnobGuiColor::_show()
     }
     _colorLabel->show();
     _colorDialogButton->show();
+    _colorSelectorButton->show();
 }
 
 void
