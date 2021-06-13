@@ -40,7 +40,8 @@ class ColorSelectorWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ColorSelectorWidget(QWidget *parent = NULL);
+    explicit ColorSelectorWidget(QWidget *parent = NULL,
+                                 int colorWheelSize = 120);
 
 Q_SIGNALS:
     void colorChanged(const QColor &color);

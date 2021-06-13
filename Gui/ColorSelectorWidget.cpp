@@ -30,7 +30,8 @@ CLANG_DIAG_ON(uninitialized)
 
 NATRON_NAMESPACE_ENTER
 
-ColorSelectorWidget::ColorSelectorWidget(QWidget *parent) : QWidget(parent)
+ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
+                                         int colorWheelSize) : QWidget(parent)
   , spinH(0)
   , spinS(0)
   , spinV(0)
@@ -46,9 +47,8 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent) : QWidget(parent)
     triangle = new QtColorTriangle(this);
     triangle->setColor( QColor::fromHsvF(0.0, 0.0, 0.0, 1.0) );
 
-    // force 120x120 size on triangle
-    triangle->setMinimumSize(120, 120);
-    triangle->setMaximumSize(120, 120);
+    triangle->setMinimumSize(colorWheelSize, colorWheelSize);
+    triangle->setMaximumSize(colorWheelSize, colorWheelSize);
     triangle->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QWidget *hsvWidget = new QWidget(this);
@@ -110,11 +110,11 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent) : QWidget(parent)
     spinS->setIncrement(0.01);
     spinV->setIncrement(0.01);
 
-    //spinH->setMaximum(1.);
+    spinH->setMaximum(1.);
     spinH->setMinimum(0.);
-    //spinS->setMaximum(1.);
+    spinS->setMaximum(1.);
     spinS->setMinimum(0.);
-    //spinV->setMaximum(1.);
+    spinV->setMaximum(1.);
     spinV->setMinimum(0.);
 
     Label *labelH = new Label(QString::fromUtf8("H"), this);
