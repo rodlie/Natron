@@ -17,7 +17,7 @@
  * along with Natron.  If not, see <http://www.gnu.org/licenses/gpl-2.0.html>
  * ***** END LICENSE BLOCK ***** */
 
-#include "ColorTriangleHSVWidget.h"
+#include "ColorSelectorWidget.h"
 
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
@@ -30,7 +30,7 @@ CLANG_DIAG_ON(uninitialized)
 
 NATRON_NAMESPACE_ENTER
 
-ColorTriangleHSVWidget::ColorTriangleHSVWidget(QWidget *parent) : QWidget(parent)
+ColorSelectorWidget::ColorSelectorWidget(QWidget *parent) : QWidget(parent)
   , spinH(0)
   , spinS(0)
   , spinV(0)
@@ -44,6 +44,7 @@ ColorTriangleHSVWidget::ColorTriangleHSVWidget(QWidget *parent) : QWidget(parent
     mainLayout->setSpacing(0);
 
     triangle = new QtColorTriangle(this);
+    triangle->setColor( QColor::fromHsvF(0.0, 0.0, 0.0, 1.0) );
 
     // force 120x120 size on triangle
     triangle->setMinimumSize(120, 120);
@@ -162,13 +163,13 @@ ColorTriangleHSVWidget::ColorTriangleHSVWidget(QWidget *parent) : QWidget(parent
 }
 
 const QColor
-ColorTriangleHSVWidget::getColor()
+ColorSelectorWidget::getColor()
 {
     return triangle->color();
 }
 
 void
-ColorTriangleHSVWidget::setColor(const QColor &color)
+ColorSelectorWidget::setColor(const QColor &color)
 {
     triangle->blockSignals(true);
     triangle->setColor(color);
@@ -177,7 +178,7 @@ ColorTriangleHSVWidget::setColor(const QColor &color)
 }
 
 void
-ColorTriangleHSVWidget::setH(qreal h)
+ColorSelectorWidget::setH(qreal h)
 {
     double value = h;
     if (value < 0.) {
@@ -192,7 +193,7 @@ ColorTriangleHSVWidget::setH(qreal h)
 }
 
 void
-ColorTriangleHSVWidget::setS(qreal s)
+ColorSelectorWidget::setS(qreal s)
 {
     double value = s;
     if (value < 0.) {
@@ -207,7 +208,7 @@ ColorTriangleHSVWidget::setS(qreal s)
 }
 
 void
-ColorTriangleHSVWidget::setV(qreal v)
+ColorSelectorWidget::setV(qreal v)
 {
     double value = v;
     if (value < 0.) {
@@ -222,7 +223,7 @@ ColorTriangleHSVWidget::setV(qreal v)
 }
 
 void
-ColorTriangleHSVWidget::handleColorChanged(const QColor &color, bool doEmit)
+ColorSelectorWidget::handleColorChanged(const QColor &color, bool doEmit)
 {
     setH( color.toHsv().hueF() );
     setS( color.toHsv().saturationF() );
@@ -233,7 +234,7 @@ ColorTriangleHSVWidget::handleColorChanged(const QColor &color, bool doEmit)
 }
 
 void
-ColorTriangleHSVWidget::handleColorHChanged(double value)
+ColorSelectorWidget::handleColorHChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( value, spinS->value(), spinV->value() );
@@ -241,7 +242,7 @@ ColorTriangleHSVWidget::handleColorHChanged(double value)
 }
 
 void
-ColorTriangleHSVWidget::handleColorSChanged(double value)
+ColorSelectorWidget::handleColorSChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), value, spinV->value() );
@@ -249,7 +250,7 @@ ColorTriangleHSVWidget::handleColorSChanged(double value)
 }
 
 void
-ColorTriangleHSVWidget::handleColorVChanged(double value)
+ColorSelectorWidget::handleColorVChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), spinS->value(), value );
@@ -257,21 +258,21 @@ ColorTriangleHSVWidget::handleColorVChanged(double value)
 }
 
 void
-ColorTriangleHSVWidget::handleSliderHMoved(double value)
+ColorSelectorWidget::handleSliderHMoved(double value)
 {
     spinH->setValue(value);
     handleColorHChanged(value);
 }
 
 void
-ColorTriangleHSVWidget::handleSliderSMoved(double value)
+ColorSelectorWidget::handleSliderSMoved(double value)
 {
     spinS->setValue(value);
     handleColorSChanged(value);
 }
 
 void
-ColorTriangleHSVWidget::handleSliderVMoved(double value)
+ColorSelectorWidget::handleSliderVMoved(double value)
 {
     spinV->setValue(value);
     handleColorVChanged(value);
@@ -280,4 +281,4 @@ ColorTriangleHSVWidget::handleSliderVMoved(double value)
 NATRON_NAMESPACE_EXIT
 
 NATRON_NAMESPACE_USING
-#include "moc_ColorTriangleHSVWidget.cpp"
+#include "moc_ColorSelectorWidget.cpp"

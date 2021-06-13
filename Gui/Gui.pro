@@ -81,7 +81,7 @@ SOURCES += \
     ClickableLabel.cpp \
     ColorDialog.cpp \
     ColoredFrame.cpp \
-    ColorTriangleHSVWidget.cpp \
+    ColorSelectorWidget.cpp \
     ComboBox.cpp \
     CurveEditor.cpp \
     CurveEditorUndoRedo.cpp \
@@ -239,7 +239,7 @@ HEADERS += \
     ClickableLabel.h \
     ColorDialog.h \
     ColoredFrame.h \
-    ColorTriangleHSVWidget.h \
+    ColorSelectorWidget.h \
     ComboBox.h \
     CurveEditor.h \
     CurveEditorUndoRedo.h \

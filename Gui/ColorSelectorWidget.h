@@ -17,8 +17,8 @@
  * along with Natron.  If not, see <http://www.gnu.org/licenses/gpl-2.0.html>
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef Gui_ColorTriangleHSVWidget_h
-#define Gui_ColorTriangleHSVWidget_h
+#ifndef Gui_ColorSelectorWidget_h
+#define Gui_ColorSelectorWidget_h
 
 #include "Global/Macros.h"
 
@@ -36,11 +36,11 @@ CLANG_DIAG_ON(uninitialized)
 
 NATRON_NAMESPACE_ENTER
 
-class ColorTriangleHSVWidget : public QWidget
+class ColorSelectorWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ColorTriangleHSVWidget(QWidget *parent = NULL);
+    explicit ColorSelectorWidget(QWidget *parent = NULL);
 
 Q_SIGNALS:
     void colorChanged(const QColor &color);
@@ -83,4 +83,4 @@ private Q_SLOTS:
 
 NATRON_NAMESPACE_EXIT
 
-#endif // Gui_ColorTriangleHSVWidget_h
+#endif // Gui_ColorSelectorWidget_h

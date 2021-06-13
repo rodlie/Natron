@@ -209,7 +209,7 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     , _knob( boost::dynamic_pointer_cast<KnobColor>(knob) )
     , _colorLabel(0)
     , _colorDialogButton(0)
-    , _colorTriangleWidget(0)
+    , _colorSelectorWidget(0)
     , _colorTriangleButton(0)
     , _lastColor()
     , _useSimplifiedUI(true)
@@ -331,12 +331,12 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     _colorTriangleButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open HSV Color Selector"), NATRON_NAMESPACE::WhiteSpaceNormal) );
     _colorTriangleButton->setFocusPolicy(Qt::NoFocus);
 
-    _colorTriangleWidget = new ColorTriangleHSVWidget( containerLayout->widget() );
-    QObject::connect( _colorTriangleWidget, SIGNAL( colorChanged(QColor) ),
+    _colorSelectorWidget = new ColorSelectorWidget( containerLayout->widget() );
+    QObject::connect( _colorSelectorWidget, SIGNAL( colorChanged(QColor) ),
                       this, SLOT( onDialogCurrentColorChanged(QColor) ) );
 
     QWidgetAction *colorPopupAction = new QWidgetAction( containerLayout->widget() );
-    colorPopupAction->setDefaultWidget(_colorTriangleWidget);
+    colorPopupAction->setDefaultWidget(_colorSelectorWidget);
     _colorTriangleButton->addAction(colorPopupAction);
     containerLayout->addWidget(_colorTriangleButton);
 
@@ -493,7 +493,7 @@ KnobGuiColor::setEnabledExtraGui(bool enabled)
 void
 KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
 {
-    ColorTriangleHSVWidget *triangle = qobject_cast<ColorTriangleHSVWidget*>( sender() );
+    ColorSelectorWidget *triangle = qobject_cast<ColorSelectorWidget*>( sender() );
     _blockColorTriangle = (triangle);
 
     KnobColorPtr knob = _knob.lock();
@@ -640,7 +640,7 @@ KnobGuiColor::updateColorTriangle()
                       Image::clamp<qreal>(isSimple ? curB : Color::to_func_srgb(curB), 0., 1.),
                       Image::clamp<qreal>(curA, 0., 1.) );
 
-    _colorTriangleWidget->setColor(curColor);
+    _colorSelectorWidget->setColor(curColor);
 }
 
 bool
