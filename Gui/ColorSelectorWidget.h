@@ -49,27 +49,62 @@ Q_SIGNALS:
 public Q_SLOTS:
     const QColor getColor();
     void setColor(const QColor &color);
+
+    void setR(qreal r);
+    void setG(qreal g);
+    void setB(qreal b);
+
     void setH(qreal h);
     void setS(qreal s);
     void setV(qreal v);
 
+    void setA(qreal a);
+
 private:
+    SpinBox *spinR;
+    SpinBox *spinG;
+    SpinBox *spinB;
+
     SpinBox *spinH;
     SpinBox *spinS;
     SpinBox *spinV;
+
+    SpinBox *spinA;
+
+    ScaleSliderQWidget *slideR;
+    ScaleSliderQWidget *slideG;
+    ScaleSliderQWidget *slideB;
+
     ScaleSliderQWidget *slideH;
     ScaleSliderQWidget *slideS;
     ScaleSliderQWidget *slideV;
+
+    ScaleSliderQWidget *slideA;
+
     QtColorTriangle *triangle;
 
 private Q_SLOTS:
     void handleColorChanged(const QColor &color, bool doEmit = true);
+
+    void handleColorRChanged(double value);
+    void handleColorGChanged(double value);
+    void handleColorBChanged(double value);
+
     void handleColorHChanged(double value);
     void handleColorSChanged(double value);
     void handleColorVChanged(double value);
+
+    void handleColorAChanged(double value);
+
+    void handleSliderRMoved(double value);
+    void handleSliderGMoved(double value);
+    void handleSliderBMoved(double value);
+
     void handleSliderHMoved(double value);
     void handleSliderSMoved(double value);
     void handleSliderVMoved(double value);
+
+    void handleSliderAMoved(double value);
 
     // https://bugreports.qt.io/browse/QTBUG-47406
     void mousePressEvent(QMouseEvent *e)

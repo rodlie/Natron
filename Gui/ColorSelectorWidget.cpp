@@ -32,27 +32,47 @@ NATRON_NAMESPACE_ENTER
 
 ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
                                          int colorWheelSize) : QWidget(parent)
+  , spinR(0)
+  , spinG(0)
+  , spinB(0)
   , spinH(0)
   , spinS(0)
   , spinV(0)
+  , spinA(0)
+  , slideR(0)
+  , slideG(0)
+  , slideB(0)
   , slideH(0)
   , slideS(0)
   , slideV(0)
+  , slideA(0)
   , triangle(0)
 {
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
-    mainLayout->setContentsMargins(5, 5, 5, 10);
+    mainLayout->setContentsMargins(5, 5, 5, 5);
     mainLayout->setSpacing(0);
 
     triangle = new QtColorTriangle(this);
-    triangle->setColor( QColor::fromHsvF(0.0, 0.0, 0.0, 1.0) );
+    triangle->setColor( QColor::fromHsvF(0.0, 0.0, 0.0, 1.0) ); // position the triangle properly
 
-    triangle->setMinimumSize(colorWheelSize, colorWheelSize);
-    triangle->setMaximumSize(colorWheelSize, colorWheelSize);
-    triangle->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    // static or dynamic triangle size?
+    if (colorWheelSize > 0) {
+        triangle->setMinimumSize(colorWheelSize, colorWheelSize);
+        triangle->setMaximumSize(colorWheelSize, colorWheelSize);
+        triangle->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    } else {
+        triangle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    }
 
-    QWidget *hsvWidget = new QWidget(this);
-    QVBoxLayout *hsvLayout = new QVBoxLayout(hsvWidget);
+    QWidget *colorWidget = new QWidget(this);
+    QVBoxLayout *colorLayout = new QVBoxLayout(colorWidget);
+
+    QWidget *rWidget = new QWidget(this);
+    QHBoxLayout *rLayout = new QHBoxLayout(rWidget);
+    QWidget *gWidget = new QWidget(this);
+    QHBoxLayout *gLayout = new QHBoxLayout(gWidget);
+    QWidget *bWidget = new QWidget(this);
+    QHBoxLayout *bLayout = new QHBoxLayout(bWidget);
 
     QWidget *hWidget = new QWidget(this);
     QHBoxLayout *hLayout = new QHBoxLayout(hWidget);
@@ -61,9 +81,43 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     QWidget *vWidget = new QWidget(this);
     QHBoxLayout *vLayout = new QHBoxLayout(vWidget);
 
+    QWidget *aWidget = new QWidget(this);
+    QHBoxLayout *aLayout = new QHBoxLayout(aWidget);
+
+    rLayout->setContentsMargins(0, 0, 0, 0);
+    gLayout->setContentsMargins(0, 0, 0, 0);
+    bLayout->setContentsMargins(0, 0, 0, 0);
+
     hLayout->setContentsMargins(0, 0, 0, 0);
     sLayout->setContentsMargins(0, 0, 0, 0);
     vLayout->setContentsMargins(0, 0, 0, 0);
+
+    aLayout->setContentsMargins(0, 0, 0, 0);
+
+    slideR = new ScaleSliderQWidget(0.,
+                                    1.,
+                                    0.,
+                                    false,
+                                    ScaleSliderQWidget::eDataTypeDouble,
+                                    NULL,
+                                    eScaleTypeLinear,
+                                    this);
+    slideG = new ScaleSliderQWidget(0.,
+                                    1.,
+                                    0.,
+                                    false,
+                                    ScaleSliderQWidget::eDataTypeDouble,
+                                    NULL,
+                                    eScaleTypeLinear,
+                                    this);
+    slideB = new ScaleSliderQWidget(0.,
+                                    1.,
+                                    0.,
+                                    false,
+                                    ScaleSliderQWidget::eDataTypeDouble,
+                                    NULL,
+                                    eScaleTypeLinear,
+                                    this);
 
     slideH = new ScaleSliderQWidget(0.,
                                     1.,
@@ -90,25 +144,71 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
                                     eScaleTypeLinear,
                                     this);
 
+    slideA = new ScaleSliderQWidget(0.,
+                                    1.,
+                                    0.,
+                                    false,
+                                    ScaleSliderQWidget::eDataTypeDouble,
+                                    NULL,
+                                    eScaleTypeLinear,
+                                    this);
+
+    slideR->setMinimumAndMaximum(0., 1.);
+    slideG->setMinimumAndMaximum(0., 1.);
+    slideB->setMinimumAndMaximum(0., 1.);
+
     slideH->setMinimumAndMaximum(0., 1.);
     slideS->setMinimumAndMaximum(0., 1.);
     slideV->setMinimumAndMaximum(0., 1.);
+
+    slideA->setMinimumAndMaximum(0., 1.);
+
+    slideR->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    slideG->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    slideB->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     slideH->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     slideS->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     slideV->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
+    slideA->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    spinR = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    spinG = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    spinB = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+
     spinH = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
     spinS = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
     spinV = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+
+    spinA = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+
+    spinR->decimals(3);
+    spinG->decimals(3);
+    spinB->decimals(3);
 
     spinH->decimals(3);
     spinS->decimals(3);
     spinV->decimals(3);
 
+    spinA->decimals(3);
+
+    spinR->setIncrement(0.01);
+    spinG->setIncrement(0.01);
+    spinB->setIncrement(0.01);
+
     spinH->setIncrement(0.01);
     spinS->setIncrement(0.01);
     spinV->setIncrement(0.01);
+
+    spinA->setIncrement(0.01);
+
+    spinR->setMaximum(1.);
+    spinR->setMinimum(0.);
+    spinG->setMaximum(1.);
+    spinG->setMinimum(0.);
+    spinB->setMaximum(1.);
+    spinB->setMinimum(0.);
 
     spinH->setMaximum(1.);
     spinH->setMinimum(0.);
@@ -117,13 +217,40 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     spinV->setMaximum(1.);
     spinV->setMinimum(0.);
 
+    spinA->setMaximum(1.);
+    spinA->setMinimum(0.);
+
+    Label *labelR = new Label(QString::fromUtf8("R"), this);
+    Label *labelG = new Label(QString::fromUtf8("G"), this);
+    Label *labelB = new Label(QString::fromUtf8("B"), this);
+
     Label *labelH = new Label(QString::fromUtf8("H"), this);
     Label *labelS = new Label(QString::fromUtf8("S"), this);
     Label *labelV = new Label(QString::fromUtf8("V"), this);
 
+    Label *labelA = new Label(QString::fromUtf8("A"), this);
+
+    labelR->setMinimumWidth(10);
+    labelG->setMinimumWidth(10);
+    labelB->setMinimumWidth(10);
+
     labelH->setMinimumWidth(10);
     labelS->setMinimumWidth(10);
     labelV->setMinimumWidth(10);
+
+    labelA->setMinimumWidth(10);
+
+    rLayout->addWidget(labelR);
+    rLayout->addWidget(spinR);
+    rLayout->addWidget(slideR);
+
+    gLayout->addWidget(labelG);
+    gLayout->addWidget(spinG);
+    gLayout->addWidget(slideG);
+
+    bLayout->addWidget(labelB);
+    bLayout->addWidget(spinB);
+    bLayout->addWidget(slideB);
 
     hLayout->addWidget(labelH);
     hLayout->addWidget(spinH);
@@ -137,12 +264,22 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     vLayout->addWidget(spinV);
     vLayout->addWidget(slideV);
 
-    hsvLayout->addWidget(hWidget);
-    hsvLayout->addWidget(sWidget);
-    hsvLayout->addWidget(vWidget);
+    aLayout->addWidget(labelA);
+    aLayout->addWidget(spinA);
+    aLayout->addWidget(slideA);
+
+    colorLayout->addWidget(rWidget);
+    colorLayout->addWidget(gWidget);
+    colorLayout->addWidget(bWidget);
+
+    colorLayout->addWidget(hWidget);
+    colorLayout->addWidget(sWidget);
+    colorLayout->addWidget(vWidget);
+
+    colorLayout->addWidget(aWidget);
 
     mainLayout->addWidget(triangle);
-    mainLayout->addWidget(hsvWidget);
+    mainLayout->addWidget(colorWidget);
 
     QObject::connect( triangle, SIGNAL( colorChanged(QColor) ),
                       this, SLOT( handleColorChanged(QColor) ) );
@@ -175,6 +312,24 @@ ColorSelectorWidget::setColor(const QColor &color)
     triangle->setColor(color);
     triangle->blockSignals(false);
     handleColorChanged(color, false);
+}
+
+void
+ColorSelectorWidget::setR(qreal r)
+{
+
+}
+
+void
+ColorSelectorWidget::setG(qreal g)
+{
+
+}
+
+void
+ColorSelectorWidget::setB(qreal b)
+{
+
 }
 
 void
@@ -223,6 +378,12 @@ ColorSelectorWidget::setV(qreal v)
 }
 
 void
+ColorSelectorWidget::setA(qreal a)
+{
+
+}
+
+void
 ColorSelectorWidget::handleColorChanged(const QColor &color, bool doEmit)
 {
     setH( color.toHsv().hueF() );
@@ -231,6 +392,24 @@ ColorSelectorWidget::handleColorChanged(const QColor &color, bool doEmit)
     if (doEmit) {
         Q_EMIT colorChanged(color);
     }
+}
+
+void
+ColorSelectorWidget::handleColorRChanged(double value)
+{
+
+}
+
+void
+ColorSelectorWidget::handleColorGChanged(double value)
+{
+
+}
+
+void
+ColorSelectorWidget::handleColorBChanged(double value)
+{
+
 }
 
 void
@@ -258,6 +437,30 @@ ColorSelectorWidget::handleColorVChanged(double value)
 }
 
 void
+ColorSelectorWidget::handleColorAChanged(double value)
+{
+
+}
+
+void
+ColorSelectorWidget::handleSliderRMoved(double value)
+{
+
+}
+
+void
+ColorSelectorWidget::handleSliderGMoved(double value)
+{
+
+}
+
+void
+ColorSelectorWidget::handleSliderBMoved(double value)
+{
+
+}
+
+void
 ColorSelectorWidget::handleSliderHMoved(double value)
 {
     spinH->setValue(value);
@@ -276,6 +479,12 @@ ColorSelectorWidget::handleSliderVMoved(double value)
 {
     spinV->setValue(value);
     handleColorVChanged(value);
+}
+
+void
+ColorSelectorWidget::handleSliderAMoved(double value)
+{
+
 }
 
 NATRON_NAMESPACE_EXIT
