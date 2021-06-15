@@ -27,6 +27,7 @@ CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
 #include "Gui/Label.h"
+#include "Engine/Lut.h"
 
 NATRON_NAMESPACE_ENTER
 
@@ -322,7 +323,9 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
 const QColor
 ColorSelectorWidget::getColor()
 {
-    return triangle->color();
+    QColor color =  triangle->color();
+    color.setAlphaF( spinA->value() );
+    return color;
 }
 
 void
@@ -338,28 +341,43 @@ ColorSelectorWidget::setColor(const QColor &color)
 void
 ColorSelectorWidget::setR(qreal r)
 {
-
+    float value = Color::from_func_srgb(r);
+    spinR->blockSignals(true);
+    slideR->blockSignals(true);
+    spinR->setValue(value);
+    slideR->seekScalePosition(value);
+    spinR->blockSignals(false);
+    slideR->blockSignals(false);
 }
 
 void
 ColorSelectorWidget::setG(qreal g)
 {
-
+    float value = Color::from_func_srgb(g);
+    spinG->blockSignals(true);
+    slideG->blockSignals(true);
+    spinG->setValue(value);
+    slideG->seekScalePosition(value);
+    spinG->blockSignals(false);
+    slideG->blockSignals(false);
 }
 
 void
 ColorSelectorWidget::setB(qreal b)
 {
-
+    float value = Color::from_func_srgb(b);
+    spinB->blockSignals(true);
+    slideB->blockSignals(true);
+    spinB->setValue(value);
+    slideB->seekScalePosition(value);
+    spinB->blockSignals(false);
+    slideB->blockSignals(false);
 }
 
 void
 ColorSelectorWidget::setH(qreal h)
 {
-    double value = h;
-    if (value < 0.) {
-        value = 0.;
-    }
+    float value = Color::from_func_srgb(h);
     spinH->blockSignals(true);
     slideH->blockSignals(true);
     spinH->setValue(value);
@@ -371,10 +389,7 @@ ColorSelectorWidget::setH(qreal h)
 void
 ColorSelectorWidget::setS(qreal s)
 {
-    double value = s;
-    if (value < 0.) {
-        value = 0.;
-    }
+    float value = Color::from_func_srgb(s);
     spinS->blockSignals(true);
     slideS->blockSignals(true);
     spinS->setValue(value);
@@ -386,10 +401,7 @@ ColorSelectorWidget::setS(qreal s)
 void
 ColorSelectorWidget::setV(qreal v)
 {
-    double value = v;
-    if (value < 0.) {
-        value = 0.;
-    }
+    float value = Color::from_func_srgb(v);
     spinV->blockSignals(true);
     slideV->blockSignals(true);
     spinV->setValue(value);
@@ -416,6 +428,9 @@ ColorSelectorWidget::setA(qreal a)
 void
 ColorSelectorWidget::handleColorChanged(const QColor &color, bool doEmit)
 {
+    setR( color.redF() );
+    setG( color.greenF() );
+    setB( color.blueF() );
     setH( color.toHsv().hueF() );
     setS( color.toHsv().saturationF() );
     setV( color.toHsv().valueF() );
@@ -429,26 +444,43 @@ ColorSelectorWidget::handleColorChanged(const QColor &color, bool doEmit)
 void
 ColorSelectorWidget::handleColorRChanged(double value)
 {
-
+    QColor color = triangle->color();
+    color.setRgbF(Color::to_func_srgb(value),
+                  Color::to_func_srgb( spinG->value() ),
+                  Color::to_func_srgb( spinB->value() ) );
+    color.setAlphaF( spinA->value() );
+    triangle->setColor(color);
 }
 
 void
 ColorSelectorWidget::handleColorGChanged(double value)
 {
-
+    QColor color = triangle->color();
+    color.setRgbF(Color::to_func_srgb( spinR->value() ),
+                  Color::to_func_srgb(value),
+                  Color::to_func_srgb( spinB->value() ) );
+    color.setAlphaF( spinA->value() );
+    triangle->setColor(color);
 }
 
 void
 ColorSelectorWidget::handleColorBChanged(double value)
 {
-
+    QColor color = triangle->color();
+    color.setRgbF(Color::to_func_srgb( spinR->value() ),
+                  Color::to_func_srgb( spinG->value() ),
+                  Color::to_func_srgb(value) );
+    color.setAlphaF( spinA->value() );
+    triangle->setColor(color);
 }
 
 void
 ColorSelectorWidget::handleColorHChanged(double value)
 {
     QColor color = triangle->color();
-    color.setHsvF( value, spinS->value(), spinV->value() );
+    color.setHsvF(Color::to_func_srgb(value),
+                  Color::to_func_srgb( spinS->value() ),
+                  Color::to_func_srgb( spinV->value() ) );
     color.setAlphaF( spinA->value() );
     triangle->setColor(color);
 }
@@ -457,7 +489,9 @@ void
 ColorSelectorWidget::handleColorSChanged(double value)
 {
     QColor color = triangle->color();
-    color.setHsvF( spinH->value(), value, spinV->value() );
+    color.setHsvF(Color::to_func_srgb( spinH->value() ),
+                  Color::to_func_srgb(value),
+                  Color::to_func_srgb( spinV->value() ) );
     color.setAlphaF( spinA->value() );
     triangle->setColor(color);
 }
@@ -466,7 +500,9 @@ void
 ColorSelectorWidget::handleColorVChanged(double value)
 {
     QColor color = triangle->color();
-    color.setHsvF( spinH->value(), spinS->value(), value );
+    color.setHsvF(Color::to_func_srgb( spinH->value() ),
+                  Color::to_func_srgb( spinS->value() ),
+                  Color::to_func_srgb(value) );
     color.setAlphaF( spinA->value() );
     triangle->setColor(color);
 }
@@ -482,19 +518,22 @@ ColorSelectorWidget::handleColorAChanged(double value)
 void
 ColorSelectorWidget::handleSliderRMoved(double value)
 {
-
+    spinR->setValue(value);
+    handleColorRChanged(value);
 }
 
 void
 ColorSelectorWidget::handleSliderGMoved(double value)
 {
-
+    spinG->setValue(value);
+    handleColorGChanged(value);
 }
 
 void
 ColorSelectorWidget::handleSliderBMoved(double value)
 {
-
+    spinB->setValue(value);
+    handleColorBChanged(value);
 }
 
 void

@@ -618,7 +618,7 @@ void
 KnobGuiColor::updateColorSelector()
 {
     if (_blockColorSelector) {
-        _blockColorSelector = false;
+        //_blockColorSelector = false;
         return;
     }
 
