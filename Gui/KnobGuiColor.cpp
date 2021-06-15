@@ -333,11 +333,14 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     _colorSelectorButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open Color Selector"), NATRON_NAMESPACE::WhiteSpaceNormal) );
     _colorSelectorButton->setFocusPolicy(Qt::NoFocus);
 
-    _colorSelector = new ColorSelectorWidget( containerLayout->widget() );
+    _colorSelector = new ColorSelectorWidget( containerLayout->widget(), 175);
     QObject::connect( _colorSelector, SIGNAL( colorChanged(QColor) ),
                       this, SLOT( onDialogCurrentColorChanged(QColor) ) );
 
     QWidgetAction *colorPopupAction = new QWidgetAction( containerLayout->widget() );
+    QObject::connect( colorPopupAction, SIGNAL( triggered() ),
+                      this, SLOT( updateColorSelector() ) );
+
     colorPopupAction->setDefaultWidget(_colorSelector);
     _colorSelectorButton->addAction(colorPopupAction);
     containerLayout->addWidget(_colorSelectorButton);
@@ -615,6 +618,7 @@ void
 KnobGuiColor::updateColorSelector()
 {
     if (_blockColorSelector) {
+        _blockColorSelector = false;
         return;
     }
 
