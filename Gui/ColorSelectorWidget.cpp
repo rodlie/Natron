@@ -284,6 +284,13 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     QObject::connect( triangle, SIGNAL( colorChanged(QColor) ),
                       this, SLOT( handleColorChanged(QColor) ) );
 
+    QObject::connect( spinR, SIGNAL( valueChanged(double) ),
+                      this, SLOT( handleColorRChanged(double) ) );
+    QObject::connect( spinG, SIGNAL( valueChanged(double) ),
+                      this, SLOT( handleColorGChanged(double) ) );
+    QObject::connect( spinB, SIGNAL( valueChanged(double) ),
+                      this, SLOT( handleColorBChanged(double) ) );
+
     QObject::connect( spinH, SIGNAL( valueChanged(double) ),
                       this, SLOT( handleColorHChanged(double) ) );
     QObject::connect( spinS, SIGNAL( valueChanged(double) ),
@@ -291,12 +298,25 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     QObject::connect( spinV, SIGNAL( valueChanged(double) ),
                       this, SLOT( handleColorVChanged(double) ) );
 
+    QObject::connect( spinA, SIGNAL( valueChanged(double) ),
+                      this, SLOT( handleColorAChanged(double) ) );
+
+    QObject::connect( slideR, SIGNAL( positionChanged(double) ),
+                      this, SLOT( handleSliderRMoved(double) ) );
+    QObject::connect( slideG, SIGNAL( positionChanged(double) ),
+                      this, SLOT( handleSliderGMoved(double) ) );
+    QObject::connect( slideB, SIGNAL( positionChanged(double) ),
+                      this, SLOT( handleSliderBMoved(double) ) );
+
     QObject::connect( slideH, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderHMoved(double) ) );
     QObject::connect( slideS, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderSMoved(double) ) );
     QObject::connect( slideV, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderVMoved(double) ) );
+
+    QObject::connect( slideA, SIGNAL( positionChanged(double) ),
+                      this, SLOT( handleSliderAMoved(double) ) );
 }
 
 const QColor
@@ -308,6 +328,7 @@ ColorSelectorWidget::getColor()
 void
 ColorSelectorWidget::setColor(const QColor &color)
 {
+    setA( color.alphaF() );
     triangle->blockSignals(true);
     triangle->setColor(color);
     triangle->blockSignals(false);
@@ -380,7 +401,16 @@ ColorSelectorWidget::setV(qreal v)
 void
 ColorSelectorWidget::setA(qreal a)
 {
-
+    double value = a;
+    if (value < 0.) {
+        value = 0.;
+    }
+    spinA->blockSignals(true);
+    slideA->blockSignals(true);
+    spinA->setValue(value);
+    slideA->seekScalePosition(value);
+    spinA->blockSignals(false);
+    slideA->blockSignals(false);
 }
 
 void
@@ -390,7 +420,9 @@ ColorSelectorWidget::handleColorChanged(const QColor &color, bool doEmit)
     setS( color.toHsv().saturationF() );
     setV( color.toHsv().valueF() );
     if (doEmit) {
-        Q_EMIT colorChanged(color);
+        QColor newColor = color;
+        newColor.setAlphaF( spinA->value() );
+        Q_EMIT colorChanged(newColor);
     }
 }
 
@@ -417,6 +449,7 @@ ColorSelectorWidget::handleColorHChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( value, spinS->value(), spinV->value() );
+    color.setAlphaF( spinA->value() );
     triangle->setColor(color);
 }
 
@@ -425,6 +458,7 @@ ColorSelectorWidget::handleColorSChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), value, spinV->value() );
+    color.setAlphaF( spinA->value() );
     triangle->setColor(color);
 }
 
@@ -433,13 +467,16 @@ ColorSelectorWidget::handleColorVChanged(double value)
 {
     QColor color = triangle->color();
     color.setHsvF( spinH->value(), spinS->value(), value );
+    color.setAlphaF( spinA->value() );
     triangle->setColor(color);
 }
 
 void
 ColorSelectorWidget::handleColorAChanged(double value)
 {
-
+    QColor color = triangle->color();
+    color.setAlphaF(value);
+    triangle->setColor(color);
 }
 
 void
@@ -484,7 +521,8 @@ ColorSelectorWidget::handleSliderVMoved(double value)
 void
 ColorSelectorWidget::handleSliderAMoved(double value)
 {
-
+    spinA->setValue(value);
+    handleColorAChanged(value);
 }
 
 NATRON_NAMESPACE_EXIT
