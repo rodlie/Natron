@@ -140,6 +140,7 @@ public Q_SLOTS:
 
     void onMustShowAllDimension();
 
+    void onColorSelectorChanged(float r, float g, float b, float a);
     void onDialogCurrentColorChanged(const QColor & color);
 
 
@@ -193,7 +194,6 @@ private:
     QToolButton *_colorSelectorButton;
     std::vector<double> _lastColor;
     bool _useSimplifiedUI;
-    bool _blockColorSelector;
 };
 
 NATRON_NAMESPACE_EXIT

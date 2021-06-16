@@ -213,7 +213,6 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     , _colorSelectorButton(0)
     , _lastColor()
     , _useSimplifiedUI(true)
-    , _blockColorSelector(false)
 {
     KnobColorPtr k = _knob.lock();
     assert(k);
@@ -327,6 +326,7 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     _colorSelectorButton->setPopupMode(QToolButton::InstantPopup);
     _colorSelectorButton->setArrowType(Qt::NoArrow);
     _colorSelectorButton->setAutoRaise(false);
+    _colorSelectorButton->setCheckable(false);
     _colorSelectorButton->setStyleSheet( QString::fromUtf8("QToolButton { border: none; }"
                                                            "QToolButton:menu-indicator { image: none; }"
                                                            "QToolButton:pressed { padding-left: 0px; top: 0px; left: 0px; }") );
@@ -334,13 +334,12 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     _colorSelectorButton->setFocusPolicy(Qt::NoFocus);
 
     _colorSelector = new ColorSelectorWidget( containerLayout->widget(), 175);
-    QObject::connect( _colorSelector, SIGNAL( colorChanged(QColor) ),
-                      this, SLOT( onDialogCurrentColorChanged(QColor) ) );
-
-    QWidgetAction *colorPopupAction = new QWidgetAction( containerLayout->widget() );
-    QObject::connect( colorPopupAction, SIGNAL( triggered() ),
+    QObject::connect( _colorSelector, SIGNAL( colorChanged(float, float, float, float) ),
+                      this, SLOT( onColorSelectorChanged(float, float, float, float) ) );
+    QObject::connect( _colorSelector, SIGNAL( updateColor() ),
                       this, SLOT( updateColorSelector() ) );
 
+    QWidgetAction *colorPopupAction = new QWidgetAction( containerLayout->widget() );
     colorPopupAction->setDefaultWidget(_colorSelector);
     _colorSelectorButton->addAction(colorPopupAction);
     containerLayout->addWidget(_colorSelectorButton);
@@ -355,6 +354,36 @@ void
 KnobGuiColor::onMustShowAllDimension()
 {
     onDimensionSwitchClicked(true);
+}
+
+void KnobGuiColor::onColorSelectorChanged(float r,
+                                          float g,
+                                          float b,
+                                          float a)
+{
+    qDebug() << "COLOR SELECTOR CHANGED" << r << g << b << a;
+    KnobColorPtr knob = _knob.lock();
+    int nDims = knob->getDimension();
+
+    assert(nDims == 1 || nDims == 3 || nDims == 4);
+    if (nDims != 1 && nDims != 3 && nDims != 4) {
+        throw std::logic_error("A color Knob can only have dimension 1, 3 or 4");
+    }
+
+    if (nDims == 1) {
+        knob->setValue(r, ViewSpec::all(), 0);
+    } else if (nDims == 3) {
+        knob->setValues(r, g, b,
+                        ViewSpec::all(),
+                        eValueChangedReasonNatronInternalEdited);
+    } else if (nDims == 4) {
+        knob->setValues(r, g, b, a,
+                        ViewSpec::all(),
+                        eValueChangedReasonNatronInternalEdited);
+    }
+    if ( getGui() ) {
+        getGui()->setDraftRenderEnabled(true);
+    }
 }
 
 void
@@ -439,7 +468,6 @@ KnobGuiColor::updateExtraGui(const std::vector<double>& values)
         a = values[3];
     }
     updateLabel(r, g, b, a);
-    updateColorSelector();
 }
 
 void
@@ -500,9 +528,6 @@ KnobGuiColor::setEnabledExtraGui(bool enabled)
 void
 KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
 {
-    ColorSelectorWidget *selector = qobject_cast<ColorSelectorWidget*>( sender() );
-    _blockColorSelector = (selector);
-
     KnobColorPtr knob = _knob.lock();
     bool isSimple = _useSimplifiedUI;
     int nDims = knob->getDimension();
@@ -617,10 +642,11 @@ KnobGuiColor::showColorDialog()
 void
 KnobGuiColor::updateColorSelector()
 {
-    if (_blockColorSelector) {
-        //_blockColorSelector = false;
+    qDebug() << "UPDATE COLOR SELECTOR";
+    /*if (_blockColorSelector && !force) {
+        qDebug() << "IGNORE COLOR SELECTOR UPDATE";
         return;
-    }
+    }*/
 
     KnobColorPtr knob = _knob.lock();
     const int nDims = knob->getDimension();
@@ -642,14 +668,11 @@ KnobGuiColor::updateColorSelector()
         curA = knob->getValue(3);
     }
 
-    bool isSimple = _useSimplifiedUI;
-    QColor curColor;
-    curColor.setRgbF( Image::clamp<qreal>(isSimple ? curR : Color::to_func_srgb(curR), 0., 1.),
-                      Image::clamp<qreal>(isSimple ? curG : Color::to_func_srgb(curG), 0., 1.),
-                      Image::clamp<qreal>(isSimple ? curB : Color::to_func_srgb(curB), 0., 1.),
-                      Image::clamp<qreal>(curA, 0., 1.) );
-
-    _colorSelector->setColor(curColor);
+    qDebug() << "COLOR SELECTOR SET COLOR";
+    _colorSelector->setColor( Image::clamp<qreal>(curR, 0., 1.),
+                              Image::clamp<qreal>(curG, 0., 1.),
+                              Image::clamp<qreal>(curB, 0., 1.),
+                              Image::clamp<qreal>(curA, 0., 1.) );
 }
 
 bool

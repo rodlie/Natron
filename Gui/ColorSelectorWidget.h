@@ -28,90 +28,99 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QColor>
 #include "Gui/QtColorTriangle.h" // from Qt Solutions
 #include <QMouseEvent>
+#include <QEvent>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
 #include "Gui/ScaleSliderQWidget.h"
 #include "Gui/SpinBox.h"
 
+#define COLOR_WHEEL_DEFAULT_SIZE 120
+
 NATRON_NAMESPACE_ENTER
 
 class ColorSelectorWidget : public QWidget
 {
     Q_OBJECT
+
 public:
+
     explicit ColorSelectorWidget(QWidget *parent = NULL,
-                                 int colorWheelSize = 120);
+                                 int colorWheelSize = COLOR_WHEEL_DEFAULT_SIZE);
 
 Q_SIGNALS:
-    void colorChanged(const QColor &color);
+
+    void colorChanged(float r, float g, float b, float a);
+    void updateColor();
 
 public Q_SLOTS:
-    const QColor getColor();
-    void setColor(const QColor &color);
 
-    void setR(qreal r);
-    void setG(qreal g);
-    void setB(qreal b);
-
-    void setH(qreal h);
-    void setS(qreal s);
-    void setV(qreal v);
-
-    void setA(qreal a);
+    void getColor(float *r, float *g, float *b, float *a);
+    void setColor(float r, float g, float b, float a);
 
 private:
-    SpinBox *spinR;
-    SpinBox *spinG;
-    SpinBox *spinB;
 
-    SpinBox *spinH;
-    SpinBox *spinS;
-    SpinBox *spinV;
+    SpinBox *_spinR;
+    SpinBox *_spinG;
+    SpinBox *_spinB;
+    SpinBox *_spinH;
+    SpinBox *_spinS;
+    SpinBox *_spinV;
+    SpinBox *_spinA;
 
-    SpinBox *spinA;
+    ScaleSliderQWidget *_slideR;
+    ScaleSliderQWidget *_slideG;
+    ScaleSliderQWidget *_slideB;
+    ScaleSliderQWidget *_slideH;
+    ScaleSliderQWidget *_slideS;
+    ScaleSliderQWidget *_slideV;
+    ScaleSliderQWidget *_slideA;
 
-    ScaleSliderQWidget *slideR;
-    ScaleSliderQWidget *slideG;
-    ScaleSliderQWidget *slideB;
+    QtColorTriangle *_triangle;
 
-    ScaleSliderQWidget *slideH;
-    ScaleSliderQWidget *slideS;
-    ScaleSliderQWidget *slideV;
+    void setRedChannel(float value);
+    void setGreenChannel(float value);
+    void setBlueChannel(float value);
+    void setHueChannel(float value);
+    void setSaturationChannel(float value);
+    void setValueChannel(float value);
+    void setAlphaChannel(float value);
+    void setTriangle(float r, float g, float b, float a);
 
-    ScaleSliderQWidget *slideA;
-
-    QtColorTriangle *triangle;
+    void announceColorChange();
 
 private Q_SLOTS:
-    void handleColorChanged(const QColor &color, bool doEmit = true);
 
-    void handleColorRChanged(double value);
-    void handleColorGChanged(double value);
-    void handleColorBChanged(double value);
+    void handleTriangleColorChanged(const QColor &color, bool announce = true);
 
-    void handleColorHChanged(double value);
-    void handleColorSChanged(double value);
-    void handleColorVChanged(double value);
-
-    void handleColorAChanged(double value);
+    void manageColorRGBChanged(double value, bool announce = true);
+    void manageColorHSVChanged(double value, bool announce = true);
+    void manageColorAlphaChanged(double value);
 
     void handleSliderRMoved(double value);
     void handleSliderGMoved(double value);
     void handleSliderBMoved(double value);
-
     void handleSliderHMoved(double value);
     void handleSliderSMoved(double value);
     void handleSliderVMoved(double value);
-
     void handleSliderAMoved(double value);
 
+    // workaround for QToolButton+QWidgetAction
+    // triggered signal(s) are never emitted!?
+    bool event(QEvent*e) override
+    {
+        if (e->type() == QEvent::Show) {
+            Q_EMIT updateColor();
+        }
+        return QWidget::event(e);
+    }
+
     // https://bugreports.qt.io/browse/QTBUG-47406
-    void mousePressEvent(QMouseEvent *e)
+    void mousePressEvent(QMouseEvent *e) override
     {
         e->accept();
     }
-    void mouseReleaseEvent(QMouseEvent *e)
+    void mouseReleaseEvent(QMouseEvent *e) override
     {
         e->accept();
     }

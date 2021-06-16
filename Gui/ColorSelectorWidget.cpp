@@ -32,38 +32,35 @@ CLANG_DIAG_ON(uninitialized)
 NATRON_NAMESPACE_ENTER
 
 ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
-                                         int colorWheelSize) : QWidget(parent)
-  , spinR(0)
-  , spinG(0)
-  , spinB(0)
-  , spinH(0)
-  , spinS(0)
-  , spinV(0)
-  , spinA(0)
-  , slideR(0)
-  , slideG(0)
-  , slideB(0)
-  , slideH(0)
-  , slideS(0)
-  , slideV(0)
-  , slideA(0)
-  , triangle(0)
+                                         int colorWheelSize)
+  : QWidget(parent)
+  , _spinR(0)
+  , _spinG(0)
+  , _spinB(0)
+  , _spinH(0)
+  , _spinS(0)
+  , _spinV(0)
+  , _spinA(0)
+  , _slideR(0)
+  , _slideG(0)
+  , _slideB(0)
+  , _slideH(0)
+  , _slideS(0)
+  , _slideV(0)
+  , _slideA(0)
+  , _triangle(0)
 {
     QHBoxLayout *mainLayout = new QHBoxLayout(this);
     mainLayout->setContentsMargins(5, 5, 5, 5);
     mainLayout->setSpacing(0);
 
-    triangle = new QtColorTriangle(this);
-    triangle->setColor( QColor::fromHsvF(0.0, 0.0, 0.0, 1.0) ); // position the triangle properly
+    _triangle = new QtColorTriangle(this);
+    // position the triangle properly before usage
+    _triangle->setColor( QColor::fromHsvF(0.0, 0.0, 0.0, 1.0) );
 
-    // static or dynamic triangle size?
-    if (colorWheelSize > 0) {
-        triangle->setMinimumSize(colorWheelSize, colorWheelSize);
-        triangle->setMaximumSize(colorWheelSize, colorWheelSize);
-        triangle->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    } else {
-        triangle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    }
+    _triangle->setMinimumSize(colorWheelSize, colorWheelSize);
+    _triangle->setMaximumSize(colorWheelSize, colorWheelSize);
+    _triangle->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     QWidget *colorWidget = new QWidget(this);
     QVBoxLayout *colorLayout = new QVBoxLayout(colorWidget);
@@ -95,131 +92,131 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
 
     aLayout->setContentsMargins(0, 0, 0, 0);
 
-    slideR = new ScaleSliderQWidget(0.,
-                                    1.,
-                                    0.,
-                                    false,
-                                    ScaleSliderQWidget::eDataTypeDouble,
-                                    NULL,
-                                    eScaleTypeLinear,
-                                    this);
-    slideG = new ScaleSliderQWidget(0.,
-                                    1.,
-                                    0.,
-                                    false,
-                                    ScaleSliderQWidget::eDataTypeDouble,
-                                    NULL,
-                                    eScaleTypeLinear,
-                                    this);
-    slideB = new ScaleSliderQWidget(0.,
-                                    1.,
-                                    0.,
-                                    false,
-                                    ScaleSliderQWidget::eDataTypeDouble,
-                                    NULL,
-                                    eScaleTypeLinear,
-                                    this);
+    _slideR = new ScaleSliderQWidget(0.,
+                                     1.,
+                                     0.,
+                                     false,
+                                     ScaleSliderQWidget::eDataTypeDouble,
+                                     NULL,
+                                     eScaleTypeLinear,
+                                     this);
+    _slideG = new ScaleSliderQWidget(0.,
+                                     1.,
+                                     0.,
+                                     false,
+                                     ScaleSliderQWidget::eDataTypeDouble,
+                                     NULL,
+                                     eScaleTypeLinear,
+                                     this);
+    _slideB = new ScaleSliderQWidget(0.,
+                                     1.,
+                                     0.,
+                                     false,
+                                     ScaleSliderQWidget::eDataTypeDouble,
+                                     NULL,
+                                     eScaleTypeLinear,
+                                     this);
 
-    slideH = new ScaleSliderQWidget(0.,
-                                    1.,
-                                    0.,
-                                    false,
-                                    ScaleSliderQWidget::eDataTypeDouble,
-                                    NULL,
-                                    eScaleTypeLinear,
-                                    this);
-    slideS = new ScaleSliderQWidget(0.,
-                                    1.,
-                                    0.,
-                                    false,
-                                    ScaleSliderQWidget::eDataTypeDouble,
-                                    NULL,
-                                    eScaleTypeLinear,
-                                    this);
-    slideV = new ScaleSliderQWidget(0.,
-                                    1.,
-                                    0.,
-                                    false,
-                                    ScaleSliderQWidget::eDataTypeDouble,
-                                    NULL,
-                                    eScaleTypeLinear,
-                                    this);
+    _slideH = new ScaleSliderQWidget(0.,
+                                     1.,
+                                     0.,
+                                     false,
+                                     ScaleSliderQWidget::eDataTypeDouble,
+                                     NULL,
+                                     eScaleTypeLinear,
+                                     this);
+    _slideS = new ScaleSliderQWidget(0.,
+                                     1.,
+                                     0.,
+                                     false,
+                                     ScaleSliderQWidget::eDataTypeDouble,
+                                     NULL,
+                                     eScaleTypeLinear,
+                                     this);
+    _slideV = new ScaleSliderQWidget(0.,
+                                     1.,
+                                     0.,
+                                     false,
+                                     ScaleSliderQWidget::eDataTypeDouble,
+                                     NULL,
+                                     eScaleTypeLinear,
+                                     this);
 
-    slideA = new ScaleSliderQWidget(0.,
-                                    1.,
-                                    0.,
-                                    false,
-                                    ScaleSliderQWidget::eDataTypeDouble,
-                                    NULL,
-                                    eScaleTypeLinear,
-                                    this);
+    _slideA = new ScaleSliderQWidget(0.,
+                                     1.,
+                                     0.,
+                                     false,
+                                     ScaleSliderQWidget::eDataTypeDouble,
+                                     NULL,
+                                     eScaleTypeLinear,
+                                     this);
 
-    slideR->setMinimumAndMaximum(0., 1.);
-    slideG->setMinimumAndMaximum(0., 1.);
-    slideB->setMinimumAndMaximum(0., 1.);
+    _slideR->setMinimumAndMaximum(0., 1.);
+    _slideG->setMinimumAndMaximum(0., 1.);
+    _slideB->setMinimumAndMaximum(0., 1.);
 
-    slideH->setMinimumAndMaximum(0., 1.);
-    slideS->setMinimumAndMaximum(0., 1.);
-    slideV->setMinimumAndMaximum(0., 1.);
+    _slideH->setMinimumAndMaximum(0., 1.);
+    _slideS->setMinimumAndMaximum(0., 1.);
+    _slideV->setMinimumAndMaximum(0., 1.);
 
-    slideA->setMinimumAndMaximum(0., 1.);
+    _slideA->setMinimumAndMaximum(0., 1.);
 
-    slideR->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    slideG->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    slideB->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    _slideR->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    _slideG->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    _slideB->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    slideH->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    slideS->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    slideV->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    _slideH->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    _slideS->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    _slideV->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    slideA->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    _slideA->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    spinR = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
-    spinG = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
-    spinB = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    _spinR = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    _spinG = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    _spinB = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
 
-    spinH = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
-    spinS = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
-    spinV = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    _spinH = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    _spinS = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    _spinV = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
 
-    spinA = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
+    _spinA = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
 
-    spinR->decimals(3);
-    spinG->decimals(3);
-    spinB->decimals(3);
+    _spinR->decimals(3);
+    _spinG->decimals(3);
+    _spinB->decimals(3);
 
-    spinH->decimals(3);
-    spinS->decimals(3);
-    spinV->decimals(3);
+    _spinH->decimals(3);
+    _spinS->decimals(3);
+    _spinV->decimals(3);
 
-    spinA->decimals(3);
+    _spinA->decimals(3);
 
-    spinR->setIncrement(0.01);
-    spinG->setIncrement(0.01);
-    spinB->setIncrement(0.01);
+    _spinR->setIncrement(0.01);
+    _spinG->setIncrement(0.01);
+    _spinB->setIncrement(0.01);
 
-    spinH->setIncrement(0.01);
-    spinS->setIncrement(0.01);
-    spinV->setIncrement(0.01);
+    _spinH->setIncrement(0.01);
+    _spinS->setIncrement(0.01);
+    _spinV->setIncrement(0.01);
 
-    spinA->setIncrement(0.01);
+    _spinA->setIncrement(0.01);
 
-    spinR->setMaximum(1.);
-    spinR->setMinimum(0.);
-    spinG->setMaximum(1.);
-    spinG->setMinimum(0.);
-    spinB->setMaximum(1.);
-    spinB->setMinimum(0.);
+    _spinR->setMaximum(1.);
+    _spinR->setMinimum(0.);
+    _spinG->setMaximum(1.);
+    _spinG->setMinimum(0.);
+    _spinB->setMaximum(1.);
+    _spinB->setMinimum(0.);
 
-    spinH->setMaximum(1.);
-    spinH->setMinimum(0.);
-    spinS->setMaximum(1.);
-    spinS->setMinimum(0.);
-    spinV->setMaximum(1.);
-    spinV->setMinimum(0.);
+    _spinH->setMaximum(1.);
+    _spinH->setMinimum(0.);
+    _spinS->setMaximum(1.);
+    _spinS->setMinimum(0.);
+    _spinV->setMaximum(1.);
+    _spinV->setMinimum(0.);
 
-    spinA->setMaximum(1.);
-    spinA->setMinimum(0.);
+    _spinA->setMaximum(1.);
+    _spinA->setMinimum(0.);
 
     Label *labelR = new Label(QString::fromUtf8("R"), this);
     Label *labelG = new Label(QString::fromUtf8("G"), this);
@@ -242,32 +239,32 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     labelA->setMinimumWidth(10);
 
     rLayout->addWidget(labelR);
-    rLayout->addWidget(spinR);
-    rLayout->addWidget(slideR);
+    rLayout->addWidget(_spinR);
+    rLayout->addWidget(_slideR);
 
     gLayout->addWidget(labelG);
-    gLayout->addWidget(spinG);
-    gLayout->addWidget(slideG);
+    gLayout->addWidget(_spinG);
+    gLayout->addWidget(_slideG);
 
     bLayout->addWidget(labelB);
-    bLayout->addWidget(spinB);
-    bLayout->addWidget(slideB);
+    bLayout->addWidget(_spinB);
+    bLayout->addWidget(_slideB);
 
     hLayout->addWidget(labelH);
-    hLayout->addWidget(spinH);
-    hLayout->addWidget(slideH);
+    hLayout->addWidget(_spinH);
+    hLayout->addWidget(_slideH);
 
     sLayout->addWidget(labelS);
-    sLayout->addWidget(spinS);
-    sLayout->addWidget(slideS);
+    sLayout->addWidget(_spinS);
+    sLayout->addWidget(_slideS);
 
     vLayout->addWidget(labelV);
-    vLayout->addWidget(spinV);
-    vLayout->addWidget(slideV);
+    vLayout->addWidget(_spinV);
+    vLayout->addWidget(_slideV);
 
     aLayout->addWidget(labelA);
-    aLayout->addWidget(spinA);
-    aLayout->addWidget(slideA);
+    aLayout->addWidget(_spinA);
+    aLayout->addWidget(_slideA);
 
     colorLayout->addWidget(rWidget);
     colorLayout->addWidget(gWidget);
@@ -279,289 +276,277 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
 
     colorLayout->addWidget(aWidget);
 
-    mainLayout->addWidget(triangle);
+    mainLayout->addWidget(_triangle);
     mainLayout->addWidget(colorWidget);
 
-    QObject::connect( triangle, SIGNAL( colorChanged(QColor) ),
-                      this, SLOT( handleColorChanged(QColor) ) );
+    QObject::connect( _triangle, SIGNAL( colorChanged(QColor) ),
+                      this, SLOT( handleTriangleColorChanged(QColor) ) );
 
-    QObject::connect( spinR, SIGNAL( valueChanged(double) ),
-                      this, SLOT( handleColorRChanged(double) ) );
-    QObject::connect( spinG, SIGNAL( valueChanged(double) ),
-                      this, SLOT( handleColorGChanged(double) ) );
-    QObject::connect( spinB, SIGNAL( valueChanged(double) ),
-                      this, SLOT( handleColorBChanged(double) ) );
+    QObject::connect( _spinR, SIGNAL( valueChanged(double) ),
+                      this, SLOT( manageColorRGBChanged(double) ) );
+    QObject::connect( _spinG, SIGNAL( valueChanged(double) ),
+                      this, SLOT( manageColorRGBChanged(double) ) );
+    QObject::connect( _spinB, SIGNAL( valueChanged(double) ),
+                      this, SLOT( manageColorRGBChanged(double) ) );
+    QObject::connect( _spinH, SIGNAL( valueChanged(double) ),
+                      this, SLOT( manageColorHSVChanged(double) ) );
+    QObject::connect( _spinS, SIGNAL( valueChanged(double) ),
+                      this, SLOT( manageColorHSVChanged(double) ) );
+    QObject::connect( _spinV, SIGNAL( valueChanged(double) ),
+                      this, SLOT( manageColorHSVChanged(double) ) );
+    QObject::connect( _spinA, SIGNAL( valueChanged(double) ),
+                      this, SLOT( manageColorAlphaChanged(double) ) );
 
-    QObject::connect( spinH, SIGNAL( valueChanged(double) ),
-                      this, SLOT( handleColorHChanged(double) ) );
-    QObject::connect( spinS, SIGNAL( valueChanged(double) ),
-                      this, SLOT( handleColorSChanged(double) ) );
-    QObject::connect( spinV, SIGNAL( valueChanged(double) ),
-                      this, SLOT( handleColorVChanged(double) ) );
-
-    QObject::connect( spinA, SIGNAL( valueChanged(double) ),
-                      this, SLOT( handleColorAChanged(double) ) );
-
-    QObject::connect( slideR, SIGNAL( positionChanged(double) ),
+    QObject::connect( _slideR, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderRMoved(double) ) );
-    QObject::connect( slideG, SIGNAL( positionChanged(double) ),
+    QObject::connect( _slideG, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderGMoved(double) ) );
-    QObject::connect( slideB, SIGNAL( positionChanged(double) ),
+    QObject::connect( _slideB, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderBMoved(double) ) );
-
-    QObject::connect( slideH, SIGNAL( positionChanged(double) ),
+    QObject::connect( _slideH, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderHMoved(double) ) );
-    QObject::connect( slideS, SIGNAL( positionChanged(double) ),
+    QObject::connect( _slideS, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderSMoved(double) ) );
-    QObject::connect( slideV, SIGNAL( positionChanged(double) ),
+    QObject::connect( _slideV, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderVMoved(double) ) );
-
-    QObject::connect( slideA, SIGNAL( positionChanged(double) ),
+    QObject::connect( _slideA, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderAMoved(double) ) );
 }
 
-const QColor
-ColorSelectorWidget::getColor()
+void ColorSelectorWidget::getColor(float *r,
+                                   float *g,
+                                   float *b,
+                                   float *a)
 {
-    QColor color =  triangle->color();
-    color.setAlphaF( spinA->value() );
-    return color;
+    *r = _spinR->value();
+    *g = _spinG->value();
+    *b = _spinB->value();
+    *a = _spinA->value();
 }
 
 void
-ColorSelectorWidget::setColor(const QColor &color)
+ColorSelectorWidget::setColor(float r,
+                              float g,
+                              float b,
+                              float a)
 {
-    setA( color.alphaF() );
-    triangle->blockSignals(true);
-    triangle->setColor(color);
-    triangle->blockSignals(false);
-    handleColorChanged(color, false);
+    float h, s, v;
+    Color::rgb_to_hsv(r, g, b, &h, &s, &v);
+    setRedChannel(r);
+    setGreenChannel(g);
+    setBlueChannel(b);
+    setHueChannel(h);
+    setSaturationChannel(s);
+    setValueChannel(v);
+    setAlphaChannel(a);
+    setTriangle(r, g, b, a);
 }
 
 void
-ColorSelectorWidget::setR(qreal r)
+ColorSelectorWidget::setRedChannel(float value)
 {
-    float value = Color::from_func_srgb(r);
-    spinR->blockSignals(true);
-    slideR->blockSignals(true);
-    spinR->setValue(value);
-    slideR->seekScalePosition(value);
-    spinR->blockSignals(false);
-    slideR->blockSignals(false);
+    _spinR->blockSignals(true);
+    _slideR->blockSignals(true);
+    _spinR->setValue(value);
+    _slideR->seekScalePosition(value);
+    _spinR->blockSignals(false);
+    _slideR->blockSignals(false);
 }
 
 void
-ColorSelectorWidget::setG(qreal g)
+ColorSelectorWidget::setGreenChannel(float value)
 {
-    float value = Color::from_func_srgb(g);
-    spinG->blockSignals(true);
-    slideG->blockSignals(true);
-    spinG->setValue(value);
-    slideG->seekScalePosition(value);
-    spinG->blockSignals(false);
-    slideG->blockSignals(false);
+    _spinG->blockSignals(true);
+    _slideG->blockSignals(true);
+    _spinG->setValue(value);
+    _slideG->seekScalePosition(value);
+    _spinG->blockSignals(false);
+    _slideG->blockSignals(false);
 }
 
 void
-ColorSelectorWidget::setB(qreal b)
+ColorSelectorWidget::setBlueChannel(float value)
 {
-    float value = Color::from_func_srgb(b);
-    spinB->blockSignals(true);
-    slideB->blockSignals(true);
-    spinB->setValue(value);
-    slideB->seekScalePosition(value);
-    spinB->blockSignals(false);
-    slideB->blockSignals(false);
+    _spinB->blockSignals(true);
+    _slideB->blockSignals(true);
+    _spinB->setValue(value);
+    _slideB->seekScalePosition(value);
+    _spinB->blockSignals(false);
+    _slideB->blockSignals(false);
 }
 
 void
-ColorSelectorWidget::setH(qreal h)
+ColorSelectorWidget::setHueChannel(float value)
 {
-    float value = Color::from_func_srgb(h);
-    spinH->blockSignals(true);
-    slideH->blockSignals(true);
-    spinH->setValue(value);
-    slideH->seekScalePosition(value);
-    spinH->blockSignals(false);
-    slideH->blockSignals(false);
+    _spinH->blockSignals(true);
+    _slideH->blockSignals(true);
+    _spinH->setValue(value);
+    _slideH->seekScalePosition(value);
+    _spinH->blockSignals(false);
+    _slideH->blockSignals(false);
 }
 
 void
-ColorSelectorWidget::setS(qreal s)
+ColorSelectorWidget::setSaturationChannel(float value)
 {
-    float value = Color::from_func_srgb(s);
-    spinS->blockSignals(true);
-    slideS->blockSignals(true);
-    spinS->setValue(value);
-    slideS->seekScalePosition(value);
-    spinS->blockSignals(false);
-    slideS->blockSignals(false);
+    _spinS->blockSignals(true);
+    _slideS->blockSignals(true);
+    _spinS->setValue(value);
+    _slideS->seekScalePosition(value);
+    _spinS->blockSignals(false);
+    _slideS->blockSignals(false);
 }
 
 void
-ColorSelectorWidget::setV(qreal v)
+ColorSelectorWidget::setValueChannel(float value)
 {
-    float value = Color::from_func_srgb(v);
-    spinV->blockSignals(true);
-    slideV->blockSignals(true);
-    spinV->setValue(value);
-    slideV->seekScalePosition(value);
-    spinV->blockSignals(false);
-    slideV->blockSignals(false);
+    _spinV->blockSignals(true);
+    _slideV->blockSignals(true);
+    _spinV->setValue(value);
+    _slideV->seekScalePosition(value);
+    _spinV->blockSignals(false);
+    _slideV->blockSignals(false);
 }
 
 void
-ColorSelectorWidget::setA(qreal a)
+ColorSelectorWidget::setAlphaChannel(float value)
 {
-    double value = a;
-    if (value < 0.) {
-        value = 0.;
+    _spinA->blockSignals(true);
+    _slideA->blockSignals(true);
+    _spinA->setValue(value);
+    _slideA->seekScalePosition(value);
+    _spinA->blockSignals(false);
+    _slideA->blockSignals(false);
+}
+
+void ColorSelectorWidget::setTriangle(float r,
+                                      float g,
+                                      float b,
+                                      float a)
+{
+    QColor color;
+    color.setRgbF(Color::to_func_srgb(r),
+                  Color::to_func_srgb(g),
+                  Color::to_func_srgb(b),
+                  a);
+    _triangle->blockSignals(true);
+    _triangle->setColor(color);
+    _triangle->blockSignals(false);
+}
+
+void ColorSelectorWidget::announceColorChange()
+{
+    Q_EMIT colorChanged( _spinR->value(),
+                         _spinG->value(),
+                         _spinB->value(),
+                         _spinA->value() );
+}
+
+void
+ColorSelectorWidget::handleTriangleColorChanged(const QColor &color, bool announce)
+{
+    setRedChannel( Color::from_func_srgb( color.redF() ) );
+    setGreenChannel( Color::from_func_srgb( color.greenF() ) );
+    setBlueChannel( Color::from_func_srgb( color.blueF() ) );
+    setHueChannel( Color::from_func_srgb( color.toHsv().hueF() ) );
+    setSaturationChannel( Color::from_func_srgb( color.toHsv().saturationF() ) );
+    setValueChannel( Color::from_func_srgb( color.toHsv().valueF() ) );
+    if (announce) {
+        announceColorChange();
     }
-    spinA->blockSignals(true);
-    slideA->blockSignals(true);
-    spinA->setValue(value);
-    slideA->seekScalePosition(value);
-    spinA->blockSignals(false);
-    slideA->blockSignals(false);
 }
 
-void
-ColorSelectorWidget::handleColorChanged(const QColor &color, bool doEmit)
+void ColorSelectorWidget::manageColorRGBChanged(double /*value*/, bool announce)
 {
-    setR( color.redF() );
-    setG( color.greenF() );
-    setB( color.blueF() );
-    setH( color.toHsv().hueF() );
-    setS( color.toHsv().saturationF() );
-    setV( color.toHsv().valueF() );
-    if (doEmit) {
-        QColor newColor = color;
-        newColor.setAlphaF( spinA->value() );
-        Q_EMIT colorChanged(newColor);
+    float r = _spinR->value();
+    float g = _spinG->value();
+    float b = _spinB->value();
+    float a = _spinA->value();
+    float h, s, v;
+    Color::rgb_to_hsv(r, g, b, &h, &s, &v);
+
+    setHueChannel(h);
+    setSaturationChannel(s);
+    setValueChannel(v);
+    setTriangle(r, g, b, a);
+
+    if (announce) {
+        announceColorChange();
     }
 }
 
-void
-ColorSelectorWidget::handleColorRChanged(double value)
+void ColorSelectorWidget::manageColorHSVChanged(double /*value*/, bool announce)
 {
-    QColor color = triangle->color();
-    color.setRgbF(Color::to_func_srgb(value),
-                  Color::to_func_srgb( spinG->value() ),
-                  Color::to_func_srgb( spinB->value() ) );
-    color.setAlphaF( spinA->value() );
-    triangle->setColor(color);
+    float h = _spinH->value();
+    float s = _spinS->value();
+    float v = _spinV->value();
+    float a = _spinA->value();
+    float r, g, b;
+    Color::hsv_to_rgb(h, s, v, &r, &g, &b);
+
+    setRedChannel(r);
+    setGreenChannel(g);
+    setBlueChannel(g);
+    setTriangle(r, g, b, a);
+
+    if (announce) {
+        announceColorChange();
+    }
 }
 
-void
-ColorSelectorWidget::handleColorGChanged(double value)
+void ColorSelectorWidget::manageColorAlphaChanged(double /*value*/)
 {
-    QColor color = triangle->color();
-    color.setRgbF(Color::to_func_srgb( spinR->value() ),
-                  Color::to_func_srgb(value),
-                  Color::to_func_srgb( spinB->value() ) );
-    color.setAlphaF( spinA->value() );
-    triangle->setColor(color);
-}
-
-void
-ColorSelectorWidget::handleColorBChanged(double value)
-{
-    QColor color = triangle->color();
-    color.setRgbF(Color::to_func_srgb( spinR->value() ),
-                  Color::to_func_srgb( spinG->value() ),
-                  Color::to_func_srgb(value) );
-    color.setAlphaF( spinA->value() );
-    triangle->setColor(color);
-}
-
-void
-ColorSelectorWidget::handleColorHChanged(double value)
-{
-    QColor color = triangle->color();
-    color.setHsvF(Color::to_func_srgb(value),
-                  Color::to_func_srgb( spinS->value() ),
-                  Color::to_func_srgb( spinV->value() ) );
-    color.setAlphaF( spinA->value() );
-    triangle->setColor(color);
-}
-
-void
-ColorSelectorWidget::handleColorSChanged(double value)
-{
-    QColor color = triangle->color();
-    color.setHsvF(Color::to_func_srgb( spinH->value() ),
-                  Color::to_func_srgb(value),
-                  Color::to_func_srgb( spinV->value() ) );
-    color.setAlphaF( spinA->value() );
-    triangle->setColor(color);
-}
-
-void
-ColorSelectorWidget::handleColorVChanged(double value)
-{
-    QColor color = triangle->color();
-    color.setHsvF(Color::to_func_srgb( spinH->value() ),
-                  Color::to_func_srgb( spinS->value() ),
-                  Color::to_func_srgb(value) );
-    color.setAlphaF( spinA->value() );
-    triangle->setColor(color);
-}
-
-void
-ColorSelectorWidget::handleColorAChanged(double value)
-{
-    QColor color = triangle->color();
-    color.setAlphaF(value);
-    triangle->setColor(color);
+    // no widget depend on alpha, so just announce color change
+    announceColorChange();
 }
 
 void
 ColorSelectorWidget::handleSliderRMoved(double value)
 {
-    spinR->setValue(value);
-    handleColorRChanged(value);
+    _spinR->setValue(value);
+    manageColorRGBChanged(value);
 }
 
 void
 ColorSelectorWidget::handleSliderGMoved(double value)
 {
-    spinG->setValue(value);
-    handleColorGChanged(value);
+    _spinG->setValue(value);
+    manageColorRGBChanged(value);
 }
 
 void
 ColorSelectorWidget::handleSliderBMoved(double value)
 {
-    spinB->setValue(value);
-    handleColorBChanged(value);
+    _spinB->setValue(value);
+    manageColorRGBChanged(value);
 }
 
 void
 ColorSelectorWidget::handleSliderHMoved(double value)
 {
-    spinH->setValue(value);
-    handleColorHChanged(value);
+    _spinH->setValue(value);
+    manageColorHSVChanged(value);
 }
 
 void
 ColorSelectorWidget::handleSliderSMoved(double value)
 {
-    spinS->setValue(value);
-    handleColorSChanged(value);
+    _spinS->setValue(value);
+    manageColorHSVChanged(value);
 }
 
 void
 ColorSelectorWidget::handleSliderVMoved(double value)
 {
-    spinV->setValue(value);
-    handleColorVChanged(value);
+    _spinV->setValue(value);
+    manageColorHSVChanged(value);
 }
 
 void
 ColorSelectorWidget::handleSliderAMoved(double value)
 {
-    spinA->setValue(value);
-    handleColorAChanged(value);
+    _spinA->setValue(value);
+    manageColorAlphaChanged(value);
 }
 
 NATRON_NAMESPACE_EXIT
