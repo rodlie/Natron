@@ -34,7 +34,6 @@ CLANG_DIAG_OFF(uninitialized)
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QStyle>
-#include <QColorDialog>
 #include <QToolTip>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
@@ -208,7 +207,6 @@ KnobGuiColor::KnobGuiColor(KnobIPtr knob,
     : KnobGuiValue(knob, container)
     , _knob( boost::dynamic_pointer_cast<KnobColor>(knob) )
     , _colorLabel(0)
-    , _colorDialogButton(0)
     , _colorSelector(0)
     , _colorSelectorButton(0)
     , _lastColor()
@@ -304,16 +302,6 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     if (_useSimplifiedUI) {
         containerLayout->addSpacing( TO_DPIX(5) );
     }
-
-    QPixmap colorDialogPix;
-    appPTR->getIcon(NATRON_PIXMAP_COLORWHEEL, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorDialogPix);
-    _colorDialogButton = new Button( QIcon(colorDialogPix), QString(), containerLayout->widget() );
-    _colorDialogButton->setFixedSize(medSize);
-    _colorDialogButton->setIconSize(medIconSize);
-    _colorDialogButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open the color dialog."), NATRON_NAMESPACE::WhiteSpaceNormal) );
-    _colorDialogButton->setFocusPolicy(Qt::NoFocus);
-    QObject::connect( _colorDialogButton, SIGNAL(clicked()), this, SLOT(showColorDialog()) );
-    containerLayout->addWidget(_colorDialogButton);
 
     // add color selector popup
     QPixmap colorTrianglePix;
@@ -435,7 +423,6 @@ KnobGuiColor::_hide()
         KnobGuiValue::_hide();
     }
     _colorLabel->hide();
-    _colorDialogButton->hide();
     _colorSelectorButton->hide();
 }
 
@@ -446,7 +433,6 @@ KnobGuiColor::_show()
         KnobGuiValue::_show();
     }
     _colorLabel->show();
-    _colorDialogButton->show();
     _colorSelectorButton->show();
 }
 
@@ -521,123 +507,8 @@ KnobGuiColor::onDimensionsExpanded()
 void
 KnobGuiColor::setEnabledExtraGui(bool enabled)
 {
-    _colorDialogButton->setEnabled(enabled);
     _colorLabel->setEnabledMode(enabled);
 }
-
-void
-KnobGuiColor::onDialogCurrentColorChanged(const QColor & color)
-{
-    KnobColorPtr knob = _knob.lock();
-    bool isSimple = _useSimplifiedUI;
-    int nDims = knob->getDimension();
-
-    assert(nDims == 1 || nDims == 3 || nDims == 4);
-    if (nDims != 1 && nDims != 3 && nDims != 4) {
-        throw std::logic_error("A color Knob can only have dimension 1, 3 or 4");
-    }
-
-    if (nDims == 1) {
-        knob->setValue(color.redF(), ViewSpec::all(), 0);
-    } else if (nDims == 3) {
-        knob->setValues(isSimple ? color.redF() : Color::from_func_srgb( color.redF() ),
-                        isSimple ? color.greenF() : Color::from_func_srgb( color.greenF() ),
-                        isSimple ? color.blueF() : Color::from_func_srgb( color.blueF() ),
-                        ViewSpec::all(),
-                        eValueChangedReasonNatronInternalEdited);
-    } else if (nDims == 4) {
-        knob->setValues(isSimple ? color.redF() : Color::from_func_srgb( color.redF() ),
-                        isSimple ? color.greenF() : Color::from_func_srgb( color.greenF() ),
-                        isSimple ? color.blueF() : Color::from_func_srgb( color.blueF() ),
-                        color.alphaF(),
-                        ViewSpec::all(),
-                        eValueChangedReasonNatronInternalEdited);
-    }
-    if ( getGui() ) {
-        getGui()->setDraftRenderEnabled(true);
-    }
-}
-
-void
-KnobGuiColor::showColorDialog()
-{
-    QColorDialog dialog( _colorLabel->parentWidget() );
-
-    dialog.setOption(QColorDialog::DontUseNativeDialog);
-    KnobColorPtr knob = _knob.lock();
-    const int nDims = knob->getDimension();
-    double curR = knob->getValue(0);
-
-    assert(nDims == 1 || nDims == 3 || nDims == 4);
-    if (nDims != 1 && nDims != 3 && nDims != 4) {
-        throw std::logic_error("A color Knob can only have dimension 1, 3 or 4");
-    }
-
-    _lastColor[0] = curR;
-    double curG = curR;
-    double curB = curR;
-    double curA = 1.;
-    if (nDims > 1) {
-        curG = knob->getValue(1);
-        _lastColor[1] =  curG;
-        curB = knob->getValue(2);
-        _lastColor[2] = curB;
-    }
-    if (nDims > 3) {
-        dialog.setOption(QColorDialog::ShowAlphaChannel);
-        curA = knob->getValue(3);
-        _lastColor[3] = curA;
-    }
-
-    bool isSimple = _useSimplifiedUI;
-    QColor curColor;
-    curColor.setRgbF( Image::clamp<qreal>(isSimple ? curR : Color::to_func_srgb(curR), 0., 1.),
-                      Image::clamp<qreal>(isSimple ? curG : Color::to_func_srgb(curG), 0., 1.),
-                      Image::clamp<qreal>(isSimple ? curB : Color::to_func_srgb(curB), 0., 1.),
-                      Image::clamp<qreal>(curA, 0., 1.) );
-    dialog.setCurrentColor(curColor);
-    QObject::connect( &dialog, SIGNAL(currentColorChanged(QColor)), this, SLOT(onDialogCurrentColorChanged(QColor)) );
-    if ( !dialog.exec() ) {
-        if (nDims == 3) {
-            knob->setValues(_lastColor[0], _lastColor[1], _lastColor[2], ViewSpec::all(), eValueChangedReasonNatronGuiEdited);
-        } else if (nDims == 4) {
-            knob->setValues(_lastColor[0], _lastColor[1], _lastColor[2], _lastColor[3], ViewSpec::all(), eValueChangedReasonNatronGuiEdited);
-        } else if (nDims == 1) {
-            knob->setValue(_lastColor[0], ViewSpec::all(), 0, eValueChangedReasonNatronGuiEdited, NULL);
-        }
-    } else {
-        QColor userColor = dialog.currentColor();
-        std::vector<double> color(4);
-        color[0] = isSimple ? userColor.redF() : Color::from_func_srgb( userColor.redF() );
-        color[1] = isSimple ? userColor.greenF() : Color::from_func_srgb( userColor.greenF() );
-        color[2] = isSimple ? userColor.blueF() : Color::from_func_srgb( userColor.blueF() );
-        color[3] = userColor.alphaF();
-
-        for (int i = 0; i < 3; ++i) {
-            SpinBox* sb = 0;
-            getSpinBox(i, &sb);
-            assert(sb);
-            sb->setValue(color[i]);
-        }
-
-        // Refresh the last value so that the undo command retrieves the value that was prior to opening the dialog
-        if (nDims == 3) {
-            knob->setValues(_lastColor[0], _lastColor[1], _lastColor[2], ViewSpec::all(), eValueChangedReasonUserEdited);
-        } else if (nDims == 4) {
-            knob->setValues(_lastColor[0], _lastColor[1], _lastColor[2], _lastColor[3], ViewSpec::all(), eValueChangedReasonUserEdited);
-        } else if (nDims == 1) {
-            knob->setValue(_lastColor[0], ViewSpec::all(), 0, eValueChangedReasonUserEdited);
-        }
-
-        onSpinBoxValueChanged();
-
-    }
-
-    if ( getGui() ) {
-        getGui()->setDraftRenderEnabled(false);
-    }
-    //knob->evaluateValueChange(0, knob->getCurrentTime(), ViewIdx(0), eValueChangedReasonNatronGuiEdited);
-} // showColorDialog
 
 void
 KnobGuiColor::updateColorSelector()

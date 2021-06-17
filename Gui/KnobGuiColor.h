@@ -131,7 +131,6 @@ public:
 
 public Q_SLOTS:
 
-    void showColorDialog();
     void updateColorSelector();
 
     void setPickingEnabled(bool enabled);
@@ -141,8 +140,6 @@ public Q_SLOTS:
     void onMustShowAllDimension();
 
     void onColorSelectorChanged(float r, float g, float b, float a);
-    void onDialogCurrentColorChanged(const QColor & color);
-
 
 Q_SIGNALS:
 
@@ -189,7 +186,6 @@ private:
 
     KnobColorWPtr _knob;
     ColorPickerLabel *_colorLabel;
-    Button *_colorDialogButton;
     ColorSelectorWidget *_colorSelector;
     QToolButton *_colorSelectorButton;
     std::vector<double> _lastColor;
