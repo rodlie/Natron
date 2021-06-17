@@ -44,9 +44,9 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
   , _slideR(0)
   , _slideG(0)
   , _slideB(0)
-  , _slideH(0)
+  /*, _slideH(0)
   , _slideS(0)
-  , _slideV(0)
+  , _slideV(0)*/
   , _slideA(0)
   , _triangle(0)
 {
@@ -62,8 +62,7 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     _triangle->setMaximumSize(colorWheelSize, colorWheelSize);
     _triangle->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    QWidget *colorWidget = new QWidget(this);
-    QVBoxLayout *colorLayout = new QVBoxLayout(colorWidget);
+
 
     QWidget *rWidget = new QWidget(this);
     QHBoxLayout *rLayout = new QHBoxLayout(rWidget);
@@ -117,7 +116,7 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
                                      eScaleTypeLinear,
                                      this);
 
-    _slideH = new ScaleSliderQWidget(0.,
+    /*_slideH = new ScaleSliderQWidget(0.,
                                      1.,
                                      0.,
                                      false,
@@ -140,7 +139,7 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
                                      ScaleSliderQWidget::eDataTypeDouble,
                                      NULL,
                                      eScaleTypeLinear,
-                                     this);
+                                     this);*/
 
     _slideA = new ScaleSliderQWidget(0.,
                                      1.,
@@ -155,9 +154,9 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     _slideG->setMinimumAndMaximum(0., 1.);
     _slideB->setMinimumAndMaximum(0., 1.);
 
-    _slideH->setMinimumAndMaximum(0., 1.);
+    /*_slideH->setMinimumAndMaximum(0., 1.);
     _slideS->setMinimumAndMaximum(0., 1.);
-    _slideV->setMinimumAndMaximum(0., 1.);
+    _slideV->setMinimumAndMaximum(0., 1.);*/
 
     _slideA->setMinimumAndMaximum(0., 1.);
 
@@ -165,11 +164,21 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     _slideG->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     _slideB->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    _slideH->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    /*_slideH->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     _slideS->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    _slideV->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    _slideV->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);*/
 
     _slideA->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    _slideR->setUseLineColor(true, QColor(200, 70, 70) );
+    _slideG->setUseLineColor(true, QColor(86, 166, 66) );
+    _slideB->setUseLineColor(true, QColor(83, 121, 180) );
+    _slideA->setUseLineColor(true, QColor(215, 215, 215));
+
+    _slideR->setUseSliderColor(true, Qt::white);
+    _slideG->setUseSliderColor(true, Qt::white);
+    _slideB->setUseSliderColor(true, Qt::white);
+    _slideA->setUseSliderColor(true, Qt::white);
 
     _spinR = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
     _spinG = new SpinBox(this, SpinBox::eSpinBoxTypeDouble);
@@ -218,66 +227,95 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     _spinA->setMaximum(1.);
     _spinA->setMinimum(0.);
 
-    Label *labelR = new Label(QString::fromUtf8("R"), this);
+    _spinR->setObjectName( QString::fromUtf8("ColorSelectorRed") );
+    _spinG->setObjectName( QString::fromUtf8("ColorSelectorGreen") );
+    _spinB->setObjectName( QString::fromUtf8("ColorSelectorBlue") );
+    _spinA->setObjectName( QString::fromUtf8("ColorSelectorAlpha") );
+    _spinH->setObjectName( QString::fromUtf8("ColorSelectorHue") );
+    _spinS->setObjectName( QString::fromUtf8("ColorSelectorSat") );
+    _spinV->setObjectName( QString::fromUtf8("ColorSelectorVal") );
+
+    /*Label *labelR = new Label(QString::fromUtf8("R"), this);
     Label *labelG = new Label(QString::fromUtf8("G"), this);
-    Label *labelB = new Label(QString::fromUtf8("B"), this);
+    Label *labelB = new Label(QString::fromUtf8("B"), this);*/
 
     Label *labelH = new Label(QString::fromUtf8("H"), this);
     Label *labelS = new Label(QString::fromUtf8("S"), this);
     Label *labelV = new Label(QString::fromUtf8("V"), this);
 
-    Label *labelA = new Label(QString::fromUtf8("A"), this);
+    //Label *labelA = new Label(QString::fromUtf8("A"), this);
 
-    labelR->setMinimumWidth(10);
+    /*labelR->setMinimumWidth(10);
     labelG->setMinimumWidth(10);
-    labelB->setMinimumWidth(10);
+    labelB->setMinimumWidth(10);*/
 
     labelH->setMinimumWidth(10);
     labelS->setMinimumWidth(10);
     labelV->setMinimumWidth(10);
 
-    labelA->setMinimumWidth(10);
+    //labelA->setMinimumWidth(10);
 
-    rLayout->addWidget(labelR);
+    //rLayout->addWidget(labelR);
     rLayout->addWidget(_spinR);
     rLayout->addWidget(_slideR);
 
-    gLayout->addWidget(labelG);
+    //gLayout->addWidget(labelG);
     gLayout->addWidget(_spinG);
     gLayout->addWidget(_slideG);
 
-    bLayout->addWidget(labelB);
+    //bLayout->addWidget(labelB);
     bLayout->addWidget(_spinB);
     bLayout->addWidget(_slideB);
 
     hLayout->addWidget(labelH);
     hLayout->addWidget(_spinH);
-    hLayout->addWidget(_slideH);
+    //hLayout->addWidget(_slideH);
 
     sLayout->addWidget(labelS);
     sLayout->addWidget(_spinS);
-    sLayout->addWidget(_slideS);
+    //sLayout->addWidget(_slideS);
 
     vLayout->addWidget(labelV);
     vLayout->addWidget(_spinV);
-    vLayout->addWidget(_slideV);
+    //vLayout->addWidget(_slideV);
 
-    aLayout->addWidget(labelA);
+    //aLayout->addWidget(labelA);
     aLayout->addWidget(_spinA);
     aLayout->addWidget(_slideA);
 
-    colorLayout->addWidget(rWidget);
-    colorLayout->addWidget(gWidget);
-    colorLayout->addWidget(bWidget);
+    QWidget *rgbaWidget = new QWidget(this);
+    QVBoxLayout *rgbaLayout = new QVBoxLayout(rgbaWidget);
 
-    colorLayout->addWidget(hWidget);
-    colorLayout->addWidget(sWidget);
-    colorLayout->addWidget(vWidget);
+    QWidget *hsvWidget = new QWidget(this);
+    hsvWidget->setContentsMargins(0, 0, 0, 0);
+    QHBoxLayout *hsvLayout = new QHBoxLayout(hsvWidget);
 
-    colorLayout->addWidget(aWidget);
+    rgbaLayout->addWidget(rWidget);
+    rgbaLayout->addWidget(gWidget);
+    rgbaLayout->addWidget(bWidget);
+    rgbaLayout->addWidget(aWidget);
 
-    mainLayout->addWidget(_triangle);
-    mainLayout->addWidget(colorWidget);
+    hsvLayout->addWidget(hWidget);
+    hsvLayout->addWidget(sWidget);
+    hsvLayout->addWidget(vWidget);
+
+    QWidget *leftWidget = new QWidget(this);
+    leftWidget->setContentsMargins(0, 0, 0, 0);
+    QVBoxLayout *leftLayout = new QVBoxLayout(leftWidget);
+
+    QWidget *rightWidget = new QWidget(this);
+    rightWidget->setContentsMargins(0, 0, 0, 0);
+    QVBoxLayout *rightLayout = new QVBoxLayout(rightWidget);
+    rightLayout->setContentsMargins(0, 0, 0, 0);
+    rightLayout->setSpacing(0);
+
+    leftLayout->addWidget(_triangle);
+
+    rightLayout->addWidget(hsvWidget);
+    rightLayout->addWidget(rgbaWidget);
+
+    mainLayout->addWidget(leftWidget);
+    mainLayout->addWidget(rightWidget);
 
     QObject::connect( _triangle, SIGNAL( colorChanged(QColor) ),
                       this, SLOT( handleTriangleColorChanged(QColor) ) );
@@ -303,12 +341,12 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
                       this, SLOT( handleSliderGMoved(double) ) );
     QObject::connect( _slideB, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderBMoved(double) ) );
-    QObject::connect( _slideH, SIGNAL( positionChanged(double) ),
+    /*QObject::connect( _slideH, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderHMoved(double) ) );
     QObject::connect( _slideS, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderSMoved(double) ) );
     QObject::connect( _slideV, SIGNAL( positionChanged(double) ),
-                      this, SLOT( handleSliderVMoved(double) ) );
+                      this, SLOT( handleSliderVMoved(double) ) );*/
     QObject::connect( _slideA, SIGNAL( positionChanged(double) ),
                       this, SLOT( handleSliderAMoved(double) ) );
 }
@@ -379,33 +417,33 @@ void
 ColorSelectorWidget::setHueChannel(float value)
 {
     _spinH->blockSignals(true);
-    _slideH->blockSignals(true);
+    //_slideH->blockSignals(true);
     _spinH->setValue(value);
-    _slideH->seekScalePosition(value);
+    //_slideH->seekScalePosition(value);
     _spinH->blockSignals(false);
-    _slideH->blockSignals(false);
+    //_slideH->blockSignals(false);
 }
 
 void
 ColorSelectorWidget::setSaturationChannel(float value)
 {
     _spinS->blockSignals(true);
-    _slideS->blockSignals(true);
+    //_slideS->blockSignals(true);
     _spinS->setValue(value);
-    _slideS->seekScalePosition(value);
+    //_slideS->seekScalePosition(value);
     _spinS->blockSignals(false);
-    _slideS->blockSignals(false);
+    //_slideS->blockSignals(false);
 }
 
 void
 ColorSelectorWidget::setValueChannel(float value)
 {
     _spinV->blockSignals(true);
-    _slideV->blockSignals(true);
+    //_slideV->blockSignals(true);
     _spinV->setValue(value);
-    _slideV->seekScalePosition(value);
+    //_slideV->seekScalePosition(value);
     _spinV->blockSignals(false);
-    _slideV->blockSignals(false);
+    //_slideV->blockSignals(false);
 }
 
 void

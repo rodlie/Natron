@@ -35,7 +35,7 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/ScaleSliderQWidget.h"
 #include "Gui/SpinBox.h"
 
-#define COLOR_WHEEL_DEFAULT_SIZE 120
+#define COLOR_WHEEL_DEFAULT_SIZE 160
 
 NATRON_NAMESPACE_ENTER
 
@@ -71,9 +71,9 @@ private:
     ScaleSliderQWidget *_slideR;
     ScaleSliderQWidget *_slideG;
     ScaleSliderQWidget *_slideB;
-    ScaleSliderQWidget *_slideH;
+    /*ScaleSliderQWidget *_slideH;
     ScaleSliderQWidget *_slideS;
-    ScaleSliderQWidget *_slideV;
+    ScaleSliderQWidget *_slideV;*/
     ScaleSliderQWidget *_slideA;
 
     QtColorTriangle *_triangle;
