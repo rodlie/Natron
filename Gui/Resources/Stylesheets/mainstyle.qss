@@ -551,6 +551,11 @@ QToolButton {
     color: %5;
 }
 
+SpinBox {
+    border-radius: 3px;
+    border-width: 1px;
+}
+
 SpinBox[animation="0"] {
     background-color: %3;
 }
@@ -738,17 +743,6 @@ OutputScriptTextEdit {
     Color Selector Widget
 */
 
-SpinBox#ColorSelectorRed,
-SpinBox#ColorSelectorGreen,
-SpinBox#ColorSelectorBlue,
-SpinBox#ColorSelectorAlpha,
-SpinBox#ColorSelectorHue,
-SpinBox#ColorSelectorSat,
-SpinBox#ColorSelectorVal {
-    border-radius: 3px;
-    border-width: 1px;
-}
-
 SpinBox#ColorSelectorRed {
     border-color: rgb(200, 70, 70);
 }
@@ -764,10 +758,3 @@ SpinBox#ColorSelectorBlue {
 SpinBox#ColorSelectorAlpha {
     border-color: rgb(215, 215, 215);
 }
-
-SpinBox#ColorSelectorHue,
-SpinBox#ColorSelectorSat,
-SpinBox#ColorSelectorVal {
-    border-color: rgb(29, 29, 29);
-}
-
