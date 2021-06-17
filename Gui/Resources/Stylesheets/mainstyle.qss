@@ -552,6 +552,7 @@ QToolButton {
 }
 
 SpinBox {
+    border-color: %4;
     border-radius: 3px;
     border-width: 1px;
 }
