@@ -23,6 +23,7 @@ CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QDebug>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -61,8 +62,6 @@ ColorSelectorWidget::ColorSelectorWidget(QWidget *parent,
     _triangle->setMinimumSize(colorWheelSize, colorWheelSize);
     _triangle->setMaximumSize(colorWheelSize, colorWheelSize);
     _triangle->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-
 
     QWidget *rWidget = new QWidget(this);
     QHBoxLayout *rLayout = new QHBoxLayout(rWidget);
@@ -462,11 +461,15 @@ void ColorSelectorWidget::setTriangle(float r,
                                       float b,
                                       float a)
 {
-    QColor color;
-    color.setRgbF(Color::to_func_srgb(r),
-                  Color::to_func_srgb(g),
-                  Color::to_func_srgb(b),
-                  a);
+    float h, s, v;
+    Color::rgb_to_hsv(r, g, b, &h, &s, &v);
+
+    QColor color = _triangle->color();
+    color.setHsvF(Color::to_func_srgb(h),
+                  Color::to_func_srgb(s),
+                  Color::to_func_srgb(v) );
+    color.setAlphaF(a);
+
     _triangle->blockSignals(true);
     _triangle->setColor(color);
     _triangle->blockSignals(false);
@@ -494,7 +497,8 @@ ColorSelectorWidget::handleTriangleColorChanged(const QColor &color, bool announ
     }
 }
 
-void ColorSelectorWidget::manageColorRGBChanged(double /*value*/, bool announce)
+void ColorSelectorWidget::manageColorRGBChanged(double /*value*/,
+                                                bool announce)
 {
     float r = _spinR->value();
     float g = _spinG->value();
@@ -513,7 +517,8 @@ void ColorSelectorWidget::manageColorRGBChanged(double /*value*/, bool announce)
     }
 }
 
-void ColorSelectorWidget::manageColorHSVChanged(double /*value*/, bool announce)
+void ColorSelectorWidget::manageColorHSVChanged(double /*value*/,
+                                                bool announce)
 {
     float h = _spinH->value();
     float s = _spinS->value();
@@ -525,7 +530,16 @@ void ColorSelectorWidget::manageColorHSVChanged(double /*value*/, bool announce)
     setRedChannel(r);
     setGreenChannel(g);
     setBlueChannel(g);
-    setTriangle(r, g, b, a);
+
+    QColor color = _triangle->color();
+    color.setHsvF(Color::to_func_srgb(h),
+                  Color::to_func_srgb(s),
+                  Color::to_func_srgb(v) );
+    color.setAlphaF(a);
+
+    _triangle->blockSignals(true);
+    _triangle->setColor(color);
+    _triangle->blockSignals(false);
 
     if (announce) {
         announceColorChange();
