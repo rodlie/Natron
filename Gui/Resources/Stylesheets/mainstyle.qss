@@ -741,8 +741,22 @@ OutputScriptTextEdit {
 }
 
 /*
-    Color Selector Widget
+    Color Selector Button/Widget
 */
+
+QToolButton#ColorSelectorButton {
+    border: none;
+}
+
+QToolButton#ColorSelectorButton:menu-indicator {
+    image: none;
+}
+
+QToolButton#ColorSelectorButton:pressed {
+    padding-left: 0px;
+    top: 0px;
+    left: 0px;
+}
 
 SpinBox#ColorSelectorRed {
     border-color: rgb(200, 70, 70);

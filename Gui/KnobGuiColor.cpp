@@ -304,20 +304,18 @@ KnobGuiColor::addExtraWidgets(QHBoxLayout* containerLayout)
     }
 
     // add color selector popup
-    QPixmap colorTrianglePix;
-    appPTR->getIcon(NATRON_PIXMAP_COLORTRIANGLE, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorTrianglePix);
+    QPixmap colorSelectorPix;
+    appPTR->getIcon(NATRON_PIXMAP_COLORWHEEL, NATRON_MEDIUM_BUTTON_ICON_SIZE, &colorSelectorPix);
 
     _colorSelectorButton = new QToolButton( containerLayout->widget() );
-    _colorSelectorButton->setIcon( QIcon(colorTrianglePix) );
+    _colorSelectorButton->setObjectName( QString::fromUtf8("ColorSelectorButton") );
+    _colorSelectorButton->setIcon( QIcon(colorSelectorPix) );
     _colorSelectorButton->setFixedSize(medSize);
     _colorSelectorButton->setIconSize(medIconSize);
     _colorSelectorButton->setPopupMode(QToolButton::InstantPopup);
     _colorSelectorButton->setArrowType(Qt::NoArrow);
     _colorSelectorButton->setAutoRaise(false);
     _colorSelectorButton->setCheckable(false);
-    _colorSelectorButton->setStyleSheet( QString::fromUtf8("QToolButton { border: none; }"
-                                                           "QToolButton:menu-indicator { image: none; }"
-                                                           "QToolButton:pressed { padding-left: 0px; top: 0px; left: 0px; }") );
     _colorSelectorButton->setToolTip( NATRON_NAMESPACE::convertFromPlainText(tr("Open Color Selector"), NATRON_NAMESPACE::WhiteSpaceNormal) );
     _colorSelectorButton->setFocusPolicy(Qt::NoFocus);
 
