@@ -93,9 +93,17 @@ private Q_SLOTS:
 
     void handleTriangleColorChanged(const QColor &color, bool announce = true);
 
-    void manageColorRGBChanged(double value, bool announce = true);
-    void manageColorHSVChanged(double value, bool announce = true);
-    void manageColorAlphaChanged(double value);
+    void manageColorRGBChanged(bool announce = true);
+    void manageColorHSVChanged(bool announce = true);
+    void manageColorAlphaChanged(bool announce = true);
+
+    void handleSpinRChanged(double value);
+    void handleSpinGChanged(double value);
+    void handleSpinBChanged(double value);
+    void handleSpinHChanged(double value);
+    void handleSpinSChanged(double value);
+    void handleSpinVChanged(double value);
+    void handleSpinAChanged(double value);
 
     void handleSliderRMoved(double value);
     void handleSliderGMoved(double value);
