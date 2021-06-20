@@ -347,7 +347,6 @@ void KnobGuiColor::onColorSelectorChanged(float r,
                                           float b,
                                           float a)
 {
-    qDebug() << "COLOR SELECTOR CHANGED" << r << g << b << a;
     KnobColorPtr knob = _knob.lock();
     int nDims = knob->getDimension();
 
@@ -511,12 +510,6 @@ KnobGuiColor::setEnabledExtraGui(bool enabled)
 void
 KnobGuiColor::updateColorSelector()
 {
-    qDebug() << "UPDATE COLOR SELECTOR";
-    /*if (_blockColorSelector && !force) {
-        qDebug() << "IGNORE COLOR SELECTOR UPDATE";
-        return;
-    }*/
-
     KnobColorPtr knob = _knob.lock();
     const int nDims = knob->getDimension();
     double curR = knob->getValue(0);
@@ -537,7 +530,6 @@ KnobGuiColor::updateColorSelector()
         curA = knob->getValue(3);
     }
 
-    qDebug() << "COLOR SELECTOR SET COLOR";
     _colorSelector->setColor( Image::clamp<qreal>(curR, 0., 1.),
                               Image::clamp<qreal>(curG, 0., 1.),
                               Image::clamp<qreal>(curB, 0., 1.),

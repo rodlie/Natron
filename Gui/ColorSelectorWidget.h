@@ -34,6 +34,7 @@ CLANG_DIAG_ON(uninitialized)
 
 #include "Gui/ScaleSliderQWidget.h"
 #include "Gui/SpinBox.h"
+#include "Gui/LineEdit.h"
 
 #define COLOR_WHEEL_DEFAULT_SIZE 160
 
@@ -47,6 +48,7 @@ public:
 
     explicit ColorSelectorWidget(QWidget *parent = NULL,
                                  int colorWheelSize = COLOR_WHEEL_DEFAULT_SIZE);
+    void getColor(float *r, float *g, float *b, float *a);
 
 Q_SIGNALS:
 
@@ -55,7 +57,6 @@ Q_SIGNALS:
 
 public Q_SLOTS:
 
-    void getColor(float *r, float *g, float *b, float *a);
     void setColor(float r, float g, float b, float a);
 
 private:
@@ -71,12 +72,11 @@ private:
     ScaleSliderQWidget *_slideR;
     ScaleSliderQWidget *_slideG;
     ScaleSliderQWidget *_slideB;
-    /*ScaleSliderQWidget *_slideH;
-    ScaleSliderQWidget *_slideS;
-    ScaleSliderQWidget *_slideV;*/
     ScaleSliderQWidget *_slideA;
 
     QtColorTriangle *_triangle;
+
+    LineEdit *_hex;
 
     void setRedChannel(float value);
     void setGreenChannel(float value);
@@ -86,6 +86,7 @@ private:
     void setValueChannel(float value);
     void setAlphaChannel(float value);
     void setTriangle(float r, float g, float b, float a);
+    void setHex(const QColor &color);
 
     void announceColorChange();
 
@@ -105,12 +106,11 @@ private Q_SLOTS:
     void handleSpinVChanged(double value);
     void handleSpinAChanged(double value);
 
+    void handleHexChanged();
+
     void handleSliderRMoved(double value);
     void handleSliderGMoved(double value);
     void handleSliderBMoved(double value);
-    void handleSliderHMoved(double value);
-    void handleSliderSMoved(double value);
-    void handleSliderVMoved(double value);
     void handleSliderAMoved(double value);
 
     // workaround for QToolButton+QWidgetAction
