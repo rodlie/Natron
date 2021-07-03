@@ -40,6 +40,8 @@
 
 #include "Gui/GuiFwd.h"
 
+#include "Engine/PowerManagement.h"
+
 class QDrag;
 
 NATRON_NAMESPACE_ENTER
@@ -223,6 +225,9 @@ public Q_SLOTS:
     virtual void goToPreviousKeyframe() OVERRIDE FINAL;
     virtual void goToNextKeyframe() OVERRIDE FINAL;
 
+    void inhibitScreenSaver(bool inhibit = true);
+    void inhibitSuspend(bool inhibit = true);
+
 Q_SIGNALS:
 
     void keyframeIndicatorsChanged();
@@ -278,6 +283,7 @@ private:
                                const NodePtr&  parentMultiInstance,
                                const CreateNodeArgs& args) OVERRIDE FINAL;
     boost::scoped_ptr<GuiAppInstancePrivate> _imp;
+    PowerManagement *_power; // power manager (screensaver/suspend)
 };
 
 NATRON_NAMESPACE_EXIT

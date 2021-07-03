@@ -166,6 +166,7 @@ struct GuiAppInstancePrivate
 GuiAppInstance::GuiAppInstance(int appID)
     : AppInstance(appID)
     , _imp(new GuiAppInstancePrivate)
+    , _power( new PowerManagement(this) )
 
 {
 #ifdef DEBUG
@@ -1595,6 +1596,18 @@ GuiAppInstance::goToNextKeyframe()
     if ( upperBound != _imp->timelineKeyframes.end() ) {
         timeline->seekFrame(*upperBound, true, NULL, eTimelineChangeReasonPlaybackSeek);
     }
+}
+
+void
+GuiAppInstance::inhibitScreenSaver(bool inhibit)
+{
+    _power->inhibitScreenSaver(inhibit);
+}
+
+void
+GuiAppInstance::inhibitSuspend(bool inhibit)
+{
+    _power->inhibitSuspend(inhibit);
 }
 
 void
