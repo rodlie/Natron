@@ -91,7 +91,7 @@ PowerManagementMac::~PowerManagementMac()
 }
 
 void
-PowerManagementMac::setScreensaverDisabled(bool disabled)
+PowerManagementMac::setScreenSaverDisabled(bool disabled)
 {
     if (disabled == (pmd->aid != 0)) {
         return;
@@ -127,3 +127,6 @@ PowerManagementMac::setSystemSleepDisabled(bool disabled)
 }
 
 NATRON_NAMESPACE_EXIT
+
+NATRON_NAMESPACE_USING
+#include "moc_PowerManagementMac.cpp"

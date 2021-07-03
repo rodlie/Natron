@@ -39,8 +39,8 @@ class PowerManagement : public QObject
 public:
 
     explicit PowerManagement(QObject *parent = NULL);
-    void inhibitScreenSaver(bool off = false);
-    void inhibitSuspend(bool off = false);
+    void inhibitScreenSaver(bool inhibit = true);
+    void inhibitSuspend(bool inhibit = true);
 
 private:
 

@@ -36,7 +36,7 @@ public:
 
     explicit PowerManagementMac(QObject *parent = NULL);
     ~PowerManagementMac();
-    void setScreensaverDisabled(bool disabled);
+    void setScreenSaverDisabled(bool disabled);
     void setSystemSleepDisabled(bool disabled);
 
 private:

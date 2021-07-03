@@ -19,6 +19,10 @@
 
 #include "PowerManagement.h"
 
+CLANG_DIAG_OFF(deprecated)
+#include <QDebug>
+CLANG_DIAG_ON(deprecated)
+
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
@@ -37,37 +41,37 @@ PowerManagement::PowerManagement(QObject *parent)
 }
 
 void
-PowerManagement::inhibitScreenSaver(bool off)
+PowerManagement::inhibitScreenSaver(bool inhibit)
 {
+    qDebug() << "Inhibit screen saver" << inhibit;
 #ifdef Q_OS_DARWIN
-    _mac->setScreensaverDisabled(!off);
-#endif
-    if (off) {
-#ifdef Q_OS_WIN
+    _mac->setScreenSaverDisabled(inhibit);
+#elif defined(Q_OS_WIN)
+    if (!inhibit) {
         SetThreadExecutionState(ES_CONTINUOUS);
-#endif
-    // TODO LINUX/BSD
     } else {
-#if defined(Q_OS_WIN)
         SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
-#endif
-    // TODO LINUX/BSD
     }
+#else
+    Q_UNUSED(inhibit)
+    // TODO LINUX/BSD
+#endif
 }
 
 void
-PowerManagement::inhibitSuspend(bool off)
+PowerManagement::inhibitSuspend(bool inhibit)
 {
+    qDebug() << "Inhibit computer sleep" << inhibit;
 #ifdef Q_OS_DARWIN
-    _mac->setSystemSleepDisabled(!off);
+    _mac->setSystemSleepDisabled(inhibit);
 #elif defined(Q_OS_WIN)
-    if (off) {
+    if (!inhibit) {
         SetThreadExecutionState(ES_CONTINUOUS);
     } else {
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED);
     }
 #else
-    Q_UNUSED(off)
+    Q_UNUSED(inhibit)
     // TODO LINUX/BSD
 #endif
 }

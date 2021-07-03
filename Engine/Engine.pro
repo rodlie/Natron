@@ -581,9 +581,12 @@ OTHER_FILES += \
 
 # QMAKE_EXTRA_COMPILERS += SHIBOKEN
 macx {
-OBJECTIVE_HEADERS += \
+HEADERS += \
     PowerManagementMac.h
+
 OBJECTIVE_SOURCES += \
     PowerManagementMac.mm \
     QUrlFix.mm
+
+LIBS += -framework IOKit -framework Cocoa
 }
