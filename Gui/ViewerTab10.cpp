@@ -261,6 +261,9 @@ ViewerTab::startPause(bool b)
             viewsToRender.push_back(_imp->currentViewIndex);
         }
         _imp->viewerNode->getRenderEngine()->renderFromCurrentFrame(app->isRenderStatsActionChecked(), viewsToRender, eRenderDirectionForward);
+
+        // turn on screen saver inhibitor
+        app->inhibitScreenSaver(true);
     }
 }
 
@@ -288,6 +291,15 @@ ViewerTab::abortRendering()
                 viewer->getRenderEngine()->abortRenderingNoRestart();
             }
         }
+    }
+
+    // turn off screen saver inhibitor
+    GuiAppInstancePtr app;
+    if ( getGui() ) {
+        app = getGui()->getApp();
+    }
+    if (app) {
+        app->inhibitScreenSaver(false);
     }
 }
 
