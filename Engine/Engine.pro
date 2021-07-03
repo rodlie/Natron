@@ -154,6 +154,7 @@ SOURCES += \
     ParallelRenderArgs.cpp \
     Plugin.cpp \
     PluginMemory.cpp \
+    PowerManagement.cpp \
     PrecompNode.cpp \
     ProcessHandler.cpp \
     Project.cpp \
@@ -369,6 +370,7 @@ HEADERS += \
     Plugin.h \
     PluginActionShortcut.h \
     PluginMemory.h \
+    PowerManagement.h \
     PrecompNode.h \
     ProcessHandler.h \
     Project.h \
@@ -579,7 +581,9 @@ OTHER_FILES += \
 
 # QMAKE_EXTRA_COMPILERS += SHIBOKEN
 macx {
-
+OBJECTIVE_HEADERS += \
+    PowerManagementMac.h
 OBJECTIVE_SOURCES += \
+    PowerManagementMac.mm \
     QUrlFix.mm
 }
