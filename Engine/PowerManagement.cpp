@@ -34,6 +34,8 @@ PowerManagement::PowerManagement(QObject *parent)
 #ifdef Q_OS_DARWIN
       , _mac(NULL)
 #endif
+    , _inhibitedScreenSaver(false)
+    , _inhibitedSuspend(false)
 {
 #ifdef Q_OS_DARWIN
     _mac = new PowerManagementMac(this);
@@ -43,6 +45,10 @@ PowerManagement::PowerManagement(QObject *parent)
 void
 PowerManagement::inhibitScreenSaver(bool inhibit)
 {
+    if (_inhibitedScreenSaver == inhibit) {
+        qDebug() << "inhibit screen saver request ignored";
+        return;
+    }
     qDebug() << "Inhibit screen saver" << inhibit;
 #ifdef Q_OS_DARWIN
     _mac->setScreenSaverDisabled(inhibit);
@@ -56,11 +62,16 @@ PowerManagement::inhibitScreenSaver(bool inhibit)
     Q_UNUSED(inhibit)
     // TODO LINUX/BSD
 #endif
+    _inhibitedScreenSaver = inhibit;
 }
 
 void
 PowerManagement::inhibitSuspend(bool inhibit)
 {
+    if (_inhibitedSuspend == inhibit) {
+        qDebug() << "inhibit suspend request ignored";
+        return;
+    }
     qDebug() << "Inhibit computer sleep" << inhibit;
 #ifdef Q_OS_DARWIN
     _mac->setSystemSleepDisabled(inhibit);
@@ -74,6 +85,7 @@ PowerManagement::inhibitSuspend(bool inhibit)
     Q_UNUSED(inhibit)
     // TODO LINUX/BSD
 #endif
+    _inhibitedSuspend = inhibit;
 }
 
 NATRON_NAMESPACE_EXIT

@@ -47,6 +47,8 @@ private:
 #ifdef Q_OS_DARWIN
     PowerManagementMac *_mac;
 #endif
+    bool _inhibitedScreenSaver;
+    bool _inhibitedSuspend;
 };
 
 NATRON_NAMESPACE_EXIT
