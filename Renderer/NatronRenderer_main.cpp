@@ -44,6 +44,7 @@
 
 #include "Engine/AppManager.h"
 #include "Engine/CLArgs.h"
+#include "Engine/PowerManagement.h"
 
 NATRON_NAMESPACE_USING
 
@@ -100,6 +101,9 @@ extern "C" {
     }
 
     AppManager manager;
+    PowerManagement power;
+
+    power.inhibitSuspend(true);
 
     // coverity[tainted_data]
 #ifdef Q_OS_WIN
@@ -107,8 +111,10 @@ extern "C" {
 #else
         if ( !manager.load(argc, argv, args) ) {
 #endif
+        power.inhibitSuspend(false);
         return 1;
     } else {
+        power.inhibitSuspend(false);
         return 0;
     }
 
