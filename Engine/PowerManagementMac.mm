@@ -19,11 +19,6 @@
 
 #include "PowerManagementMac.h"
 
-CLANG_DIAG_OFF(deprecated)
-#include <QApplication>
-#include <QWidget>
-CLANG_DIAG_ON(deprecated)
-
 #include <IOKit/pwr_mgt/IOPMLib.h>
 #include <Cocoa/Cocoa.h>
 
@@ -36,23 +31,23 @@ CLANG_DIAG_ON(deprecated)
 @implementation AppObjC
 - (id) init
 {
-	NSAutoreleasePool *pool = [NSAutoreleasePool new];
-	[super init];
-	[[NSAppleEventManager sharedAppleEventManager] setEventHandler:self
-		andSelector:@selector(appReopen:withReplyEvent:)
-		forEventClass:kCoreEventClass
-		andEventID:kAEReopenApplication];
-	[pool release];
-	return self;
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+    [super init];
+    [[NSAppleEventManager sharedAppleEventManager] setEventHandler:self
+        andSelector:@selector(appReopen:withReplyEvent:)
+        forEventClass:kCoreEventClass
+        andEventID:kAEReopenApplication];
+    [pool release];
+    return self;
 }
 
 - (void) dealloc
 {
-	NSAutoreleasePool *pool = [NSAutoreleasePool new];
-	[[NSAppleEventManager sharedAppleEventManager] removeEventHandlerForEventClass:kCoreEventClass
-		andEventID:kAEReopenApplication];
-	[pool release];
-	[super dealloc];
+    NSAutoreleasePool *pool = [NSAutoreleasePool new];
+    [[NSAppleEventManager sharedAppleEventManager] removeEventHandlerForEventClass:kCoreEventClass
+        andEventID:kAEReopenApplication];
+    [pool release];
+    [super dealloc];
 }
 @end
 
