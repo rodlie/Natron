@@ -108,6 +108,8 @@ public:
 
     void onLastTaskAddedFinished(const ProgressTaskInfo* task);
 
+    void inhibitSuspend(bool inhibit);
+
 public Q_SLOTS:
 
     void onCancelTasksTriggered();

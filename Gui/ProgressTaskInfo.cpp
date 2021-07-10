@@ -279,6 +279,8 @@ ProgressTaskInfo::cancelTask(bool calledFromRenderEngine,
     if (!calledFromRenderEngine) {
         Q_EMIT taskCanceled();
     }
+
+    _imp->panel->inhibitSuspend(false);
 } // ProgressTaskInfo::cancelTask
 
 void
@@ -573,6 +575,19 @@ ProgressTaskInfo::updateProgress(const int frame,
     }
     _imp->lastRenderedFrame = frame;
     updateProgressBar(percent, progress);
+
+    switch(_imp->status) {
+    case eProgressTaskStatusCanceled:
+    case eProgressTaskStatusPaused:
+    case eProgressTaskStatusQueued:
+    case eProgressTaskStatusFinished:
+        _imp->panel->inhibitSuspend(false);
+        break;
+    case eProgressTaskStatusRunning:
+        _imp->panel->inhibitSuspend(true);
+        break;
+    default:;
+    }
 }
 
 void

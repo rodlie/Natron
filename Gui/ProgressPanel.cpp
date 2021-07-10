@@ -504,6 +504,18 @@ ProgressPanel::onLastTaskAddedFinished(const ProgressTaskInfo* task)
 }
 
 void
+ProgressPanel::inhibitSuspend(bool inhibit)
+{
+    GuiAppInstancePtr app;
+    if ( getGui() ) {
+        app = getGui()->getApp();
+    }
+    if (app) {
+        app->inhibitSuspend(inhibit);
+    }
+}
+
+void
 ProgressPanel::addTaskToTable(const ProgressTaskInfoPtr& task)
 {
     assert( QThread::currentThread() == qApp->thread() );

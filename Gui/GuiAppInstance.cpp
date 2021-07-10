@@ -166,6 +166,7 @@ struct GuiAppInstancePrivate
 GuiAppInstance::GuiAppInstance(int appID)
     : AppInstance(appID)
     , _imp(new GuiAppInstancePrivate)
+    , _pm( new PowerManagement(this) )
 
 {
 #ifdef DEBUG
@@ -1595,6 +1596,12 @@ GuiAppInstance::goToNextKeyframe()
     if ( upperBound != _imp->timelineKeyframes.end() ) {
         timeline->seekFrame(*upperBound, true, NULL, eTimelineChangeReasonPlaybackSeek);
     }
+}
+
+void
+GuiAppInstance::inhibitSuspend(bool inhibit)
+{
+    _pm->inhibitSuspend(inhibit);
 }
 
 void

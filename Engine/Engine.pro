@@ -154,6 +154,7 @@ SOURCES += \
     ParallelRenderArgs.cpp \
     Plugin.cpp \
     PluginMemory.cpp \
+    PowerManagement.cpp \
     PrecompNode.cpp \
     ProcessHandler.cpp \
     Project.cpp \
@@ -369,6 +370,7 @@ HEADERS += \
     Plugin.h \
     PluginActionShortcut.h \
     PluginMemory.h \
+    PowerManagement.h \
     PrecompNode.h \
     ProcessHandler.h \
     Project.h \
@@ -578,8 +580,20 @@ OTHER_FILES += \
 # SHIBOKEN.clean = dummy # don't remove the %_wrapper.cpp file by "make clean"
 
 # QMAKE_EXTRA_COMPILERS += SHIBOKEN
+
+unix:!macx {
+QT += dbus
+HEADERS += PowerManagementDBus.h
+SOURCES += PowerManagementDBus.cpp
+}
+
 macx {
+HEADERS += \
+    PowerManagementMac.h
 
 OBJECTIVE_SOURCES += \
+    PowerManagementMac.mm \
     QUrlFix.mm
+
+LIBS += -framework IOKit -framework Cocoa
 }
