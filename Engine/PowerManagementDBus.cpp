@@ -61,7 +61,6 @@ PowerManagementDBus::~PowerManagementDBus()
 bool
 PowerManagementDBus::setScreenSaverDisabled(bool disabled)
 {
-    qDebug() << "setScreenSaverDisabled (DBus)" << disabled;
     Q_UNUSED(disabled)
     return false;
 }
@@ -69,7 +68,6 @@ PowerManagementDBus::setScreenSaverDisabled(bool disabled)
 bool
 PowerManagementDBus::setSystemSleepDisabled(bool disabled)
 {
-    qDebug() << "setSystemSleepDisabled (DBus)" << disabled;
     if (disabled) {
         return registerSuspendLock();
     } else {
@@ -84,21 +82,15 @@ PowerManagementDBus::isServiceAvailable(const QString &service,
                                         const QString &interface,
                                         bool session)
 {
-    if (!session) {
-        // check if we have access to the system dbus
-        // iface errors don't indicate if the issue is missing (system) dbus
-        // so it's best to check for dbus before setting up iface
-        QDBusConnection system = QDBusConnection::systemBus();
-        if ( !system.isConnected() ) {
-            qWarning() << system.lastError();
-            return false;
-        }
+    QDBusConnection dbus = session? QDBusConnection::sessionBus() : QDBusConnection::systemBus();
+    if ( !dbus.isConnected() ) {
+        qWarning() << dbus.lastError();
+        return false;
     }
     QDBusInterface iface(service,
                          path,
                          interface,
-                         session ? QDBusConnection::sessionBus() : QDBusConnection::systemBus() );
-    qDebug() << "is DBus service available?" << service << path << interface << iface.isValid();
+                         dbus);
     if ( iface.isValid() ) {
         return true;
     } else {
@@ -136,14 +128,13 @@ bool
 PowerManagementDBus::registerSuspendLock()
 {
     if (_suspendLock) {
-        // we already have a suspend lock
+        // we already have a suspend lock, ignore
         return true;
     }
     if ( _service.isEmpty() ) {
-        // DBus and/or service (Logind/ConsoleKit) not available
+        // Logind/ConsoleKit not found, nothing we can do
         return false;
     }
-    qDebug() << "try to register suspend lock";
     QDBusInterface iface( _service,
                           _path,
                           _interface,
@@ -159,7 +150,6 @@ PowerManagementDBus::registerSuspendLock()
                         QString::fromUtf8("Rendering"),
                         QString::fromUtf8("block") );
     if ( reply.isValid() ) {
-        qDebug() << "registered suspend lock success";
         _suspendLock.reset( new QDBusUnixFileDescriptor( reply.value() ) );
         return true;
     } else {
@@ -170,10 +160,8 @@ PowerManagementDBus::registerSuspendLock()
 
 void PowerManagementDBus::releaseSuspendLock()
 {
-    qDebug() << "release suspend lock";
-   _suspendLock.reset(NULL);
+    _suspendLock.reset(NULL);
 }
-
 
 NATRON_NAMESPACE_EXIT
 
