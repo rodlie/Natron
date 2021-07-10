@@ -12,7 +12,7 @@ if build_step && { force_build || { [ ! -s "$SDK_HOME/lib/pkgconfig/dbus-1.pc" ]
     start_build
     untar "$SRC_PATH/$DBUS_TAR"
     pushd "dbus-${DBUS_VERSION}"
-    env CFLAGS="$BF" CXXFLAGS="$BF" ./configure --prefix="$SDK_HOME" --disable-docs --disable-doxygen-docs --disable-xml-docs --disable-static --enable-shared
+    env CFLAGS="$BF" CXXFLAGS="$BF" ./configure --prefix="$SDK_HOME" --localstatedir=/var --disable-docs --disable-doxygen-docs --disable-xml-docs --disable-static --enable-shared
     make -j${MKJOBS}
     make install
     popd
