@@ -20,6 +20,7 @@
 QT       += core network
 QT       -= gui
 greaterThan(QT_MAJOR_VERSION, 4): QT += concurrent
+unix:!macx: QT += dbus
 
 TARGET = NatronRenderer
 CONFIG += console

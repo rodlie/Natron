@@ -32,13 +32,17 @@ NATRON_NAMESPACE_ENTER
 PowerManagement::PowerManagement(QObject *parent)
     : QObject(parent)
 #ifdef Q_OS_DARWIN
-      , _mac(NULL)
+    , _mac(NULL)
+#elif defined(Q_OS_UNIX)
+    , _dbus(NULL)
 #endif
     , _inhibitedScreenSaver(false)
     , _inhibitedSuspend(false)
 {
 #ifdef Q_OS_DARWIN
     _mac = new PowerManagementMac(this);
+#elif defined(Q_OS_UNIX)
+    _dbus = new PowerManagementDBus(this);
 #endif
 }
 
@@ -52,15 +56,15 @@ PowerManagement::inhibitScreenSaver(bool inhibit)
     qDebug() << "Inhibit screen saver" << inhibit;
 #ifdef Q_OS_DARWIN
     _mac->setScreenSaverDisabled(inhibit);
+#elif defined(Q_OS_UNIX)
+    _inhibitedScreenSaver = _dbus->setScreenSaverDisabled(inhibit);
+    return;
 #elif defined(Q_OS_WIN)
     if (!inhibit) {
         SetThreadExecutionState(ES_CONTINUOUS);
     } else {
         SetThreadExecutionState(ES_CONTINUOUS | ES_DISPLAY_REQUIRED);
     }
-#else
-    Q_UNUSED(inhibit)
-    // TODO LINUX/BSD
 #endif
     _inhibitedScreenSaver = inhibit;
 }
@@ -75,15 +79,15 @@ PowerManagement::inhibitSuspend(bool inhibit)
     qDebug() << "Inhibit computer sleep" << inhibit;
 #ifdef Q_OS_DARWIN
     _mac->setSystemSleepDisabled(inhibit);
+#elif defined(Q_OS_UNIX)
+    _inhibitedSuspend = _dbus->setSystemSleepDisabled(inhibit);
+    return;
 #elif defined(Q_OS_WIN)
     if (!inhibit) {
         SetThreadExecutionState(ES_CONTINUOUS);
     } else {
         SetThreadExecutionState(ES_CONTINUOUS | ES_SYSTEM_REQUIRED);
     }
-#else
-    Q_UNUSED(inhibit)
-    // TODO LINUX/BSD
 #endif
     _inhibitedSuspend = inhibit;
 }

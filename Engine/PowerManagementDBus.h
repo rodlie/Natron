@@ -17,44 +17,49 @@
  * along with Natron.  If not, see <http://www.gnu.org/licenses/gpl-2.0.html>
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef POWERMANAGEMENT_H
-#define POWERMANAGEMENT_H
+#ifndef POWERMANAGEMENT_DBUS_H
+#define POWERMANAGEMENT_DBUS_H
 
 #include "Global/Macros.h"
 
 CLANG_DIAG_OFF(deprecated)
 #include <QObject>
+#include <QDBusUnixFileDescriptor>
 CLANG_DIAG_ON(deprecated)
-
-#ifdef Q_OS_DARWIN
-#include "PowerManagementMac.h"
-#elif defined(Q_OS_UNIX)
-#include "PowerManagementDBus.h"
-#endif
 
 NATRON_NAMESPACE_ENTER
 
-class PowerManagement : public QObject
+class PowerManagementDBus : public QObject
 {
     Q_OBJECT
 
 public:
 
-    explicit PowerManagement(QObject *parent = NULL);
-    void inhibitScreenSaver(bool inhibit = true);
-    void inhibitSuspend(bool inhibit = true);
+    explicit PowerManagementDBus(QObject *parent = NULL);
+    ~PowerManagementDBus();
+    bool setScreenSaverDisabled(bool disabled);
+    bool setSystemSleepDisabled(bool disabled);
 
 private:
 
-#ifdef Q_OS_DARWIN
-    PowerManagementMac *_mac;
-#elif defined(Q_OS_UNIX)
-    PowerManagementDBus *_dbus;
-#endif
-    bool _inhibitedScreenSaver;
-    bool _inhibitedSuspend;
+    QScopedPointer<QDBusUnixFileDescriptor> _suspendLock;
+    QString _service;
+    QString _path;
+    QString _interface;
+
+    bool isServiceAvailable(const QString &service,
+                            const QString &path,
+                            const QString &interface,
+                            bool session = false);
+
+    bool hasLogind();
+    bool hasConsoleKit();
+    bool hasScreenSaver();
+
+    bool registerSuspendLock();
+    void releaseSuspendLock();
 };
 
 NATRON_NAMESPACE_EXIT
 
-#endif // POWERMANAGEMENT_H
+#endif // POWERMANAGEMENT_DBUS_H

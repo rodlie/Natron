@@ -580,6 +580,13 @@ OTHER_FILES += \
 # SHIBOKEN.clean = dummy # don't remove the %_wrapper.cpp file by "make clean"
 
 # QMAKE_EXTRA_COMPILERS += SHIBOKEN
+
+unix:!macx {
+QT += dbus
+HEADERS += PowerManagementDBus.h
+SOURCES += PowerManagementDBus.cpp
+}
+
 macx {
 HEADERS += \
     PowerManagementMac.h

@@ -41,6 +41,7 @@ CONFIG += static-gui static-engine static-host-support static-breakpadclient sta
 
 QT += gui core opengl network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets concurrent
+unix:!macx: QT += dbus
 
 !noexpat: CONFIG += expat
 

@@ -24,6 +24,7 @@ CONFIG += moc rcc
 CONFIG += boost opengl qt cairo python shiboken pyside 
 QT += gui core opengl network
 greaterThan(QT_MAJOR_VERSION, 4): QT += concurrent
+unix:!macx: QT += dbus
 
 CONFIG += glad-flags
 
