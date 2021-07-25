@@ -39,6 +39,7 @@
 #include "Engine/ViewIdx.h"
 #include "Engine/EngineFwd.h"
 
+#include "Gui/MIDIHandler.h"
 
 #define kQSettingsSoftwareMajorVersionSettingName "SoftwareVersionMajor"
 
@@ -132,6 +133,8 @@ public:
     void restorePluginSettings();
 
     void populateSystemFonts(const QSettings& settings, const std::vector<std::string>& fonts);
+
+    void populateMidiIn();
 
     // should settings be saved?
     void setSaveSettings(bool);
@@ -380,6 +383,9 @@ public:
 
     bool isDriveLetterToUNCPathConversionEnabled() const;
 
+    std::string getMidiInputDevice() const;
+    void setMidiInputDevice(const std::string &id) const;
+
 Q_SIGNALS:
 
     void settingChanged(KnobI* knob);
@@ -407,6 +413,7 @@ private:
     void initializeKnobsDopeSheetColors();
     void initializeKnobsNodeGraphColors();
     void initializeKnobsScriptEditorColors();
+    void initializeKnobsMidi();
 
 
     void warnChangedKnobs(const std::vector<KnobI*>& knobs);
@@ -643,6 +650,10 @@ private:
     bool _ocioRestored;
     bool _settingsExisted;
     bool _defaultAppearanceOutdated;
+
+    // Midi
+    KnobPagePtr _midiTab;
+    KnobChoicePtr _midiIn;
 };
 
 NATRON_NAMESPACE_EXIT

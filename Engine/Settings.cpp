@@ -130,6 +130,7 @@ Settings::initializeKnobs()
     initializeKnobsDopeSheetColors();
     initializeKnobsNodeGraphColors();
     initializeKnobsScriptEditorColors();
+    initializeKnobsMidi();
 
     setDefaultValues();
 }
@@ -1038,6 +1039,19 @@ Settings::initializeKnobsScriptEditorColors()
     _numbersColor->setSimplified(true);
     _scriptEditorColorsTab->addKnob(_numbersColor);
 } // Settings::initializeKnobsScriptEditorColors
+
+void
+Settings::initializeKnobsMidi()
+{
+    _midiTab = AppManager::createKnob<KnobPage>( this, tr("MIDI") );
+
+    _midiIn = AppManager::createKnob<KnobChoice>( this, tr("Input device") );
+    _midiIn->setName("midiIn");
+
+    populateMidiIn();
+
+    _midiTab->addKnob(_midiIn);
+}
 
 void
 Settings::initializeKnobsViewers()
@@ -2817,6 +2831,28 @@ Settings::populateSystemFonts(const QSettings& settings,
 }
 
 void
+Settings::populateMidiIn()
+{
+    QSettings settings( QString::fromUtf8(NATRON_ORGANIZATION_NAME), QString::fromUtf8(NATRON_APPLICATION_NAME) );
+    QVector<QString> devices = MIDIHandler::getInputDevices();
+
+    std::vector<ChoiceOption> options;
+    options.push_back( ChoiceOption("none", tr("None").toStdString(), "") );
+    for (int i = 0; i < devices.size(); ++i) {
+        options.push_back( ChoiceOption(devices.at(i).toStdString(), devices.at(i).toStdString(), "") );
+    }
+    _midiIn->populateChoices(options);
+
+    QString name = QString::fromUtf8( _midiIn->getName().c_str() );
+    if ( settings.contains(name) ) {
+        std::string value = settings.value(name).toString().toStdString();
+        if ( !value.empty() ) {
+            _midiIn->setDefaultValueFromID(value);
+        }
+    }
+}
+
+void
 Settings::getOpenFXPluginsSearchPaths(std::list<std::string>* paths) const
 {
     assert(paths);
@@ -3825,6 +3861,18 @@ bool
 Settings::isDriveLetterToUNCPathConversionEnabled() const
 {
     return !_enableMappingFromDriveLettersToUNCShareNames->getValue();
+}
+
+std::string
+Settings::getMidiInputDevice() const
+{
+    return _midiIn->getActiveEntry().id;
+}
+
+void
+Settings::setMidiInputDevice(const std::string &id) const
+{
+    _midiIn->setDefaultValueFromID(id.empty() ? "none" : id);
 }
 
 NATRON_NAMESPACE_EXIT
