@@ -46,16 +46,22 @@ public:
     bool isInputConnected();
     bool connectInput(int port);
     bool connectInput(const QString &device);
+    const QString connectedInputDevice();
+    void checkSettings();
 
 Q_SIGNALS:
 
+    void newInputValue(int key, int value);
+
 private:
 
+    int _inputPort;
     RtMidiIn *_input;
 
     static void inputHandler(double deltatime,
                              std::vector< unsigned char > *message,
                              void *userData);
+    void setInputValue(int key, int value);
 };
 
 NATRON_NAMESPACE_EXIT

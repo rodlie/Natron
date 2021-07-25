@@ -22,6 +22,7 @@
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QDebug>
+#include <QSettings>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -29,23 +30,17 @@ NATRON_NAMESPACE_ENTER
 
 MIDIHandler::MIDIHandler(QObject *parent)
     : QObject(parent)
+    , _inputPort(-1)
     , _input(NULL)
 {
-    QVector<QString> devices = getInputDevices();
-    qDebug() << "MIDI handler input init" << devices;
     _input = new RtMidiIn();
     _input->setCallback(&MIDIHandler::inputHandler, (void*)this);
     _input->ignoreTypes(false, false, false);
-    if (devices.size() > 0) {
-        // connect to first available device
-        // just for TESTING
-        connectInput(0);
-    }
+    checkSettings();
 }
 
 MIDIHandler::~MIDIHandler()
 {
-    qDebug() << "MIDI handler exit";
     if ( _input->isPortOpen() ) {
         _input->closePort();
     }
@@ -101,7 +96,12 @@ MIDIHandler::connectInput(int port)
     }
 
     _input->openPort(port);
-    return _input->isPortOpen();
+    if ( _input->isPortOpen() ) {
+        _inputPort = port;
+        return true;
+    }
+    _inputPort = -1;
+    return false;
 }
 
 bool
@@ -114,8 +114,40 @@ MIDIHandler::connectInput(const QString &device)
     return false;
 }
 
+const
+QString MIDIHandler::connectedInputDevice()
+{
+    if (_inputPort >= 0 && _inputPort <= getInputDevices().size() ) {
+        return getInputDevices()[_inputPort];
+    }
+    return QString();
+}
+
 void
-MIDIHandler::inputHandler(double deltatime,
+MIDIHandler::checkSettings()
+{
+    QSettings settings( QString::fromUtf8(NATRON_ORGANIZATION_NAME), QString::fromUtf8(NATRON_APPLICATION_NAME) );
+    QString name = QString::fromUtf8("midiIn");
+    if ( !settings.contains(name) ) {
+        return;
+    }
+    QString value = settings.value(name).toString();
+    if ( value.isEmpty() || value == QString::fromUtf8("none") ) {
+        if ( isInputConnected() ) {
+            _input->closePort();
+        }
+        return;
+    }
+    if ( value != connectedInputDevice() ) {
+        int port = getInputDevicePort(value);
+        if (port >= 0) {
+            connectInput(port);
+        }
+    }
+}
+
+void
+MIDIHandler::inputHandler(double /*deltatime*/,
                           std::vector<unsigned char> *message,
                           void *userData)
 {
@@ -126,10 +158,13 @@ MIDIHandler::inputHandler(double deltatime,
     int key = (int)message->at(1);
     int value = (int)message->at(2);
 
-    qDebug() << "MIDI inputHandler" << key << value;
+    reinterpret_cast<MIDIHandler*>(userData)->setInputValue(key, value);
+}
 
-    Q_UNUSED(deltatime)
-    Q_UNUSED(userData)
+void
+MIDIHandler::setInputValue(int key, int value)
+{
+    Q_EMIT newInputValue(key, value);
 }
 
 NATRON_NAMESPACE_EXIT
