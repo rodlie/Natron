@@ -615,6 +615,12 @@ Gui::getRegisteredTabs() const
     return _imp->_registeredTabs;
 }
 
+MIDIHandler
+*Gui::getMidi()
+{
+    return _imp->_midi;
+}
+
 void
 Gui::debugImage(const Image* image,
                 const RectI& roi,

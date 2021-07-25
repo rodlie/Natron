@@ -215,6 +215,7 @@ GuiPrivate::GuiPrivate(const GuiAppInstancePtr& app,
     , _propertiesBin(0)
     , _propertiesScrollArea(0)
     , _propertiesContainer(0)
+    , _midi( app->getMidi() )
     , _layoutPropertiesBin(0)
     , _clearAllPanelsButton(0)
     , _minimizeAllPanelsButtons(0)

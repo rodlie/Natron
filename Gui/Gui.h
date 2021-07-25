@@ -54,6 +54,7 @@ CLANG_DIAG_ON(uninitialized)
 #endif
 #include "Gui/RegisteredTabs.h"
 #include "Gui/GuiFwd.h"
+#include "Gui/MIDIHandler.h"
 
 
 #define kMainSplitterObjectName "ToolbarSplitter"
@@ -360,6 +361,8 @@ public:
     QVBoxLayout* getPropertiesLayout() const;
     PropertiesBinWrapper* getPropertiesBin() const;
     const RegisteredTabs & getRegisteredTabs() const;
+
+    MIDIHandler* getMidi();
 
     void updateLastSequenceOpenedPath(const QString & path);
 
@@ -687,6 +690,8 @@ public Q_SLOTS:
     void openHelpForum();
     void openHelpIssues();
     void openHelpDocumentation();
+
+    void onPreferencesPanelClosed();
 
 #ifdef Q_OS_MAC
     void dockClicked();

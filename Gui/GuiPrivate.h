@@ -53,7 +53,7 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/RegisteredTabs.h"
 #include "Gui/GuiFwd.h"
 #include "Gui/LogWindow.h"
-
+#include "Gui/MIDIHandler.h"
 
 #define kPropertiesBinName "properties"
 
@@ -190,6 +190,8 @@ public:
     PropertiesBinWrapper *_propertiesBin;
     QScrollArea* _propertiesScrollArea;
     QWidget* _propertiesContainer;
+
+    MIDIHandler *_midi;
 
     ///the vertical layout for the properties dock container.
     QVBoxLayout *_layoutPropertiesBin;

@@ -779,6 +779,12 @@ Gui::openHelpDocumentation()
 #endif
 }
 
+void
+Gui::onPreferencesPanelClosed()
+{
+    getApp()->getMidi()->checkSettings();
+}
+
 #ifdef Q_OS_MAC
 void
 Gui::dockClicked()
