@@ -1185,6 +1185,7 @@ void
 PreferencesPanel::cancelChanges()
 {
     _imp->closeIsOK = false;
+    Q_EMIT closedPreferencesPanel();
     close();
 }
 
@@ -1200,6 +1201,7 @@ PreferencesPanel::saveChangesAndClose()
     }
     appPTR->saveShortcuts();
     _imp->closeIsOK = true;
+    Q_EMIT closedPreferencesPanel();
     close();
 }
 
@@ -1228,6 +1230,7 @@ PreferencesPanel::closeEvent(QCloseEvent*)
         if (_imp->pluginSettingsChanged) {
             settings->restorePluginSettings();
         }
+        Q_EMIT closedPreferencesPanel();
     }
 }
 
