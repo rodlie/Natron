@@ -28,6 +28,75 @@ CLANG_DIAG_ON(uninitialized)
 
 NATRON_NAMESPACE_ENTER
 
+MidiKnob::MidiKnob(QObject *parent)
+    : QObject(parent)
+    , _knob(0)
+{
+
+}
+
+void
+MidiKnob::setValue(int dim,
+                   int key,
+                   double min,
+                   double max)
+{
+    int index = getIndex(dim);
+    if (index >= 0) {
+        _knob[index].key = key;
+        _knob[index].min = min;
+        _knob[index].max = max;
+    } else {
+        MidiKnob::MidiKnobItem item;
+        item.dim = dim;
+        item.key = key;
+        item.min = min;
+        item.max = max;
+        _knob.append(item);
+    }
+}
+
+int
+MidiKnob::getIndex(int dim, int key)
+{
+    for (int i = 0; i < _knob.size(); ++i) {
+        if (_knob.at(i).dim == dim) {
+            if (key > 0) {
+                if (_knob.at(i).key == key) {
+                    return i;
+                }
+            } else {
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+QVector<int>
+MidiKnob::getKeyIndex(int key)
+{
+    QVector<int> result;
+    for (int i = 0; i < _knob.size(); ++i) {
+        if (_knob.at(i).key == key) {
+            result.append(i);
+        }
+    }
+    return result;
+}
+
+QVector<MidiKnob::MidiKnobItem>
+MidiKnob::getValue()
+{
+    return _knob;
+}
+
+void
+MidiKnob::clearAll()
+{
+    _knob.clear();
+}
+
 MIDIHandler::MIDIHandler(QObject *parent)
     : QObject(parent)
     , _inputPort(-1)
@@ -45,6 +114,25 @@ MIDIHandler::~MIDIHandler()
         _input->closePort();
     }
     delete _input;
+}
+
+double
+MIDIHandler::convertMidiValue(int value,
+                              double min,
+                              double max)
+{
+    if (value < 0 || min >= max) {
+        return 0.0;
+    }
+
+    double mVal = value;
+    double mMin = 0;
+    double mMax = 127;
+    double kMin = min;
+    double kMax = max;
+    double kVal= ( (mVal - mMin) / (mMax - mMin) ) * (kMax - kMin) + kMin;
+
+    return kVal;
 }
 
 QVector<QString>

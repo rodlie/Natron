@@ -32,6 +32,32 @@ CLANG_DIAG_ON(uninitialized)
 
 NATRON_NAMESPACE_ENTER
 
+class MidiKnob : public QObject
+{
+    Q_OBJECT
+
+public:
+
+    struct MidiKnobItem
+    {
+       int dim;
+       int key;
+       double min;
+       double max;
+    };
+
+    explicit MidiKnob(QObject *parent = NULL);
+    void setValue(int dim, int key, double min, double max);
+    int getIndex(int dim, int key = 0);
+    QVector<int> getKeyIndex(int key);
+    QVector<MidiKnob::MidiKnobItem> getValue();
+    void clearAll();
+
+private:
+
+    QVector<MidiKnob::MidiKnobItem> _knob;
+};
+
 class MIDIHandler : public QObject
 {
     Q_OBJECT
@@ -41,6 +67,7 @@ public:
     explicit MIDIHandler(QObject *parent = NULL);
     ~MIDIHandler();
 
+    static double convertMidiValue(int value, double min, double max);
     static QVector<QString> getInputDevices();
     static int getInputDevicePort(const QString &device);
     bool isInputConnected();
