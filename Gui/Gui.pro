@@ -150,6 +150,7 @@ SOURCES += \
     ManageUserParamsDialog.cpp \
     Menu.cpp \
     MessageBox.cpp \
+    MidiLearnDialog.cpp \
     MultiInstancePanel.cpp \
     NewLayerDialog.cpp \
     NodeBackdropSerialization.cpp \
@@ -303,6 +304,7 @@ HEADERS += \
     ManageUserParamsDialog.h \
     Menu.h \
     MessageBox.h \
+    MidiLearnDialog.h \
     MultiInstancePanel.h \
     NewLayerDialog.h \
     NodeBackdropSerialization.h \
