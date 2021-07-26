@@ -2834,7 +2834,7 @@ void
 Settings::populateMidiIn()
 {
     QSettings settings( QString::fromUtf8(NATRON_ORGANIZATION_NAME), QString::fromUtf8(NATRON_APPLICATION_NAME) );
-    QVector<QString> devices = MIDIHandler::getInputDevices();
+    QVector<QString> devices = MidiHandler::getInputDevices();
 
     std::vector<ChoiceOption> options;
     options.push_back( ChoiceOption("none", tr("None").toStdString(), "") );

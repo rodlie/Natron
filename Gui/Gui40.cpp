@@ -615,7 +615,7 @@ Gui::getRegisteredTabs() const
     return _imp->_registeredTabs;
 }
 
-MIDIHandler
+MidiHandler
 *Gui::getMidi()
 {
     return _imp->_midi;

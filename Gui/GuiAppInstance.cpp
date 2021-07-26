@@ -166,7 +166,7 @@ struct GuiAppInstancePrivate
 GuiAppInstance::GuiAppInstance(int appID)
     : AppInstance(appID)
     , _imp(new GuiAppInstancePrivate)
-    , _midi(new MIDIHandler)
+    , _midi(new MidiHandler)
 {
 #ifdef DEBUG
     qDebug() << "GuiAppInstance()" << (void*)(this);
@@ -599,7 +599,7 @@ GuiAppInstance::getGui() const
     return _imp->_gui;
 }
 
-MIDIHandler*
+MidiHandler*
 GuiAppInstance::getMidi()
 {
     return _midi;

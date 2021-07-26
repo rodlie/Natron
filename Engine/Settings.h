@@ -39,7 +39,7 @@
 #include "Engine/ViewIdx.h"
 #include "Engine/EngineFwd.h"
 
-#include "Gui/MIDIHandler.h"
+#include "Gui/MidiHandler.h"
 
 #define kQSettingsSoftwareMajorVersionSettingName "SoftwareVersionMajor"
 

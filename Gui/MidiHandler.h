@@ -17,8 +17,8 @@
  * along with Natron.  If not, see <http://www.gnu.org/licenses/gpl-2.0.html>
  * ***** END LICENSE BLOCK ***** */
 
-#ifndef MIDIHANDLER_H
-#define MIDIHANDLER_H
+#ifndef Gui_MidiHandler_h
+#define Gui_MidiHandler_h
 
 #include "Global/Macros.h"
 
@@ -58,14 +58,14 @@ private:
     QVector<MidiKnob::MidiKnobItem> _knob;
 };
 
-class MIDIHandler : public QObject
+class MidiHandler : public QObject
 {
     Q_OBJECT
 
 public:
 
-    explicit MIDIHandler(QObject *parent = NULL);
-    ~MIDIHandler();
+    explicit MidiHandler(QObject *parent = NULL);
+    ~MidiHandler();
 
     static double convertMidiValue(int value, double min, double max);
     static QVector<QString> getInputDevices();
@@ -93,4 +93,4 @@ private:
 
 NATRON_NAMESPACE_EXIT
 
-#endif // MIDIHANDLER_H
+#endif // Gui_MidiHandler_h

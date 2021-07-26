@@ -9,7 +9,7 @@ CLANG_DIAG_OFF(uninitialized)
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
-#include "Gui/MIDIHandler.h"
+#include "Gui/MidiHandler.h"
 #include "Gui/SpinBox.h"
 
 NATRON_NAMESPACE_ENTER
@@ -24,7 +24,7 @@ public:
     MidiLearnDialog(int key = 0,
                     double min = 0.0,
                     double max = 1.0,
-                    MIDIHandler *handler = NULL,
+                    MidiHandler *handler = NULL,
                     QWidget* parent = NULL);
 
     void getOptions(int *key, double *min, double *max);

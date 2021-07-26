@@ -16,7 +16,7 @@ NATRON_NAMESPACE_ENTER
 MidiLearnDialog::MidiLearnDialog(int key,
                                  double min,
                                  double max,
-                                 MIDIHandler *handler,
+                                 MidiHandler *handler,
                                  QWidget *parent)
     : QDialog(parent)
     , _key(NULL)

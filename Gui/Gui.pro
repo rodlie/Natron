@@ -146,10 +146,10 @@ SOURCES += \
     LineEdit.cpp \
     LinkToKnobDialog.cpp \
     LogWindow.cpp \
-    MIDIHandler.cpp \
     ManageUserParamsDialog.cpp \
     Menu.cpp \
     MessageBox.cpp \
+    MidiHandler.cpp \
     MidiLearnDialog.cpp \
     MultiInstancePanel.cpp \
     NewLayerDialog.cpp \
@@ -300,10 +300,10 @@ HEADERS += \
     LineEdit.h \
     LinkToKnobDialog.h \
     LogWindow.h \
-    MIDIHandler.h \
     ManageUserParamsDialog.h \
     Menu.h \
     MessageBox.h \
+    MidiHandler.h \
     MidiLearnDialog.h \
     MultiInstancePanel.h \
     NewLayerDialog.h \

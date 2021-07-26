@@ -40,7 +40,7 @@
 
 #include "Gui/GuiFwd.h"
 
-#include "Gui/MIDIHandler.h"
+#include "Gui/MidiHandler.h"
 
 class QDrag;
 
@@ -118,7 +118,7 @@ public:
 
     Gui* getGui() const WARN_UNUSED_RETURN;
 
-    MIDIHandler* getMidi();
+    MidiHandler* getMidi();
 
 
     //////////
@@ -282,7 +282,7 @@ private:
                                const NodePtr&  parentMultiInstance,
                                const CreateNodeArgs& args) OVERRIDE FINAL;
     boost::scoped_ptr<GuiAppInstancePrivate> _imp;
-    MIDIHandler *_midi;
+    MidiHandler *_midi;
 };
 
 NATRON_NAMESPACE_EXIT

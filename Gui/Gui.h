@@ -54,7 +54,7 @@ CLANG_DIAG_ON(uninitialized)
 #endif
 #include "Gui/RegisteredTabs.h"
 #include "Gui/GuiFwd.h"
-#include "Gui/MIDIHandler.h"
+#include "Gui/MidiHandler.h"
 
 
 #define kMainSplitterObjectName "ToolbarSplitter"
@@ -362,7 +362,7 @@ public:
     PropertiesBinWrapper* getPropertiesBin() const;
     const RegisteredTabs & getRegisteredTabs() const;
 
-    MIDIHandler* getMidi();
+    MidiHandler* getMidi();
 
     void updateLastSequenceOpenedPath(const QString & path);
 
