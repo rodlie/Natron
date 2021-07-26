@@ -56,6 +56,7 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/KnobGuiContainerI.h"
 #include "Gui/GuiFwd.h"
 
+#include "Gui/MidiHandler.h"
 
 #define SLIDER_MAX_RANGE 100000
 
@@ -425,6 +426,9 @@ public Q_SLOTS:
 
     void onCreateAliasOnGroupActionTriggered();
 
+    void onMidiInputChanged(int key, int value);
+    void onMidiLearnActionTriggered();
+
 Q_SIGNALS:
 
     void knobUndoneChange();
@@ -514,6 +518,8 @@ private:
 private:
 
     boost::scoped_ptr<KnobGuiPrivate> _imp;
+
+    MidiKnob _midiKnob;
 };
 
 NATRON_NAMESPACE_EXIT

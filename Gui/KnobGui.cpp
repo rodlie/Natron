@@ -100,6 +100,10 @@ KnobGui::initialize()
         QObject::connect( handler, SIGNAL(labelChanged()), this, SLOT(onLabelChanged()) );
         QObject::connect( handler, SIGNAL(dimensionNameChanged(int)), this, SLOT(onDimensionNameChanged(int)) );
         QObject::connect( handler, SIGNAL(viewerContextSecretChanged()), this, SLOT(onViewerContextSecretChanged()) );
+
+        if ( getGui()->getMidi() ) {
+            QObject::connect( getGui()->getMidi(), SIGNAL(newInputValue(int,int)), this, SLOT(onMidiInputChanged(int,int)) );
+        }
     }
     if (!_imp->isInViewerUIKnob) {
         _imp->guiCurves.resize( knob->getDimension() );
@@ -506,6 +510,15 @@ KnobGui::createAnimationMenu(QMenu* menu,
                 if (!isEnabled) {
                     removeAnyAnimationAction->setEnabled(false);
                 }
+            }
+
+            QAction* midiLearnAction = new QAction(tr("Midi Learn"), menu);
+            midiLearnAction->setData(dimension);
+            QObject::connect( midiLearnAction, SIGNAL(triggered()), this, SLOT(onMidiLearnActionTriggered()) );
+            menu->addSeparator();
+            menu->addAction(midiLearnAction);
+            if (!isEnabled) {
+                midiLearnAction->setEnabled(false);
             }
         }
     }

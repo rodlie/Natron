@@ -38,6 +38,7 @@
 
 #include "Gui/KnobGuiPrivate.h"
 #include "Gui/KnobUndoCommand.h" // SetExpressionCommand...
+#include "Gui/MidiLearnDialog.h"
 
 NATRON_NAMESPACE_ENTER
 
@@ -57,6 +58,64 @@ KnobGui::onCreateAliasOnGroupActionTriggered()
     assert(isCollecGroup);
     if (isCollecGroup) {
         createDuplicateOnNode(isCollecGroup, true, KnobPagePtr(), KnobGroupPtr(), -1);
+    }
+}
+
+void
+KnobGui::onMidiInputChanged(int key, int value)
+{
+    QVector<int> mKnobs = _midiKnob.getKeyIndex(key);
+    if (mKnobs.size() == 0) {
+        return;
+    }
+
+    KnobIPtr knob = getKnob();
+    SequenceTime time = knob->getHolder()->getApp()->getTimeLine()->currentFrame();
+    KeyFrame kf;
+    kf.setTime(time);
+
+    for (int i = 0; i < mKnobs.size(); ++i) {
+        int dim = _midiKnob.getValue()[mKnobs.at(i)].dim;
+        double min = _midiKnob.getValue()[mKnobs.at(i)].min;
+        double max = _midiKnob.getValue()[mKnobs.at(i)].max;
+
+        if (min >= max) {
+            continue;
+        }
+
+        double val= MidiHandler::convertMidiValue(value, min, max);
+
+        qDebug() << "Midi KnobGui value" << key << value << dim << min << max << val;
+        setValue(dim,
+                 val,
+                 &kf,
+                 true,
+                 eValueChangedReasonNatronGuiEdited);
+    }
+}
+
+void
+KnobGui::onMidiLearnActionTriggered()
+{
+    QAction* action = qobject_cast<QAction*>( sender() );
+    assert(action);
+
+    int dim = action->data().toInt();
+    int index = _midiKnob.getIndex(dim);
+    int key = index >= 0 ? _midiKnob.getValue()[index].key : 0;
+    double min = index >= 0 ? _midiKnob.getValue()[index].min : 0.0;
+    double max = index >= 0 ? _midiKnob.getValue()[index].max : 1.0;
+
+    if ( !getGui()->getMidi() ) {
+        return;
+    }
+
+    MidiLearnDialog dialog( key, min, max, getGui()->getMidi() );
+    int ret = dialog.exec();
+
+    if (ret == QDialog::Accepted) {
+        dialog.getOptions(&key, &min, &max);
+        _midiKnob.setValue(dim, key, min, max);
     }
 }
 
