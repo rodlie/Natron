@@ -107,6 +107,8 @@ private:
     virtual void initializeExtraGui(QVBoxLayout* layout) OVERRIDE FINAL;
     virtual void centerOnItem() OVERRIDE FINAL;
 
+    bool hasMidiKnobs();
+
 public Q_SLOTS:
 
     void onSettingsButtonClicked();
@@ -114,6 +116,10 @@ public Q_SLOTS:
     void onImportPresetsActionTriggered();
 
     void onExportPresetsActionTriggered();
+
+    void onMidiImportPresetsActionTriggered();
+
+    void onMidiExportPresetsActionTriggered();
 };
 
 NATRON_NAMESPACE_EXIT

@@ -1043,7 +1043,7 @@ Settings::initializeKnobsScriptEditorColors()
 void
 Settings::initializeKnobsMidi()
 {
-    _midiTab = AppManager::createKnob<KnobPage>( this, tr("MIDI") );
+    _midiTab = AppManager::createKnob<KnobPage>( this, tr("Midi") );
 
     _midiIn = AppManager::createKnob<KnobChoice>( this, tr("Input device") );
     _midiIn->setName("midiIn");

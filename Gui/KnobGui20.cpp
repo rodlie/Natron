@@ -825,6 +825,21 @@ KnobGui::setWarningValue(KnobWarningEnum warn,
     }
 }
 
+QVector<MidiKnob::MidiKnobItem>
+KnobGui::getMidiKnob()
+{
+    return _midiKnob.getValue();
+}
+
+void
+KnobGui::setMidiKnob(int dim,
+                     int key,
+                     double min,
+                     double max)
+{
+    _midiKnob.setValue(dim, key, min, max);
+}
+
 void
 KnobGui::refreshKnobWarningIndicatorVisibility()
 {

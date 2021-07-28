@@ -315,6 +315,9 @@ public:
 
     void setWarningValue(KnobWarningEnum warn, const QString& value);
 
+    QVector<MidiKnob::MidiKnobItem> getMidiKnob();
+    void setMidiKnob(int dim, int key, double min, double max);
+
 public Q_SLOTS:
 
     void onRemoveAliasLinkActionTriggered();
