@@ -512,14 +512,6 @@ KnobGui::createAnimationMenu(QMenu* menu,
                 }
             }
 
-            QAction* midiLearnAction = new QAction(tr("Midi Learn"), menu);
-            midiLearnAction->setData(dimension);
-            QObject::connect( midiLearnAction, SIGNAL(triggered()), this, SLOT(onMidiLearnActionTriggered()) );
-            menu->addSeparator();
-            menu->addAction(midiLearnAction);
-            if (!isEnabled) {
-                midiLearnAction->setEnabled(false);
-            }
         }
     }
     if ( !menu->isEmpty() ) {
@@ -744,6 +736,21 @@ KnobGui::createAnimationMenu(QMenu* menu,
         isCollecGroup = dynamic_cast<NodeGroup*>( collec.get() );
     }
 
+    KnobDouble* isKnobDouble = dynamic_cast<KnobDouble*>( knob.get() );
+    KnobInt* isKnobInt = dynamic_cast<KnobInt*>( knob.get() );
+    KnobColor* isKnobColor = dynamic_cast<KnobColor*>( knob.get() );
+    bool isMidiKnob = (isKnobDouble || isKnobInt || isKnobColor);
+
+    if (isAppKnob && isEffect && isMidiKnob && dimension >= 0) {
+        QAction* midiLearnAction = new QAction(tr("Midi Learn"), menu);
+        midiLearnAction->setData(dimension);
+        QObject::connect( midiLearnAction, SIGNAL(triggered()), this, SLOT(onMidiLearnActionTriggered()) );
+        menu->addSeparator();
+        menu->addAction(midiLearnAction);
+        if (!isEnabled) {
+            midiLearnAction->setEnabled(false);
+        }
+    }
 
     if ( isAppKnob && ( ( hasDimensionSlaved && (dimension == -1) ) || dimensionIsSlaved ) ) {
         menu->addSeparator();

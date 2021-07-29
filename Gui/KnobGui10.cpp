@@ -74,6 +74,14 @@ KnobGui::onMidiInputChanged(int key, int value)
     KeyFrame kf;
     kf.setTime(time);
 
+    KnobDouble* isKnobDouble = dynamic_cast<KnobDouble*>( knob.get() );
+    KnobInt* isKnobInt = dynamic_cast<KnobInt*>( knob.get() );
+    KnobColor* isKnobColor = dynamic_cast<KnobColor*>( knob.get() );
+
+    if (!isKnobDouble && !isKnobInt && !isKnobColor) {
+        return;
+    }
+
     for (int i = 0; i < mKnobs.size(); ++i) {
         int dim = _midiKnob.getValue()[mKnobs.at(i)].dim;
         double min = _midiKnob.getValue()[mKnobs.at(i)].min;
