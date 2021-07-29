@@ -115,7 +115,7 @@ MidiLearnDialog::MidiLearnDialog(int key,
     QObject::connect( clearButton, SIGNAL( clicked() ),
                       this, SLOT(resetOptions() ) );
     if (handler) {
-        QObject::connect( handler, SIGNAL( newInputValue(int,int) ),
+        QObject::connect( handler, SIGNAL( midiInputChanged(int,int) ),
                           this, SLOT( onMidiInputChanged(int,int) ) );
     }
 }

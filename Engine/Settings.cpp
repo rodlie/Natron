@@ -59,6 +59,7 @@
 #include "Engine/ViewerInstance.h"
 
 #include "Gui/GuiDefines.h"
+#include "Gui/MidiHandler.h"
 
 #include <SequenceParsing.h> // for removePath
 
@@ -1045,20 +1046,20 @@ Settings::initializeKnobsMidi()
 {
     _midiTab = AppManager::createKnob<KnobPage>( this, tr("Midi") );
 
-    _midiIn = AppManager::createKnob<KnobChoice>( this, tr("Input device") );
-    _midiIn->setName("midiIn");
+    _midiInDevice = AppManager::createKnob<KnobChoice>( this, tr("Input device") );
+    _midiInDevice->setName("midiIn");
 
     _midiViewerSeek = AppManager::createKnob<KnobInt>( this, tr("Viewer Seek") );
     _midiViewerSeek->setName("midiViewerSeek");
 
-    _midiViewerPlayForward = AppManager::createKnob<KnobInt>( this, tr("Viewer Play/Pause") );
-    _midiViewerPlayForward->setName("midiViewerPlayForward");
+    _midiViewerPlayPause = AppManager::createKnob<KnobInt>( this, tr("Viewer Play/Pause") );
+    _midiViewerPlayPause->setName("midiViewerPlayPause");
 
     populateMidiIn();
 
-    _midiTab->addKnob(_midiIn);
+    _midiTab->addKnob(_midiInDevice);
     _midiTab->addKnob(_midiViewerSeek);
-    _midiTab->addKnob(_midiViewerPlayForward);
+    _midiTab->addKnob(_midiViewerPlayPause);
 }
 
 void
@@ -2849,13 +2850,13 @@ Settings::populateMidiIn()
     for (int i = 0; i < devices.size(); ++i) {
         options.push_back( ChoiceOption(devices.at(i).toStdString(), devices.at(i).toStdString(), "") );
     }
-    _midiIn->populateChoices(options);
+    _midiInDevice->populateChoices(options);
 
-    QString name = QString::fromUtf8( _midiIn->getName().c_str() );
+    QString name = QString::fromUtf8( _midiInDevice->getName().c_str() );
     if ( settings.contains(name) ) {
         std::string value = settings.value(name).toString().toStdString();
         if ( !value.empty() ) {
-            _midiIn->setDefaultValueFromID(value);
+            _midiInDevice->setDefaultValueFromID(value);
         }
     }
 }
@@ -3874,13 +3875,13 @@ Settings::isDriveLetterToUNCPathConversionEnabled() const
 std::string
 Settings::getMidiInputDevice() const
 {
-    return _midiIn->getActiveEntry().id;
+    return _midiInDevice->getActiveEntry().id;
 }
 
 void
 Settings::setMidiInputDevice(const std::string &id) const
 {
-    _midiIn->setDefaultValueFromID(id.empty() ? "none" : id);
+    _midiInDevice->setDefaultValueFromID(id.empty() ? "none" : id);
 }
 
 int
@@ -3896,15 +3897,15 @@ Settings::setMidiViewerSeekKey(int key) const
 }
 
 int
-Settings::getMidiViewerPlayForwardKey() const
+Settings::getMidiViewerPlayPauseKey() const
 {
-    return _midiViewerPlayForward->getValue();
+    return _midiViewerPlayPause->getValue();
 }
 
 void
-Settings::setMidiViewerPlayForwardKey(int key) const
+Settings::setMidiViewerPlayPauseKey(int key) const
 {
-    _midiViewerPlayForward->setValue(key);
+    _midiViewerPlayPause->setValue(key);
 }
 
 NATRON_NAMESPACE_EXIT

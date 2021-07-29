@@ -105,7 +105,10 @@ Gui::Gui(const GuiAppInstancePtr& app,
     QObject::connect( qApp, SIGNAL(focusChanged(QWidget*,QWidget*)), this, SLOT(onFocusChanged(QWidget*,QWidget*)) );
     QObject::connect (this, SIGNAL(s_showLogOnMainThread()), this, SLOT(onShowLogOnMainThreadReceived()));
 
-    QObject::connect( app.get()->getMidi(), SIGNAL(newInputValue(int,int)), this, SLOT(onMidiInputChanged(int,int)) );
+    if ( app.get()->getMidi() ) {
+        QObject::connect( app.get()->getMidi(), SIGNAL(midiInputChanged(int,int)),
+                          this, SLOT(onMidiInputChanged(int,int)) );
+    }
 
     setAcceptDrops(true);
 
@@ -785,7 +788,10 @@ Gui::openHelpDocumentation()
 void
 Gui::onPreferencesPanelClosed()
 {
-    getApp()->getMidi()->checkSettings();
+    // update midi settings
+    if ( getApp()->getMidi() ) {
+        getApp()->getMidi()->checkSettings();
+    }
 }
 
 #ifdef Q_OS_MAC
@@ -803,26 +809,28 @@ Gui::onMidiInputChanged(int key, int value)
 {
     qDebug() << "Gui::onMidiInputChanged" << key << value;
 
-    // viewer triggers
+    // viewer actions
     int viewerSeekKey = appPTR->getCurrentSettings()->getMidiViewerSeekKey();
-    int viewerPlayForwardKey = appPTR->getCurrentSettings()->getMidiViewerPlayForwardKey();
-    bool hasViewerAction = ( key == viewerSeekKey || key == viewerPlayForwardKey);
+    int viewerPlayPauseKey = appPTR->getCurrentSettings()->getMidiViewerPlayPauseKey();
+    bool hasViewerAction = ( key == viewerSeekKey || key == viewerPlayPauseKey);
 
     if (hasViewerAction) {
         ViewerTab *viewer = NULL;
         if (getViewersList().size() == 1) {
             viewer = getViewersList().front();
+        } else if ( getNodeGraph()->getLastSelectedViewer() ) {
+            viewer = getNodeGraph()->getLastSelectedViewer();
         } else {
             viewer = getActiveViewer();
         }
         if (viewer) {
-            if (key == viewerSeekKey) { // viewer seek
+            if (key == viewerSeekKey) { // seek
                 int left, right;
                 viewer->getTimelineBounds(&left, &right);
                 SequenceTime frame = MidiHandler::convertMidiValue(value, left, right);
                 viewer->seek(frame);
-            } else if (key == viewerPlayForwardKey) { // viewer play/pause
-                viewer->startPause( MidiHandler::convertMidiValueTrigger(value) );
+            } else if (key == viewerPlayPauseKey) { //  play/pause
+                viewer->startPause( MidiHandler::convertMidiValueBool(value) );
             }
         }
     }

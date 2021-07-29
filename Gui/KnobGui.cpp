@@ -102,7 +102,7 @@ KnobGui::initialize()
         QObject::connect( handler, SIGNAL(viewerContextSecretChanged()), this, SLOT(onViewerContextSecretChanged()) );
 
         if ( getGui()->getMidi() ) {
-            QObject::connect( getGui()->getMidi(), SIGNAL(newInputValue(int,int)), this, SLOT(onMidiInputChanged(int,int)) );
+            QObject::connect( getGui()->getMidi(), SIGNAL(midiInputChanged(int,int)), this, SLOT(onMidiInputChanged(int,int)) );
         }
     }
     if (!_imp->isInViewerUIKnob) {

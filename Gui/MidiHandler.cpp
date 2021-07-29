@@ -138,7 +138,7 @@ MidiHandler::convertMidiValue(int value,
 }
 
 bool
-MidiHandler::convertMidiValueTrigger(int value)
+MidiHandler::convertMidiValueBool(int value)
 {
     if ( value >= (int)(MIDI_MAX_VALUE / 2) ) {
         return true;
@@ -263,7 +263,7 @@ MidiHandler::inputHandler(double /*deltatime*/,
 void
 MidiHandler::setInputValue(int key, int value)
 {
-    Q_EMIT newInputValue(key, value);
+    Q_EMIT midiInputChanged(key, value);
 }
 
 NATRON_NAMESPACE_EXIT

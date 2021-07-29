@@ -39,8 +39,6 @@
 #include "Engine/ViewIdx.h"
 #include "Engine/EngineFwd.h"
 
-#include "Gui/MidiHandler.h"
-
 #define kQSettingsSoftwareMajorVersionSettingName "SoftwareVersionMajor"
 
 NATRON_NAMESPACE_ENTER
@@ -389,8 +387,8 @@ public:
     int getMidiViewerSeekKey() const;
     void setMidiViewerSeekKey(int key) const;
 
-    int getMidiViewerPlayForwardKey() const;
-    void setMidiViewerPlayForwardKey(int key) const;
+    int getMidiViewerPlayPauseKey() const;
+    void setMidiViewerPlayPauseKey(int key) const;
 
 Q_SIGNALS:
 
@@ -659,9 +657,9 @@ private:
 
     // Midi
     KnobPagePtr _midiTab;
-    KnobChoicePtr _midiIn;
+    KnobChoicePtr _midiInDevice;
     KnobIntPtr _midiViewerSeek;
-    KnobIntPtr _midiViewerPlayForward;
+    KnobIntPtr _midiViewerPlayPause;
 };
 
 NATRON_NAMESPACE_EXIT
