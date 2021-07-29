@@ -68,6 +68,7 @@ public:
     ~MidiHandler();
 
     static double convertMidiValue(int value, double min, double max);
+    static bool convertMidiValueTrigger(int value);
     static QVector<QString> getInputDevices();
     static int getInputDevicePort(const QString &device);
     bool isInputConnected();

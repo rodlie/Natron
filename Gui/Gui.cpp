@@ -44,6 +44,7 @@ GCC_DIAG_UNUSED_PRIVATE_FIELD_ON
 #include "Engine/Project.h"
 #include "Engine/ViewerInstance.h"
 #include "Engine/Settings.h"
+#include "Engine/TimeLine.h"
 
 #include "Global/StrUtils.h"
 
@@ -103,6 +104,8 @@ Gui::Gui(const GuiAppInstancePtr& app,
     QObject::connect( app.get(), SIGNAL(pluginsPopulated()), this, SLOT(addToolButttonsToToolBar()) );
     QObject::connect( qApp, SIGNAL(focusChanged(QWidget*,QWidget*)), this, SLOT(onFocusChanged(QWidget*,QWidget*)) );
     QObject::connect (this, SIGNAL(s_showLogOnMainThread()), this, SLOT(onShowLogOnMainThreadReceived()));
+
+    QObject::connect( app.get()->getMidi(), SIGNAL(newInputValue(int,int)), this, SLOT(onMidiInputChanged(int,int)) );
 
     setAcceptDrops(true);
 
@@ -794,6 +797,36 @@ Gui::dockClicked()
     setWindowState( (windowState() & ~Qt::WindowMinimized) | Qt::WindowActive);
 }
 #endif
+
+void
+Gui::onMidiInputChanged(int key, int value)
+{
+    qDebug() << "Gui::onMidiInputChanged" << key << value;
+
+    // viewer triggers
+    int viewerSeekKey = appPTR->getCurrentSettings()->getMidiViewerSeekKey();
+    int viewerPlayForwardKey = appPTR->getCurrentSettings()->getMidiViewerPlayForwardKey();
+    bool hasViewerAction = ( key == viewerSeekKey || key == viewerPlayForwardKey);
+
+    if (hasViewerAction) {
+        ViewerTab *viewer = NULL;
+        if (getViewersList().size() == 1) {
+            viewer = getViewersList().front();
+        } else {
+            viewer = getActiveViewer();
+        }
+        if (viewer) {
+            if (key == viewerSeekKey) { // viewer seek
+                int left, right;
+                viewer->getTimelineBounds(&left, &right);
+                SequenceTime frame = MidiHandler::convertMidiValue(value, left, right);
+                viewer->seek(frame);
+            } else if (key == viewerPlayForwardKey) { // viewer play/pause
+                viewer->startPause( MidiHandler::convertMidiValueTrigger(value) );
+            }
+        }
+    }
+}
 
 NATRON_NAMESPACE_EXIT
 

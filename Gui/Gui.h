@@ -697,6 +697,8 @@ public Q_SLOTS:
     void dockClicked();
 #endif
     
+    void onMidiInputChanged(int key, int value);
+
 private:
 
     void setCurrentPanelFocus(PanelWidget* widget);

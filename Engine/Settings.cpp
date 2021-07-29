@@ -1048,9 +1048,17 @@ Settings::initializeKnobsMidi()
     _midiIn = AppManager::createKnob<KnobChoice>( this, tr("Input device") );
     _midiIn->setName("midiIn");
 
+    _midiViewerSeek = AppManager::createKnob<KnobInt>( this, tr("Viewer Seek") );
+    _midiViewerSeek->setName("midiViewerSeek");
+
+    _midiViewerPlayForward = AppManager::createKnob<KnobInt>( this, tr("Viewer Play/Pause") );
+    _midiViewerPlayForward->setName("midiViewerPlayForward");
+
     populateMidiIn();
 
     _midiTab->addKnob(_midiIn);
+    _midiTab->addKnob(_midiViewerSeek);
+    _midiTab->addKnob(_midiViewerPlayForward);
 }
 
 void
@@ -3873,6 +3881,30 @@ void
 Settings::setMidiInputDevice(const std::string &id) const
 {
     _midiIn->setDefaultValueFromID(id.empty() ? "none" : id);
+}
+
+int
+Settings::getMidiViewerSeekKey() const
+{
+    return _midiViewerSeek->getValue();
+}
+
+void
+Settings::setMidiViewerSeekKey(int key) const
+{
+    _midiViewerSeek->setValue(key);
+}
+
+int
+Settings::getMidiViewerPlayForwardKey() const
+{
+    return _midiViewerPlayForward->getValue();
+}
+
+void
+Settings::setMidiViewerPlayForwardKey(int key) const
+{
+    _midiViewerPlayForward->setValue(key);
 }
 
 NATRON_NAMESPACE_EXIT

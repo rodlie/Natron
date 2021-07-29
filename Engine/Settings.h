@@ -386,6 +386,12 @@ public:
     std::string getMidiInputDevice() const;
     void setMidiInputDevice(const std::string &id) const;
 
+    int getMidiViewerSeekKey() const;
+    void setMidiViewerSeekKey(int key) const;
+
+    int getMidiViewerPlayForwardKey() const;
+    void setMidiViewerPlayForwardKey(int key) const;
+
 Q_SIGNALS:
 
     void settingChanged(KnobI* knob);
@@ -654,6 +660,8 @@ private:
     // Midi
     KnobPagePtr _midiTab;
     KnobChoicePtr _midiIn;
+    KnobIntPtr _midiViewerSeek;
+    KnobIntPtr _midiViewerPlayForward;
 };
 
 NATRON_NAMESPACE_EXIT

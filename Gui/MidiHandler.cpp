@@ -26,6 +26,8 @@ CLANG_DIAG_OFF(uninitialized)
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
+#define MIDI_MAX_VALUE 127
+
 NATRON_NAMESPACE_ENTER
 
 MidiKnob::MidiKnob(QObject *parent)
@@ -127,12 +129,21 @@ MidiHandler::convertMidiValue(int value,
 
     double mVal = value;
     double mMin = 0;
-    double mMax = 127;
+    double mMax = MIDI_MAX_VALUE;
     double kMin = min;
     double kMax = max;
     double kVal= ( (mVal - mMin) / (mMax - mMin) ) * (kMax - kMin) + kMin;
 
     return kVal;
+}
+
+bool
+MidiHandler::convertMidiValueTrigger(int value)
+{
+    if ( value >= (int)(MIDI_MAX_VALUE / 2) ) {
+        return true;
+    }
+    return false;
 }
 
 QVector<QString>
