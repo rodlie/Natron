@@ -691,8 +691,6 @@ public Q_SLOTS:
     void openHelpIssues();
     void openHelpDocumentation();
 
-    void onPreferencesPanelClosed();
-
 #ifdef Q_OS_MAC
     void dockClicked();
 #endif

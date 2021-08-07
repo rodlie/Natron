@@ -393,6 +393,10 @@ public:
 Q_SIGNALS:
 
     void settingChanged(KnobI* knob);
+    void midiInputDeviceChanged(const std::string &device);
+
+public Q_SLOTS:
+    void onMidiInputChanged(int key, int value);
 
 private:
 
@@ -659,7 +663,9 @@ private:
     KnobPagePtr _midiTab;
     KnobChoicePtr _midiInDevice;
     KnobIntPtr _midiViewerSeek;
+    KnobButtonPtr _midiViewerSeekLearn;
     KnobIntPtr _midiViewerPlayPause;
+    KnobButtonPtr _midiViewerPlayPauseLearn;
 };
 
 NATRON_NAMESPACE_EXIT

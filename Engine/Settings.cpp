@@ -1048,18 +1048,38 @@ Settings::initializeKnobsMidi()
 
     _midiInDevice = AppManager::createKnob<KnobChoice>( this, tr("Input device") );
     _midiInDevice->setName("midiIn");
+    _midiInDevice->setHintToolTip( tr("Select midi input device to use").toStdString() );
+
+    _midiTab->addKnob(_midiInDevice);
+    populateMidiIn();
 
     _midiViewerSeek = AppManager::createKnob<KnobInt>( this, tr("Viewer Seek") );
     _midiViewerSeek->setName("midiViewerSeek");
+    _midiViewerSeek->setHintToolTip( tr("Midi input knob assigned to viewer seek").toStdString() );
+    _midiViewerSeek->setAddNewLine(false);
+
+    _midiTab->addKnob(_midiViewerSeek);
+
+    _midiViewerSeekLearn = AppManager::createKnob<KnobButton>( this, tr("Learn") );
+    _midiViewerSeekLearn->setCheckable(true);
+    _midiViewerSeekLearn->setName("midiViewerSeekLearnButton");
+    _midiViewerSeekLearn->setHintToolTip( tr("When checked any midi input knob active will be assigned to viewer seek").toStdString() );
+
+    _midiTab->addKnob(_midiViewerSeekLearn);
 
     _midiViewerPlayPause = AppManager::createKnob<KnobInt>( this, tr("Viewer Play/Pause") );
     _midiViewerPlayPause->setName("midiViewerPlayPause");
+    _midiViewerPlayPause->setHintToolTip( tr("Midi input knob assigned to viewer play/pause").toStdString() );
+    _midiViewerPlayPause->setAddNewLine(false);
 
-    populateMidiIn();
-
-    _midiTab->addKnob(_midiInDevice);
-    _midiTab->addKnob(_midiViewerSeek);
     _midiTab->addKnob(_midiViewerPlayPause);
+
+    _midiViewerPlayPauseLearn = AppManager::createKnob<KnobButton>( this, tr("Learn") );
+    _midiViewerPlayPauseLearn->setCheckable(true);
+    _midiViewerPlayPauseLearn->setName("midiViewerPlayPauseLearnButton");
+    _midiViewerPlayPauseLearn->setHintToolTip( tr("When checked any midi input knob active will be assigned to viewer play/pause").toStdString() );
+
+    _midiTab->addKnob(_midiViewerPlayPauseLearn);
 }
 
 void
@@ -2410,6 +2430,8 @@ Settings::onKnobValueChanged(KnobI* k,
         if (!_restoringSettings) {
             appPTR->clearPluginsLoadedCache();
         }
+    } else if ( k == _midiInDevice.get() ) {
+        Q_EMIT midiInputDeviceChanged(_midiInDevice->getActiveEntry().id);
     } else {
         ret = false;
     }
@@ -3906,6 +3928,16 @@ void
 Settings::setMidiViewerPlayPauseKey(int key) const
 {
     _midiViewerPlayPause->setValue(key);
+}
+
+void
+Settings::onMidiInputChanged(int key, int /*value*/)
+{
+    if ( _midiViewerSeekLearn->getValue() ) { // assign key for viewer seek
+        _midiViewerSeek->setValue(key);
+    } else if ( _midiViewerPlayPauseLearn->getValue() ) { // assign key for viewer play/pause
+        _midiViewerPlayPause->setValue(key);
+    }
 }
 
 NATRON_NAMESPACE_EXIT

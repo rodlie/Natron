@@ -785,15 +785,6 @@ Gui::openHelpDocumentation()
 #endif
 }
 
-void
-Gui::onPreferencesPanelClosed()
-{
-    // update midi settings
-    if ( getApp()->getMidi() ) {
-        getApp()->getMidi()->checkSettings();
-    }
-}
-
 #ifdef Q_OS_MAC
 void
 Gui::dockClicked()
@@ -807,8 +798,6 @@ Gui::dockClicked()
 void
 Gui::onMidiInputChanged(int key, int value)
 {
-    qDebug() << "Gui::onMidiInputChanged" << key << value;
-
     // viewer actions
     int viewerSeekKey = appPTR->getCurrentSettings()->getMidiViewerSeekKey();
     int viewerPlayPauseKey = appPTR->getCurrentSettings()->getMidiViewerPlayPauseKey();
@@ -830,7 +819,8 @@ Gui::onMidiInputChanged(int key, int value)
                 SequenceTime frame = MidiHandler::convertMidiValue(value, left, right);
                 viewer->seek(frame);
             } else if (key == viewerPlayPauseKey) { //  play/pause
-                viewer->startPause( MidiHandler::convertMidiValueBool(value) );
+                bool startPause = MidiHandler::convertMidiValueBool(value);
+                viewer->startPause(startPause);
             }
         }
     }

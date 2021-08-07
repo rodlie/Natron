@@ -403,6 +403,13 @@ PreferencesPanel::PreferencesPanel(Gui *parent)
     , KnobGuiContainerHelper( appPTR->getCurrentSettings().get(), QUndoStackPtr() )
     , _imp( new PreferencesPanelPrivate(this, parent) )
 {
+    // need access to midi signals/slots for some settings
+    if ( getGui() && getGui()->getMidi() ) {
+        QObject::connect( getGui()->getMidi(), SIGNAL( midiInputChanged(int,int) ),
+                          appPTR->getCurrentSettings().get(), SLOT( onMidiInputChanged(int,int) ) );
+        QObject::connect( appPTR->getCurrentSettings().get(), SIGNAL( midiInputDeviceChanged(std::string) ),
+                          getGui()->getMidi(), SLOT( setInputDevice(std::string) ) );
+    }
 }
 
 PreferencesPanel::~PreferencesPanel()
@@ -1185,7 +1192,7 @@ void
 PreferencesPanel::cancelChanges()
 {
     _imp->closeIsOK = false;
-    Q_EMIT closedPreferencesPanel();
+    checkMidiSettings();
     close();
 }
 
@@ -1201,7 +1208,8 @@ PreferencesPanel::saveChangesAndClose()
     }
     appPTR->saveShortcuts();
     _imp->closeIsOK = true;
-    Q_EMIT closedPreferencesPanel();
+    checkMidiSettings();
+
     close();
 }
 
@@ -1230,7 +1238,7 @@ PreferencesPanel::closeEvent(QCloseEvent*)
         if (_imp->pluginSettingsChanged) {
             settings->restorePluginSettings();
         }
-        Q_EMIT closedPreferencesPanel();
+        checkMidiSettings();
     }
 }
 
@@ -1654,6 +1662,14 @@ PreferencesPanel::onRestoreDefaultShortcutsButtonClicked()
             }
         }
         _imp->shortcutsTree->clearSelection();
+    }
+}
+
+void
+PreferencesPanel::checkMidiSettings()
+{
+    if ( getGui() && getGui()->getMidi() ) {
+        getGui()->getMidi()->checkSettings();
     }
 }
 

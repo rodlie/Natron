@@ -213,6 +213,15 @@ MidiHandler::connectInput(const QString &device)
     return false;
 }
 
+bool
+MidiHandler::disconnectInput()
+{
+    if ( _input->isPortOpen() ) {
+        _input->closePort();
+    }
+    return !_input->isPortOpen();
+}
+
 const
 QString MidiHandler::connectedInputDevice()
 {
@@ -242,6 +251,16 @@ MidiHandler::checkSettings()
         if (port >= 0) {
             connectInput(port);
         }
+    }
+}
+
+void
+MidiHandler::setInputDevice(const std::string &device)
+{
+    if (device.empty() || device == "none") {
+        disconnectInput();
+    } else {
+        connectInput( QString::fromStdString(device) );
     }
 }
 

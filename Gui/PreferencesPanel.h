@@ -66,9 +66,6 @@ public:
 
     void addShortcut(BoundAction* action);
 
-Q_SIGNALS:
-    void closedPreferencesPanel();
-
 public Q_SLOTS:
 
     void restoreDefaults();
@@ -100,6 +97,8 @@ public Q_SLOTS:
     void onResetShortcutButtonClicked();
 
     void onRestoreDefaultShortcutsButtonClicked();
+
+    void checkMidiSettings();
 
 private:
 

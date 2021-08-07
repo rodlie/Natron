@@ -74,8 +74,12 @@ public:
     bool isInputConnected();
     bool connectInput(int port);
     bool connectInput(const QString &device);
+    bool disconnectInput();
     const QString connectedInputDevice();
     void checkSettings();
+
+public Q_SLOTS:
+    void setInputDevice(const std::string &device);
 
 Q_SIGNALS:
 

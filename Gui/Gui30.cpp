@@ -649,8 +649,6 @@ Gui::showSettings()
 {
     if (!_imp->_settingsGui) {
         _imp->_settingsGui = new PreferencesPanel(this);
-        QObject::connect( _imp->_settingsGui, SIGNAL( closedPreferencesPanel() ),
-                          this, SLOT( onPreferencesPanelClosed() ) );
         _imp->_settingsGui->createGui();
     }
     _imp->_settingsGui->show();
