@@ -807,9 +807,12 @@ Gui::onMidiInputChanged(int key, int value)
     int viewerPlayPauseKey = appPTR->getCurrentSettings()->getMidiViewerPlayPauseKey();
     int viewerFirstFrameKey = appPTR->getCurrentSettings()->getMidiViewerFirstFrameKey();
     int viewerLastFrameKey = appPTR->getCurrentSettings()->getMidiViewerLastFrameKey();
+    int viewerNextFrameKey = appPTR->getCurrentSettings()->getMidiViewerNextFrameKey();
+    int viewerPrevFrameKey = appPTR->getCurrentSettings()->getMidiViewerPrevFrameKey();
 
     bool hasViewerAction = (key == viewerSeekKey || key == viewerPlayPauseKey ||
-                            key == viewerFirstFrameKey || key == viewerLastFrameKey);
+                            key == viewerFirstFrameKey || key == viewerLastFrameKey ||
+                            key == viewerNextFrameKey || key == viewerPrevFrameKey);
 
     if (hasViewerAction) {
         ViewerTab *viewer = NULL;
@@ -833,6 +836,10 @@ Gui::onMidiInputChanged(int key, int value)
                 viewer->firstFrame();
             } else if (key == viewerLastFrameKey) { // last frame
                 viewer->lastFrame();
+            } else if (key == viewerNextFrameKey) { // next frame
+                viewer->nextFrame();
+            } else if (key == viewerPrevFrameKey) { // prev frame
+                viewer->previousFrame();
             }
         }
     }

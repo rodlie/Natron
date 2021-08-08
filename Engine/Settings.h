@@ -396,6 +396,12 @@ public:
     int getMidiViewerLastFrameKey() const;
     void setMidiViewerLastFrameKey(int key) const;
 
+    int getMidiViewerNextFrameKey() const;
+    void setMidiViewerNextFrameKey(int key) const;
+
+    int getMidiViewerPrevFrameKey() const;
+    void setMidiViewerPrevFrameKey(int key) const;
+
 Q_SIGNALS:
 
     void settingChanged(KnobI* knob);
@@ -676,6 +682,10 @@ private:
     KnobButtonPtr _midiViewerFirstFrameLearn;
     KnobIntPtr _midiViewerLastFrame;
     KnobButtonPtr _midiViewerLastFrameLearn;
+    KnobIntPtr _midiViewerNextFrame;
+    KnobButtonPtr _midiViewerNextFrameLearn;
+    KnobIntPtr _midiViewerPrevFrame;
+    KnobButtonPtr _midiViewerPrevFrameLearn;
 };
 
 NATRON_NAMESPACE_EXIT

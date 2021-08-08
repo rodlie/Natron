@@ -1108,6 +1108,34 @@ Settings::initializeKnobsMidi()
     _midiViewerLastFrameLearn->setHintToolTip( tr("When checked any midi input knob active will be assigned to viewer last frame").toStdString() );
 
     _midiTab->addKnob(_midiViewerLastFrameLearn);
+
+    _midiViewerNextFrame = AppManager::createKnob<KnobInt>( this, tr("Viewer Next Frame") );
+    _midiViewerNextFrame->setName("midiViewerNextFrame");
+    _midiViewerNextFrame->setHintToolTip( tr("Midi input knob assigned to viewer next frame").toStdString() );
+    _midiViewerNextFrame->setAddNewLine(false);
+
+    _midiTab->addKnob(_midiViewerNextFrame);
+
+    _midiViewerNextFrameLearn = AppManager::createKnob<KnobButton>( this, tr("Learn") );
+    _midiViewerNextFrameLearn->setCheckable(true);
+    _midiViewerNextFrameLearn->setName("midiViewerNextFrameLearnButton");
+    _midiViewerNextFrameLearn->setHintToolTip( tr("When checked any midi input knob active will be assigned to viewer next frame").toStdString() );
+
+    _midiTab->addKnob(_midiViewerNextFrameLearn);
+
+    _midiViewerPrevFrame = AppManager::createKnob<KnobInt>( this, tr("Viewer Previous Frame") );
+    _midiViewerPrevFrame->setName("midiViewerPrevFrame");
+    _midiViewerPrevFrame->setHintToolTip( tr("Midi input knob assigned to viewer previous frame").toStdString() );
+    _midiViewerPrevFrame->setAddNewLine(false);
+
+    _midiTab->addKnob(_midiViewerPrevFrame);
+
+    _midiViewerPrevFrameLearn = AppManager::createKnob<KnobButton>( this, tr("Learn") );
+    _midiViewerPrevFrameLearn->setCheckable(true);
+    _midiViewerPrevFrameLearn->setName("midiViewerPrevFrameLearnButton");
+    _midiViewerPrevFrameLearn->setHintToolTip( tr("When checked any midi input knob active will be assigned to viewer previous frame").toStdString() );
+
+    _midiTab->addKnob(_midiViewerPrevFrameLearn);
 }
 
 void
@@ -3981,6 +4009,30 @@ void Settings::setMidiViewerLastFrameKey(int key) const
     _midiViewerLastFrame->setValue(key);
 }
 
+int
+Settings::getMidiViewerNextFrameKey() const
+{
+    return _midiViewerNextFrame->getValue();
+}
+
+void
+Settings::setMidiViewerNextFrameKey(int key) const
+{
+    _midiViewerNextFrame->setValue(key);
+}
+
+int
+Settings::getMidiViewerPrevFrameKey() const
+{
+    return _midiViewerPrevFrame->getValue();
+}
+
+void
+Settings::setMidiViewerPrevFrameKey(int key) const
+{
+    _midiViewerPrevFrame->setValue(key);
+}
+
 void
 Settings::onMidiInputChanged(int key, int /*value*/)
 {
@@ -3996,6 +4048,12 @@ Settings::onMidiInputChanged(int key, int /*value*/)
     } else if ( _midiViewerLastFrameLearn->getValue() ) { // assign key for viewer last frame
         _midiViewerLastFrame->setValue(key);
         _midiViewerLastFrameLearn->setValue(false);
+    } else if ( _midiViewerNextFrameLearn->getValue() ) { // assign key for viewer next frame
+        _midiViewerNextFrame->setValue(key);
+        _midiViewerNextFrameLearn->setValue(false);
+    } else if ( _midiViewerPrevFrameLearn->getValue() ) { // assign key for viewer prev frame
+        _midiViewerPrevFrame->setValue(key);
+        _midiViewerPrevFrameLearn->setValue(false);
     }
 }
 
