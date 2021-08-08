@@ -3986,12 +3986,16 @@ Settings::onMidiInputChanged(int key, int /*value*/)
 {
     if ( _midiViewerSeekLearn->getValue() ) { // assign key for viewer seek
         _midiViewerSeek->setValue(key);
+        _midiViewerSeekLearn->setValue(false);
     } else if ( _midiViewerPlayPauseLearn->getValue() ) { // assign key for viewer play/pause
         _midiViewerPlayPause->setValue(key);
+        _midiViewerPlayPauseLearn->setValue(false);
     } else if ( _midiViewerFirstFrameLearn->getValue() ) { // assign key for viewer first frame
         _midiViewerFirstFrame->setValue(key);
+        _midiViewerFirstFrameLearn->setValue(false);
     } else if ( _midiViewerLastFrameLearn->getValue() ) { // assign key for viewer last frame
         _midiViewerLastFrame->setValue(key);
+        _midiViewerLastFrameLearn->setValue(false);
     }
 }
 
