@@ -1080,6 +1080,34 @@ Settings::initializeKnobsMidi()
     _midiViewerPlayPauseLearn->setHintToolTip( tr("When checked any midi input knob active will be assigned to viewer play/pause").toStdString() );
 
     _midiTab->addKnob(_midiViewerPlayPauseLearn);
+
+    _midiViewerFirstFrame = AppManager::createKnob<KnobInt>( this, tr("Viewer First Frame") );
+    _midiViewerFirstFrame->setName("midiViewerFirstFrame");
+    _midiViewerFirstFrame->setHintToolTip( tr("Midi input knob assigned to viewer first frame").toStdString() );
+    _midiViewerFirstFrame->setAddNewLine(false);
+
+    _midiTab->addKnob(_midiViewerFirstFrame);
+
+    _midiViewerFirstFrameLearn = AppManager::createKnob<KnobButton>( this, tr("Learn") );
+    _midiViewerFirstFrameLearn->setCheckable(true);
+    _midiViewerFirstFrameLearn->setName("midiViewerFirstFrameLearnButton");
+    _midiViewerFirstFrameLearn->setHintToolTip( tr("When checked any midi input knob active will be assigned to viewer first frame").toStdString() );
+
+    _midiTab->addKnob(_midiViewerFirstFrameLearn);
+
+    _midiViewerLastFrame = AppManager::createKnob<KnobInt>( this, tr("Viewer Last Frame") );
+    _midiViewerLastFrame->setName("midiViewerLastFrame");
+    _midiViewerLastFrame->setHintToolTip( tr("Midi input knob assigned to viewer last frame").toStdString() );
+    _midiViewerLastFrame->setAddNewLine(false);
+
+    _midiTab->addKnob(_midiViewerLastFrame);
+
+    _midiViewerLastFrameLearn = AppManager::createKnob<KnobButton>( this, tr("Learn") );
+    _midiViewerLastFrameLearn->setCheckable(true);
+    _midiViewerLastFrameLearn->setName("midiViewerLastFrameLearnButton");
+    _midiViewerLastFrameLearn->setHintToolTip( tr("When checked any midi input knob active will be assigned to viewer last frame").toStdString() );
+
+    _midiTab->addKnob(_midiViewerLastFrameLearn);
 }
 
 void
@@ -3901,9 +3929,9 @@ Settings::getMidiInputDevice() const
 }
 
 void
-Settings::setMidiInputDevice(const std::string &id) const
+Settings::setMidiInputDevice(const std::string &device)
 {
-    _midiInDevice->setDefaultValueFromID(id.empty() ? "none" : id);
+    _midiInDevice->setDefaultValueFromID(device.empty() ? "none" : device);
 }
 
 int
@@ -3930,6 +3958,29 @@ Settings::setMidiViewerPlayPauseKey(int key) const
     _midiViewerPlayPause->setValue(key);
 }
 
+int
+Settings::getMidiViewerFirstFrameKey() const
+{
+    return _midiViewerFirstFrame->getValue();
+}
+
+void
+Settings::setMidiViewerFirstFrameKey(int key) const
+{
+    _midiViewerFirstFrame->setValue(key);
+}
+
+int
+Settings::getMidiViewerLastFrameKey() const
+{
+    return _midiViewerLastFrame->getValue();
+}
+
+void Settings::setMidiViewerLastFrameKey(int key) const
+{
+    _midiViewerLastFrame->setValue(key);
+}
+
 void
 Settings::onMidiInputChanged(int key, int /*value*/)
 {
@@ -3937,6 +3988,10 @@ Settings::onMidiInputChanged(int key, int /*value*/)
         _midiViewerSeek->setValue(key);
     } else if ( _midiViewerPlayPauseLearn->getValue() ) { // assign key for viewer play/pause
         _midiViewerPlayPause->setValue(key);
+    } else if ( _midiViewerFirstFrameLearn->getValue() ) { // assign key for viewer first frame
+        _midiViewerFirstFrame->setValue(key);
+    } else if ( _midiViewerLastFrameLearn->getValue() ) { // assign key for viewer last frame
+        _midiViewerLastFrame->setValue(key);
     }
 }
 

@@ -382,13 +382,19 @@ public:
     bool isDriveLetterToUNCPathConversionEnabled() const;
 
     std::string getMidiInputDevice() const;
-    void setMidiInputDevice(const std::string &id) const;
+    void setMidiInputDevice(const std::string &device);
 
     int getMidiViewerSeekKey() const;
     void setMidiViewerSeekKey(int key) const;
 
     int getMidiViewerPlayPauseKey() const;
     void setMidiViewerPlayPauseKey(int key) const;
+
+    int getMidiViewerFirstFrameKey() const;
+    void setMidiViewerFirstFrameKey(int key) const;
+
+    int getMidiViewerLastFrameKey() const;
+    void setMidiViewerLastFrameKey(int key) const;
 
 Q_SIGNALS:
 
@@ -666,6 +672,10 @@ private:
     KnobButtonPtr _midiViewerSeekLearn;
     KnobIntPtr _midiViewerPlayPause;
     KnobButtonPtr _midiViewerPlayPauseLearn;
+    KnobIntPtr _midiViewerFirstFrame;
+    KnobButtonPtr _midiViewerFirstFrameLearn;
+    KnobIntPtr _midiViewerLastFrame;
+    KnobButtonPtr _midiViewerLastFrameLearn;
 };
 
 NATRON_NAMESPACE_EXIT

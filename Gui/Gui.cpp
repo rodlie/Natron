@@ -798,10 +798,18 @@ Gui::dockClicked()
 void
 Gui::onMidiInputChanged(int key, int value)
 {
+    if (key < 1 || value < 0) {
+        return;
+    }
+
     // viewer actions
     int viewerSeekKey = appPTR->getCurrentSettings()->getMidiViewerSeekKey();
     int viewerPlayPauseKey = appPTR->getCurrentSettings()->getMidiViewerPlayPauseKey();
-    bool hasViewerAction = ( key == viewerSeekKey || key == viewerPlayPauseKey);
+    int viewerFirstFrameKey = appPTR->getCurrentSettings()->getMidiViewerFirstFrameKey();
+    int viewerLastFrameKey = appPTR->getCurrentSettings()->getMidiViewerLastFrameKey();
+
+    bool hasViewerAction = (key == viewerSeekKey || key == viewerPlayPauseKey ||
+                            key == viewerFirstFrameKey || key == viewerLastFrameKey);
 
     if (hasViewerAction) {
         ViewerTab *viewer = NULL;
@@ -821,6 +829,10 @@ Gui::onMidiInputChanged(int key, int value)
             } else if (key == viewerPlayPauseKey) { //  play/pause
                 bool startPause = MidiHandler::convertMidiValueBool(value);
                 viewer->startPause(startPause);
+            } else if (key == viewerFirstFrameKey) { // first frame
+                viewer->firstFrame();
+            } else if (key == viewerLastFrameKey) { // last frame
+                viewer->lastFrame();
             }
         }
     }
