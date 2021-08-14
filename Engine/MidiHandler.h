@@ -26,7 +26,7 @@ CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QObject>
 #include <QVector>
-#include "Gui/RtMidi.h"
+#include "Engine/RtMidi.h"
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 

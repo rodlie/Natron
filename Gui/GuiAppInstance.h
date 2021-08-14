@@ -37,10 +37,10 @@
 
 #include "Engine/AppInstance.h"
 #include "Engine/ViewIdx.h"
+#include "Engine/MidiHandler.h"
 
 #include "Gui/GuiFwd.h"
 
-#include "Gui/MidiHandler.h"
 
 class QDrag;
 

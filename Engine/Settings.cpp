@@ -59,7 +59,7 @@
 #include "Engine/ViewerInstance.h"
 
 #include "Gui/GuiDefines.h"
-#include "Gui/MidiHandler.h"
+#include "Engine/MidiHandler.h"
 
 #include <SequenceParsing.h> // for removePath
 

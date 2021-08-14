@@ -78,8 +78,6 @@ macx {
     Fontconfig.files = $$PWD/../Gui/Resources/etc/fonts
     Fontconfig.path = Contents/Resources/etc
     QMAKE_BUNDLE_DATA += Fontconfig
-    # Midi
-    LIBS += -framework CoreServices -framework CoreAudio -framework CoreMIDI -framework CoreFoundation
 }
 !macx {
     Resources.path = $$OUT_PWD

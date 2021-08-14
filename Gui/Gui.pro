@@ -149,7 +149,6 @@ SOURCES += \
     ManageUserParamsDialog.cpp \
     Menu.cpp \
     MessageBox.cpp \
-    MidiHandler.cpp \
     MidiLearnDialog.cpp \
     MultiInstancePanel.cpp \
     NewLayerDialog.cpp \
@@ -192,7 +191,6 @@ SOURCES += \
     ResizableMessageBox.cpp \
     RightClickableWidget.cpp \
     RotoPanel.cpp \
-    RtMidi.cpp \
     ScaleSliderQWidget.cpp \
     ScriptEditor.cpp \
     ScriptTextEdit.cpp \
@@ -303,7 +301,6 @@ HEADERS += \
     ManageUserParamsDialog.h \
     Menu.h \
     MessageBox.h \
-    MidiHandler.h \
     MidiLearnDialog.h \
     MultiInstancePanel.h \
     NewLayerDialog.h \
@@ -339,7 +336,6 @@ HEADERS += \
     ResizableMessageBox.h \
     RightClickableWidget.h \
     RotoPanel.h \
-    RtMidi.h \
     ScaleSliderQWidget.h \
     ScriptEditor.h \
     ScriptTextEdit.h \
@@ -417,10 +413,6 @@ OTHER_FILES += \
     Resources/Images/splashscreen.svg
 
 macx {
-# Midi
-# LIBS += -framework CoreServices -framework CoreAudio -framework CoreMIDI -framework CoreFoundation
-DEFINES += __MACOSX_CORE__
-
 OBJECTIVE_SOURCES += \
     $$PWD/../Gui/QtMac.mm
 }

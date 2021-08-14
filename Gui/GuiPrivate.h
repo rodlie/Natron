@@ -49,11 +49,12 @@ CLANG_DIAG_ON(uninitialized)
 
 #include "Global/Enums.h"
 
+#include "Engine/MidiHandler.h"
+
 #include "Gui/GuiDefines.h"
 #include "Gui/RegisteredTabs.h"
 #include "Gui/GuiFwd.h"
 #include "Gui/LogWindow.h"
-#include "Gui/MidiHandler.h"
 
 #define kPropertiesBinName "properties"
 

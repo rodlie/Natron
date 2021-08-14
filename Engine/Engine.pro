@@ -123,6 +123,7 @@ SOURCES += \
     Markdown.cpp \
     MemoryFile.cpp \
     MemoryInfo.cpp \
+    MidiHandler.cpp \
     NoOpBase.cpp \
     Node.cpp \
     NodeDocumentation.cpp \
@@ -180,6 +181,7 @@ SOURCES += \
     RotoSmear.cpp \
     RotoStrokeItem.cpp \
     RotoUndoCommand.cpp \
+    RtMidi.cpp \
     ScriptObject.cpp \
     Settings.cpp \
     Smooth1D.cpp \
@@ -336,6 +338,7 @@ HEADERS += \
     MemoryFile.h \
     MemoryInfo.h \
     MergingEnum.h \
+    MidiHandler.h \
     NoOpBase.h \
     Node.h \
     NodeGraphI.h \
@@ -405,6 +408,7 @@ HEADERS += \
     RotoStrokeItem.h \
     RotoStrokeItemSerialization.h \
     RotoUndoCommand.h \
+    RtMidi.h \
     ScriptObject.h \
     Settings.h \
     Singleton.h \
@@ -583,3 +587,8 @@ macx {
 OBJECTIVE_SOURCES += \
     QUrlFix.mm
 }
+
+# Midi
+macx: DEFINES += __MACOSX_CORE__
+unix:!macx: DEFINES += __UNIX_JACK__
+win32-g++: DEFINES += __WINDOWS_MM__

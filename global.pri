@@ -266,7 +266,10 @@ macx {
 
   #link against the CoreFoundation framework for the StandardPaths functionnality
   LIBS += -framework CoreServices
-    
+
+  # Midi
+  LIBS += -framework CoreAudio -framework CoreMIDI -framework CoreFoundation
+
   #// Disable availability macros on macOS
   #// because we may be using libc++ on an older macOS,
   #// so that std::locale::numeric may be available
@@ -375,6 +378,9 @@ win32-g++ {
     QT_CONFIG -= no-pkg-config
     CONFIG += link_pkgconfig
 
+    # Midi
+    LIBS += -lwinmm
+
     expat:     PKGCONFIG += expat
     cairo:     PKGCONFIG += cairo fontconfig
     equals(QT_MAJOR_VERSION, 5) {
@@ -404,6 +410,9 @@ unix {
      # Linking cairo dynamically is OK even on Linux, where it links to X11,
      # since we need X11 for OpenGL rendering anyway.
      cairo:     PKGCONFIG += cairo fontconfig
+
+     # Midi requires jack
+     !macx: PKGCONFIG += jack
 
      # GLFW will require a link to X11 on linux and OpenGL framework on OS X
      linux-*|freebsd-* {

@@ -52,11 +52,11 @@ CLANG_DIAG_ON(uninitialized)
 #include "Engine/ViewIdx.h"
 #include "Engine/EngineFwd.h"
 #include "Engine/Markdown.h"
+#include "Engine/MidiHandler.h"
 
 #include "Gui/KnobGuiContainerI.h"
 #include "Gui/GuiFwd.h"
 
-#include "Gui/MidiHandler.h"
 
 #define SLIDER_MAX_RANGE 100000
 
