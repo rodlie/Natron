@@ -104,10 +104,13 @@ MidiHandler::MidiHandler(QObject *parent)
     , _inputPort(-1)
     , _input(NULL)
 {
-    _input = new RtMidiIn();
-    _input->setCallback(&MidiHandler::inputHandler, (void*)this);
-    _input->ignoreTypes(false, false, false);
-    _input->setClientName( QString::fromUtf8("Natron").toStdString() );
+    try {
+        _input = new RtMidiIn();
+        _input->setCallback(&MidiHandler::inputHandler, (void*)this);
+        _input->ignoreTypes(false, false, false);
+    } catch (RtMidiError &error) {
+        error.printMessage();
+    }
 
     checkSettings();
 }
@@ -154,9 +157,19 @@ MidiHandler::getInputDevices()
     QVector<QString> devices;
 
     RtMidiIn midi;
-    unsigned int ports = midi.getPortCount();
+    unsigned int ports = 0;
+    try {
+        ports = midi.getPortCount();
+    } catch (RtMidiError &error) {
+        error.printMessage();
+    }
     for (unsigned int port = 0; port < ports; ++port) {
-        QString portName = QString::fromStdString( midi.getPortName(port) );
+        QString portName;
+        try {
+            portName = QString::fromStdString( midi.getPortName(port) );
+        } catch (RtMidiError &error) {
+            error.printMessage();
+        }
         if ( portName.isEmpty() ) {
             continue;
         }
@@ -188,7 +201,12 @@ bool
 MidiHandler::connectInput(int port)
 {
     qDebug() << "MIDI connect input" << port;
-    unsigned int ports = _input->getPortCount();
+    unsigned int ports = 0;
+    try {
+        ports = _input->getPortCount();
+    } catch (RtMidiError &error) {
+        error.printMessage();
+    }
     if (port < 0 || ports < 1) {
         return false;
     }
@@ -196,8 +214,12 @@ MidiHandler::connectInput(int port)
         _input->closePort();
     }
 
-    _input->openPort( port,
-                      QString::fromUtf8("Natron").toStdString() );
+    try {
+        _input->openPort( port,
+                          QString::fromUtf8("Natron").toStdString() );
+    }  catch (RtMidiError &error) {
+        error.printMessage();
+    }
 
     if ( _input->isPortOpen() ) {
         _inputPort = port;
