@@ -32,6 +32,7 @@
         <file alias="LICENSE-Pixman.txt">../tools/license/components/LICENSE-Pixman.txt</file>
         <file alias="LICENSE-Python.txt">../tools/license/components/LICENSE-Python.txt</file>
         <file alias="LICENSE-Qt-LGPL.txt">../tools/license/components/LICENSE-Qt-LGPL.txt</file>
+        <file alias="LICENSE-RtMidi.txt">../tools/license/components/LICENSE-RtMidi.txt</file>
         <file alias="LICENSE-Snappy.txt">../tools/license/components/LICENSE-Snappy.txt</file>
         <file alias="LICENSE-SeExpr.txt">../tools/license/components/LICENSE-SeExpr.txt</file>
         <file alias="LICENSE-TinyXML.txt">../tools/license/components/LICENSE-TinyXML.txt</file>

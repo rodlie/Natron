@@ -24,6 +24,7 @@ Natron binaries include components from the following libraries:
 * qhttpserver (BSD) https://github.com/nikhilm/qhttpserver
 * hoedown (BSD) https://github.com/hoedown/hoedown
 * libtess (SGI Free Software License B, X11-like) ftp://ftp.freedesktop.org/pub/mesa/glu/
+* RtMidi (other-MIT) https://github.com/thestk/rtmidi
 
 # Additional dependencies
 
@@ -116,4 +117,5 @@ Natron binaries include components from the following libraries:
 * libiconv (LGPL 2.1) https://www.gnu.org/software/libiconv/
 * libintl (LGPL 2.1) https://www.gnu.org/software/gettext/
 * ncurses (LGPL 2.1) https://www.gnu.org/software/ncurses/
+* JACK 1/2 (LGPL 2.1/GPL 2.0) https://github.com/jackaudio (used by RtMidi on Linux/FreeBSD)
 
