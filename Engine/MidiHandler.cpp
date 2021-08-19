@@ -107,6 +107,8 @@ MidiHandler::MidiHandler(QObject *parent)
     _input = new RtMidiIn();
     _input->setCallback(&MidiHandler::inputHandler, (void*)this);
     _input->ignoreTypes(false, false, false);
+    _input->setClientName( QString::fromUtf8("Natron").toStdString() );
+
     checkSettings();
 }
 
@@ -194,7 +196,9 @@ MidiHandler::connectInput(int port)
         _input->closePort();
     }
 
-    _input->openPort(port);
+    _input->openPort( port,
+                      QString::fromUtf8("Natron").toStdString() );
+
     if ( _input->isPortOpen() ) {
         _inputPort = port;
         return true;
