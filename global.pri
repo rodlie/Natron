@@ -327,6 +327,8 @@ win32 {
   LIBS += -lopengl32 -lGdi32
 
 
+  # TaskBar
+  LIBS += -lole32
 }
 
 win32-g++ {
