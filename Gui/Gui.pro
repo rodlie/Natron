@@ -413,6 +413,8 @@ OTHER_FILES += \
     Resources/Images/splashscreen.svg
 
 macx {
+HEADERS += TaskBarMac.h
 OBJECTIVE_SOURCES += \
-    $$PWD/../Gui/QtMac.mm
+    $$PWD/../Gui/QtMac.mm \
+    TaskBarMac.mm
 }

@@ -265,7 +265,7 @@ macx {
   } 
 
   #link against the CoreFoundation framework for the StandardPaths functionnality
-  LIBS += -framework CoreServices
+  LIBS += -framework CoreServices -framework AppKit
     
   #// Disable availability macros on macOS
   #// because we may be using libc++ on an older macOS,
