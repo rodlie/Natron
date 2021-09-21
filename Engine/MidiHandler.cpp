@@ -299,8 +299,24 @@ MidiHandler::inputHandler(double /*deltatime*/,
         return;
     }
 
-    int key = (int)message->at(1);
+    int key1 = (int)message->at(0);
+    int key2 = (int)message->at(1);
     int value = (int)message->at(2);
+
+    qDebug() << "MIDI input" << message->size() << ":" << key1 << key2 << value;
+
+    // Steinberg CMC faders (and others?)
+    // note + pitchbend = fader
+    int key = 0;
+    if (key2 > 0) {
+        key = key2;
+    } else if (key2 == 0 && key1 > 0) {
+        key = key1;
+    }
+
+    if (key == 0) {
+        return;
+    }
 
     reinterpret_cast<MidiHandler*>(userData)->setInputValue(key, value);
 }
