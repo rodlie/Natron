@@ -25,6 +25,7 @@
 - Python: `app.saveProject`  and `app.saveProjectAs` now do project variable substitution, as in `app.saveProjectAs("[Variable]/output.ntp")`.
 - Fix ASCII curve import. #656
 - New color selection dialog for RGB and RGBA knobs. #210
+- Fix histogram smoothing (was 5 times too strong).
 
 ### Plugins
 
@@ -32,6 +33,8 @@
 - HueCorrect now has the ability to do hue vs. hue adjustments, with an option to change the background curve guide. #610
 - Merge: Fix behavior on most operators when A is not connected or A's RoD and B's RoD are disjoint. #647
 - Reformat: fix bugs when "turn" is checked with Resize Type = None or Type = Scale.
+- Write: Remove file first when overwriting. #666
+- Mirror: Fix crash. #660
 
 
 ## Version 2.4.0
