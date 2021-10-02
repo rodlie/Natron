@@ -117,7 +117,7 @@ MidiHandler::MidiHandler(QObject *parent)
 
 MidiHandler::~MidiHandler()
 {
-    if ( _input->isPortOpen() ) {
+    if ( _input && _input->isPortOpen() ) {
         _input->closePort();
     }
     delete _input;
@@ -194,12 +194,20 @@ MidiHandler::getInputDevicePort(const QString &device)
 bool
 MidiHandler::isInputConnected()
 {
+    if (!_input) {
+        return false;
+    }
+
     return _input->isPortOpen();
 }
 
 bool
 MidiHandler::connectInput(int port)
 {
+    if (!_input) {
+        return false;
+    }
+
     qDebug() << "MIDI connect input" << port;
     unsigned int ports = 0;
     try {
@@ -242,6 +250,10 @@ MidiHandler::connectInput(const QString &device)
 bool
 MidiHandler::disconnectInput()
 {
+    if (!_input) {
+        return false;
+    }
+
     if ( _input->isPortOpen() ) {
         _input->closePort();
     }
@@ -251,6 +263,10 @@ MidiHandler::disconnectInput()
 const
 QString MidiHandler::connectedInputDevice()
 {
+    if (!_input) {
+        return QString();
+    }
+
     if (_inputPort >= 0 && _inputPort <= getInputDevices().size() ) {
         return getInputDevices()[_inputPort];
     }
@@ -260,6 +276,10 @@ QString MidiHandler::connectedInputDevice()
 void
 MidiHandler::checkSettings()
 {
+    if (!_input) {
+        return;
+    }
+
     QSettings settings( QString::fromUtf8(NATRON_ORGANIZATION_NAME), QString::fromUtf8(NATRON_APPLICATION_NAME) );
     QString name = QString::fromUtf8("midiIn");
     if ( !settings.contains(name) ) {

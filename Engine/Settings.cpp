@@ -2931,7 +2931,7 @@ Settings::populateMidiIn()
     _midiInDevice->populateChoices(options);
 
     QString name = QString::fromUtf8( _midiInDevice->getName().c_str() );
-    if ( settings.contains(name) ) {
+    if ( settings.contains(name) && devices.size() > 0) {
         std::string value = settings.value(name).toString().toStdString();
         if ( !value.empty() ) {
             _midiInDevice->setDefaultValueFromID(value);
