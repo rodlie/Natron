@@ -108,6 +108,12 @@ private:
     virtual void centerOnItem() OVERRIDE FINAL;
 
     bool hasMidiKnobs();
+    int loadMidiKnobs(const QString &filename);
+    int saveMidiKnobs(const QString &filename);
+
+private Q_SLOTS:
+
+    void initMidiKnobs();
 
 public Q_SLOTS:
 
@@ -120,6 +126,8 @@ public Q_SLOTS:
     void onMidiImportPresetsActionTriggered();
 
     void onMidiExportPresetsActionTriggered();
+
+    void onMidiSetDefaultPresetsActionTriggered();
 };
 
 NATRON_NAMESPACE_EXIT

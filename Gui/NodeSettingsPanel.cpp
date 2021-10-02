@@ -39,6 +39,7 @@
 #endif
 
 #include <QSettings>
+#include <QTimer>
 
 #include "Global/FStreamsSupport.h"
 
@@ -101,6 +102,8 @@ NodeSettingsPanel::NodeSettingsPanel(const MultiInstancePanelPtr & multiPanel,
     _settingsButton->setFocusPolicy(Qt::NoFocus);
     QObject::connect( _settingsButton, SIGNAL(clicked()), this, SLOT(onSettingsButtonClicked()) );
     insertHeaderWidget(1, _settingsButton);
+
+    QTimer::singleShot(100, this, SLOT(initMidiKnobs()));
 }
 
 NodeSettingsPanel::~NodeSettingsPanel()
@@ -153,6 +156,124 @@ NodeSettingsPanel::hasMidiKnobs()
     }
 
     return false;
+}
+
+int
+NodeSettingsPanel::loadMidiKnobs(const QString &filename)
+{
+    QSettings preset(filename, QSettings::IniFormat);
+
+    int rKnobs = preset.value( QString::fromUtf8("knobs") ).toInt();
+    if (rKnobs < 1) {
+        return 0;
+    }
+
+    const std::vector<KnobIPtr> &knobs = getInternalKnobs();
+    int totalPresets = 0;
+
+    for (int i = 0; i < rKnobs; ++i) {
+        preset.beginGroup( QString::fromUtf8("knob%1").arg(i) );
+        if ( preset.contains( QString::fromUtf8("name") ) ) {
+            QString midiName = preset.value( QString::fromUtf8("name") ).toString();
+            int dims = preset.value( QString::fromUtf8("dim") ).toInt();
+            if (dims < 1) {
+                continue;
+            }
+            for (U32 y = 0; y < knobs.size(); ++y) {
+                QString knobName = QString::fromStdString( knobs[y].get()->getName() );
+                if ( knobName !=  midiName) {
+                    continue;
+                }
+                KnobGuiPtr knobgui = getKnobGui(knobs[y]);
+                if (!knobgui) {
+                    continue;
+                }
+                for (int dim = 0; dim < dims; ++dim) {
+                    int key = preset.value(QString::fromUtf8("dim%1/key").arg(dim), 0).toInt();
+                    double min = preset.value(QString::fromUtf8("dim%1/min").arg(dim), 0.0).toDouble();
+                    double max = preset.value(QString::fromUtf8("dim%1/max").arg(dim), 1.0).toDouble();
+                    if (key < 1) {
+                        continue;
+                    }
+                    qDebug() << "set/update midi knob from preset" << knobName << key << min << max;
+                    knobgui.get()->setMidiKnob(dim, key, min, max);
+                    totalPresets++;
+                }
+            }
+        }
+        preset.endGroup();
+    }
+
+    qDebug() << "load midi presets" << totalPresets << filename;
+
+    return totalPresets;
+}
+
+int
+NodeSettingsPanel::saveMidiKnobs(const QString &filename)
+{
+    if ( !hasMidiKnobs() ) {
+        return 0;
+    }
+
+    QSettings preset(filename, QSettings::IniFormat);
+
+    // we must clear existing values (QSettings will always append)
+    preset.clear();
+
+    const std::vector<KnobIPtr> &knobs = getInternalKnobs();
+    int totalKnobs = 0;
+
+    for (U32 i = 0; i < knobs.size(); ++i) {
+        KnobGuiPtr knobgui = getKnobGui(knobs[i]);
+        if (knobgui && knobgui.get()->getMidiKnob().size() > 0) {
+            preset.beginGroup( QString::fromUtf8("knob%1").arg(totalKnobs) );
+            preset.setValue( QString::fromUtf8("name"), QString::fromStdString(knobs[i].get()->getName() ) );
+            preset.setValue( QString::fromUtf8("dim"), knobgui.get()->getMidiKnob().size() );
+            for (int y = 0; y < knobgui.get()->getMidiKnob().size(); ++y) {
+                preset.beginGroup( QString::fromUtf8("dim%1").arg(y) );
+                preset.setValue(QString::fromUtf8("key"), knobgui.get()->getMidiKnob()[y].key);
+                preset.setValue(QString::fromUtf8("min"), knobgui.get()->getMidiKnob()[y].min);
+                preset.setValue(QString::fromUtf8("max"), knobgui.get()->getMidiKnob()[y].max);
+                preset.endGroup();
+            }
+            preset.endGroup();
+            totalKnobs++;
+        }
+    }
+
+    if (totalKnobs > 0) {
+        preset.setValue(QString::fromUtf8("knobs"), totalKnobs);
+        preset.sync();
+    }
+
+    qDebug() << "save midi preset" << totalKnobs << filename;
+
+    return totalKnobs;
+}
+
+void
+NodeSettingsPanel::initMidiKnobs()
+{
+    QString pluginID;
+    if ( getNode() ) {
+        pluginID  = QString::fromStdString( getNode()->getNode()->getPluginID() );
+    }
+    if ( pluginID.isEmpty() ) {
+        return;
+    }
+
+    QString presetFile = QString::fromUtf8("%1/.%2/midi-presets/%3.%4")
+                         .arg( QDir::homePath() )
+                         .arg( QString::fromUtf8(NATRON_APPLICATION_NAME) )
+                         .arg(pluginID)
+                         .arg( QString::fromUtf8(NATRON_MIDI_PRESETS_FILE_EXT) );
+
+    if ( !QFile::exists(presetFile) ) {
+        return;
+    }
+
+    loadMidiKnobs(presetFile);
 }
 
 RotoPanel*
@@ -213,6 +334,10 @@ NodeSettingsPanel::onSettingsButtonClicked()
         QAction* exportMidiPresets = new QAction(tr("Export Midi presets"), &menu);
         QObject::connect( exportMidiPresets, SIGNAL(triggered()), this, SLOT(onMidiExportPresetsActionTriggered()) );
         menu.addAction(exportMidiPresets);
+
+        QAction* setDefaultMidiPresets = new QAction(tr("Set default Midi presets"), &menu);
+        QObject::connect( setDefaultMidiPresets, SIGNAL(triggered()), this, SLOT(onMidiSetDefaultPresetsActionTriggered()) );
+        menu.addAction(setDefaultMidiPresets);
     }
 
     menu.addSeparator();
@@ -355,54 +480,10 @@ NodeSettingsPanel::onMidiImportPresetsActionTriggered()
         return;
     }
 
-    QSettings ini(QString::fromStdString(filename), QSettings::IniFormat);
+    int importedPresets = loadMidiKnobs( QString::fromStdString(filename) );
 
-    int rKnobs = ini.value( QString::fromUtf8("knobs") ).toInt();
-    if (rKnobs < 1) {
-        Dialogs::errorDialog(tr("Midi import preset").toStdString(),
-                             tr("Invalid or empty Midi preset file.").toStdString(),
-                             false);
-        return;
-    }
-
-    const std::vector<KnobIPtr> &knobs = getInternalKnobs();
-    int totalPresets = 0;
-
-    for (int i = 0; i < rKnobs; ++i) {
-        ini.beginGroup( QString::fromUtf8("knob%1").arg(i) );
-        if ( ini.contains( QString::fromUtf8("name") ) ) {
-            QString midiName = ini.value( QString::fromUtf8("name") ).toString();
-            int dims = ini.value( QString::fromUtf8("dim") ).toInt();
-            if (dims < 1) {
-                continue;
-            }
-            for (U32 y = 0; y < knobs.size(); ++y) {
-                QString knobName = QString::fromStdString( knobs[y].get()->getName() );
-                if ( knobName !=  midiName) {
-                    continue;
-                }
-                KnobGuiPtr knobgui = getKnobGui(knobs[y]);
-                if (!knobgui) {
-                    continue;
-                }
-                for (int dim = 0; dim < dims; ++dim) {
-                    int key = ini.value(QString::fromUtf8("dim%1/key").arg(dim), 0).toInt();
-                    double min = ini.value(QString::fromUtf8("dim%1/min").arg(dim), 0.0).toDouble();
-                    double max = ini.value(QString::fromUtf8("dim%1/max").arg(dim), 1.0).toDouble();
-                    if (key < 1) {
-                        continue;
-                    }
-                    qDebug() << "set/update midi knob from preset" << knobName << key << min << max;
-                    knobgui.get()->setMidiKnob(dim, key, min, max);
-                    totalPresets++;
-                }
-            }
-        }
-        ini.endGroup();
-    }
-
-    QString dialogMsg = tr("Imported a total of %1 preset(s).").arg(totalPresets);
-    if (totalPresets < 1) {
+    QString dialogMsg = tr("Imported a total of %1 preset(s).").arg(importedPresets);
+    if (importedPresets < 1) {
         dialogMsg.append( tr(" Unable to find any knobs that matches imported presets.") );
     }
     Dialogs::informationDialog(tr("Midi import preset").toStdString(),
@@ -435,38 +516,40 @@ NodeSettingsPanel::onMidiExportPresetsActionTriggered()
         filename.append("." NATRON_MIDI_PRESETS_FILE_EXT);
     }
 
-    QSettings ini(QString::fromStdString(filename), QSettings::IniFormat);
+    int exportedKnobs = saveMidiKnobs( QString::fromStdString(filename) );
 
-    // we must clear existing values (QSettings will always append)
-    ini.clear();
+    Dialogs::informationDialog(tr("Midi export preset").toStdString(),
+                               tr("Exported presets for %1 knob(s)").arg(exportedKnobs).toStdString(),
+                               false);
+}
 
-    const std::vector<KnobIPtr> &knobs = getInternalKnobs();
-    int totalKnobs = 0;
+void
+NodeSettingsPanel::onMidiSetDefaultPresetsActionTriggered()
+{
+    QString pluginID;
+    if ( getNode() ) {
+        pluginID  = QString::fromStdString( getNode()->getNode()->getPluginID() );
+    }
+    if ( pluginID.isEmpty() ) {
+        return;
+    }
 
-    for (U32 i = 0; i < knobs.size(); ++i) {
-        KnobGuiPtr knobgui = getKnobGui(knobs[i]);
-        if (knobgui && knobgui.get()->getMidiKnob().size() > 0) {
-            ini.beginGroup( QString::fromUtf8("knob%1").arg(totalKnobs) );
-            ini.setValue( QString::fromUtf8("name"), QString::fromStdString(knobs[i].get()->getName() ) );
-            ini.setValue( QString::fromUtf8("dim"), knobgui.get()->getMidiKnob().size() );
-            for (int y = 0; y < knobgui.get()->getMidiKnob().size(); ++y) {
-                ini.beginGroup( QString::fromUtf8("dim%1").arg(y) );
-                ini.setValue(QString::fromUtf8("key"), knobgui.get()->getMidiKnob()[y].key);
-                ini.setValue(QString::fromUtf8("min"), knobgui.get()->getMidiKnob()[y].min);
-                ini.setValue(QString::fromUtf8("max"), knobgui.get()->getMidiKnob()[y].max);
-                ini.endGroup();
-            }
-            ini.endGroup();
-            totalKnobs++;
+    QString presetPath = QString::fromUtf8("%1/.%2/midi-presets")
+                         .arg( QDir::homePath() )
+                         .arg( QString::fromUtf8(NATRON_APPLICATION_NAME) );
+    QDir presetDir(presetPath);
+    if ( !presetDir.exists() ) {
+        if ( !presetDir.mkpath(presetPath) ) {
+            return;
         }
     }
 
-    ini.setValue(QString::fromUtf8("knobs"), totalKnobs);
-    ini.sync();
+    QString presetFile = QString::fromUtf8("%1/%2.%3")
+                         .arg(presetPath)
+                         .arg(pluginID)
+                         .arg( QString::fromUtf8(NATRON_MIDI_PRESETS_FILE_EXT) );
 
-    Dialogs::informationDialog(tr("Midi export preset").toStdString(),
-                               tr("Exported a total of %1 preset(s)").arg(totalKnobs).toStdString(),
-                               false);
+    saveMidiKnobs(presetFile);
 }
 
 NATRON_NAMESPACE_EXIT
