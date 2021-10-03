@@ -2930,19 +2930,25 @@ Settings::populateMidiIn()
     QSettings settings( QString::fromUtf8(NATRON_ORGANIZATION_NAME), QString::fromUtf8(NATRON_APPLICATION_NAME) );
     QVector<QString> devices = MidiHandler::getInputDevices();
 
+    bool hasSavedMidiInDevice = false;
+    QString settingsMidiIn = QString::fromUtf8( _midiInDevice->getName().c_str() );
+    std::string deviceID;
+    if ( settings.contains(settingsMidiIn) ) {
+        deviceID = settings.value(settingsMidiIn).toString().toStdString();
+    }
+
     std::vector<ChoiceOption> options;
     options.push_back( ChoiceOption("none", tr("None").toStdString(), "") );
     for (int i = 0; i < devices.size(); ++i) {
         options.push_back( ChoiceOption(devices.at(i).toStdString(), devices.at(i).toStdString(), "") );
+        if ( !deviceID.empty() && deviceID == devices.at(i).toStdString() ) {
+            hasSavedMidiInDevice = true;
+        }
     }
     _midiInDevice->populateChoices(options);
 
-    QString name = QString::fromUtf8( _midiInDevice->getName().c_str() );
-    if ( settings.contains(name) && devices.size() > 0) {
-        std::string value = settings.value(name).toString().toStdString();
-        if ( !value.empty() ) {
-            _midiInDevice->setDefaultValueFromID(value);
-        }
+    if (hasSavedMidiInDevice) {
+        _midiInDevice->setDefaultValueFromID(deviceID);
     }
 }
 
