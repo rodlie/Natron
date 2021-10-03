@@ -99,11 +99,22 @@ KnobGui::onMidiInputChanged(int key, int value)
         double val= MidiHandler::convertMidiValue(value, min, max);
 
         qDebug() << "Midi KnobGui value" << key << value << dim << min << max << val;
-        setValue(dim,
-                 val,
-                 &kf,
-                 true,
-                 eValueChangedReasonNatronGuiEdited);
+        if (dim == -1) {
+            int dims = knob->getDimension();
+            for (int i = 0; i < dims; ++i) {
+                setValue(i,
+                         val,
+                         &kf,
+                         true,
+                         eValueChangedReasonNatronGuiEdited);
+            }
+        } else {
+            setValue(dim,
+                     val,
+                     &kf,
+                     true,
+                     eValueChangedReasonNatronGuiEdited);
+        }
     }
 }
 

@@ -741,7 +741,7 @@ KnobGui::createAnimationMenu(QMenu* menu,
     KnobColor* isKnobColor = dynamic_cast<KnobColor*>( knob.get() );
     bool isMidiKnob = (isKnobDouble || isKnobInt || isKnobColor);
 
-    if (isAppKnob && isEffect && isMidiKnob && dimension >= 0) {
+    if (isAppKnob && isEffect && isMidiKnob) {
         QAction* midiLearnAction = new QAction(tr("Midi Learn"), menu);
         midiLearnAction->setData(dimension);
         QObject::connect( midiLearnAction, SIGNAL(triggered()), this, SLOT(onMidiLearnActionTriggered()) );
