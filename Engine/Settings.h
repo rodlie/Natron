@@ -384,6 +384,9 @@ public:
     std::string getMidiInputDevice() const;
     void setMidiInputDevice(const std::string &device);
 
+    bool getMidiApplyIfVisible() const;
+    void setMidiApplyIfVisible(bool ifVisible);
+
     int getMidiViewerSeekKey() const;
     void setMidiViewerSeekKey(int key) const;
 
@@ -674,6 +677,7 @@ private:
     // Midi
     KnobPagePtr _midiTab;
     KnobChoicePtr _midiInDevice;
+    KnobBoolPtr _midiApplyIfVisible;
     KnobIntPtr _midiViewerSeek;
     KnobButtonPtr _midiViewerSeekLearn;
     KnobIntPtr _midiViewerPlayPause;

@@ -69,6 +69,11 @@ KnobGui::onMidiInputChanged(int key, int value)
         return;
     }
 
+    bool applyIfVisible = appPTR->getCurrentSettings()->getMidiApplyIfVisible();
+    if ( applyIfVisible && _imp->field && !_imp->field->isVisible() ) {
+        return;
+    }
+
     KnobIPtr knob = getKnob();
     SequenceTime time = knob->getHolder()->getApp()->getTimeLine()->currentFrame();
     KeyFrame kf;

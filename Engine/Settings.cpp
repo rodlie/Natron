@@ -1053,6 +1053,13 @@ Settings::initializeKnobsMidi()
     _midiTab->addKnob(_midiInDevice);
     populateMidiIn();
 
+    _midiApplyIfVisible = AppManager::createKnob<KnobBool>( this, tr("Apply only if knob is visible") );
+    _midiApplyIfVisible->setDefaultValue(true);
+    _midiApplyIfVisible->setName("midiApplyIfVisible");
+    _midiApplyIfVisible->setHintToolTip( tr("Only apply Midi values to knob if it's visible, else ignore").toStdString() );
+
+    _midiTab->addKnob(_midiApplyIfVisible);
+
     _midiViewerSeek = AppManager::createKnob<KnobInt>( this, tr("Viewer Seek") );
     _midiViewerSeek->setName("midiViewerSeek");
     _midiViewerSeek->setHintToolTip( tr("Midi input knob assigned to viewer seek").toStdString() );
@@ -3960,6 +3967,18 @@ void
 Settings::setMidiInputDevice(const std::string &device)
 {
     _midiInDevice->setDefaultValueFromID(device.empty() ? "none" : device);
+}
+
+bool
+Settings::getMidiApplyIfVisible() const
+{
+    return _midiApplyIfVisible->getValue();
+}
+
+void
+Settings::setMidiApplyIfVisible(bool ifVisible)
+{
+    _midiApplyIfVisible->setValue(ifVisible);
 }
 
 int
