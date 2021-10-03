@@ -25,6 +25,7 @@
 CLANG_DIAG_OFF(deprecated)
 CLANG_DIAG_OFF(uninitialized)
 #include <QDialog>
+#include <QPlainTextEdit>
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
@@ -59,6 +60,7 @@ private:
     SpinBox *_key;
     SpinBox *_min;
     SpinBox *_max;
+    QPlainTextEdit *_log;
 };
 
 NATRON_NAMESPACE_EXIT

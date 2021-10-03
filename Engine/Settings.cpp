@@ -48,6 +48,7 @@
 #include "Engine/KnobTypes.h"
 #include "Engine/LibraryBinary.h"
 #include "Engine/MemoryInfo.h" // getSystemTotalRAM, isApplication32Bits, printAsRAM
+#include "Engine/MidiHandler.h"
 #include "Engine/Node.h"
 #include "Engine/OSGLContext.h"
 #include "Engine/OutputSchedulerThread.h"
@@ -59,7 +60,6 @@
 #include "Engine/ViewerInstance.h"
 
 #include "Gui/GuiDefines.h"
-#include "Engine/MidiHandler.h"
 
 #include <SequenceParsing.h> // for removePath
 

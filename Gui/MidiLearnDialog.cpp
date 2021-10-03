@@ -41,6 +41,7 @@ MidiLearnDialog::MidiLearnDialog(int key,
     , _key(NULL)
     , _min(NULL)
     , _max(NULL)
+    , _log(NULL)
 {
     setWindowTitle( tr("Midi Learn") );
 
@@ -50,6 +51,10 @@ MidiLearnDialog::MidiLearnDialog(int key,
     QWidget *minWidget = new QWidget(this);
     QWidget *maxWidget = new QWidget(this);
     QWidget *btnWidget = new QWidget(this);
+
+    _log = new QPlainTextEdit(this);
+    _log->setReadOnly(true);
+    _log->setMaximumHeight(100);
 
     QHBoxLayout *keyLayout = new QHBoxLayout(keyWidget);
     QHBoxLayout *minLayout = new QHBoxLayout(minWidget);
@@ -105,6 +110,7 @@ MidiLearnDialog::MidiLearnDialog(int key,
     mainLayout->addWidget(maxWidget);
     mainLayout->addStretch();
     mainLayout->addWidget(btnWidget);
+    mainLayout->addWidget(_log);
 
     clearOptions(key, min, max);
 
@@ -132,8 +138,9 @@ MidiLearnDialog::getOptions(int *key,
 
 void
 MidiLearnDialog::onMidiInputChanged(int key,
-                                    int /*value*/)
+                                    int value)
 {
+    _log->appendPlainText( QString::fromUtf8("Midi key: %1 value: %2").arg(key).arg(value) );
     _key->setValue(key);
 }
 
