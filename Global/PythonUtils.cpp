@@ -88,6 +88,8 @@ void setupPythonEnv(const std::string& binPath)
     static std::string pythonHome = binPath + "\\.."; // must use static storage
     std::string pyPathZip = pythonHome + "\\lib\\python" NATRON_PY_VERSION_STRING_NO_DOT ".zip";
     std::string pyPath = pythonHome +  "\\lib\\python" NATRON_PY_VERSION_STRING;
+    std::string pyPathDynLoad = pyPath + "\\lib-dynload";
+    std::string pyPathSitePackages = pyPath + "\\site-packages";
     std::string pluginPath = binPath + "\\..\\Plugins";
 #else
 #  if defined(__NATRON_LINUX__)
