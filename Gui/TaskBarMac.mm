@@ -56,10 +56,10 @@
     }
 
     NSRect progressBoundary = boundary;
-    progressBoundary.size.height *= 0.10; //0.13;
-    progressBoundary.size.width *= 0.8;
+    progressBoundary.size.height *= 0.15;
+    progressBoundary.size.width *= 0.75;
     progressBoundary.origin.x = ( NSWidth(boundary) - NSWidth(progressBoundary) ) / 2.0;
-    progressBoundary.origin.y =  NSHeight(boundary) * 0; //(NSHeight(boundary) / 2.0) - (NSHeight(progressBoundary) / 2.0);
+    progressBoundary.origin.y = (NSHeight(boundary) / 2.0) - (NSHeight(progressBoundary) / 2.0);
 
     NSRect currentProgress = progressBoundary;
     currentProgress.size.width *= _progress;
@@ -67,10 +67,10 @@
     [[NSColor blackColor] setFill];
     [NSBezierPath fillRect:progressBoundary];
 
-    [[NSColor greenColor] setFill];
+    [[NSColor systemBlueColor] setFill];
     [NSBezierPath fillRect:currentProgress];
 
-    [[NSColor whiteColor] setStroke];
+    [[NSColor blackColor] setStroke];
     [NSBezierPath strokeRect:progressBoundary];
 }
 @end
