@@ -2048,14 +2048,11 @@ ViewerGL::mouseReleaseEvent(QMouseEvent* e)
     _imp->pressureOnPress = 1;
     _imp->pointerTypeOnPress = ePenTypeLMB;
 
-    bool mustRedraw = false;
     if (_imp->ms == eMouseStateBuildingPickerRectangle) {
         updateRectangleColorPicker();
     }
 
     if (_imp->ms == eMouseStateSelecting) {
-        mustRedraw = true;
-
         if (_imp->hasMovedSincePress) {
             Q_EMIT selectionRectangleChanged(true);
         }
@@ -2067,7 +2064,8 @@ ViewerGL::mouseReleaseEvent(QMouseEvent* e)
 
     _imp->hasMovedSincePress = false;
 
-
+    // Always redraw if mouse state changes (e.g. from hovering something)
+    bool mustRedraw = (_imp->ms != eMouseStateUndefined);
     _imp->ms = eMouseStateUndefined;
     QPointF zoomPos;
     {
@@ -2517,8 +2515,10 @@ ViewerGL::penMotionInternal(int x,
     if (!cursorSet) {
         if ( _imp->viewerTab->getGui()->hasPickers() ) {
             setCursor( appPTR->getColorPickerCursor() );
-        } else if (!overlaysCaughtByPlugin) {
+            _imp->setColorPickerCursor = true;
+        } else if (!overlaysCaughtByPlugin && _imp->setColorPickerCursor) {
             unsetCursor();
+            _imp->setColorPickerCursor = false;
         }
     }
 

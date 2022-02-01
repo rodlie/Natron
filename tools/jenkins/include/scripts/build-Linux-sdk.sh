@@ -104,7 +104,6 @@ EOF
     LD_RUN_PATH=\"\$SDK/lib:\$QTDIR/lib:\$GCC/lib:\$FFMPEG/lib:\$LIBRAW/lib\" \\
     CPATH=\"\$SDK/include:\$QTDIR/include:\$GCC/include:\$FFMPEG/include:\$LIBRAW/include:\$OSMESA/include\" \\
     PKG_CONFIG_PATH=\"\$SDK/lib/pkgconfig:\$OSMESA/lib/pkgconfig:\$QTDIR/lib/pkgconfig:\$GCC/lib/pkgconfig:\$FFMPEG/lib/pkgconfig:\$LIBRAW/lib/pkgconfig\" \\
-    PYTHONPATH=\"\$QTDIR/lib/python2.7/site-packages/\" \\
     PATH=\"\$SDK/bin:\$QTDIR/bin:\$GCC/bin:\$FFMPEG/bin:\$LIBRAW_PATH:\$PATH\" \\
     WORKSPACE=/home \\
     GIT_URL=https://github.com/NatronGitHub/Natron.git \\
@@ -195,7 +194,7 @@ EOF
         fi
         # Note: perl-version added for qt4webkit, see https://github.com/NatronGitHub/Natron/issues/351#issuecomment-524068232
         # perl-Encode and perl-Data-Dumper needed to build texinfo before perl
-        YUM_PKGS="make util-linux git tar bzip2 wget glibc-devel diffutils patch zip unzip libX11-devel mesa-libGL-devel mesa-libGLU-devel libXrender-devel libSM-devel libICE-devel libXcursor-devel libXrender-devel libXrandr-devel libXinerama-devel libXi-devel libXv-devel libXfixes-devel libXvMC-devel libXxf86vm-devel libxkbfile-devel libXdamage-devel libXp-devel libXScrnSaver-devel libXcomposite-devel libXp-devel libXres-devel xorg-x11-proto-devel libXxf86dga-devel libXpm-devel perl-Digest-MD5 perl-version perl-Encode perl-Data-Dumper"
+        YUM_PKGS="ca-certificates make util-linux git tar bzip2 wget glibc-devel diffutils patch zip unzip libX11-devel mesa-libGL-devel mesa-libGLU-devel libXrender-devel libSM-devel libICE-devel libXcursor-devel libXrender-devel libXrandr-devel libXinerama-devel libXi-devel libXv-devel libXfixes-devel libXvMC-devel libXxf86vm-devel libxkbfile-devel libXdamage-devel libXp-devel libXScrnSaver-devel libXcomposite-devel libXp-devel libXres-devel xorg-x11-proto-devel libXxf86dga-devel libXpm-devel perl-Digest-MD5 perl-version perl-Encode perl-Data-Dumper"
         SDKPREP="RUN ${PREYUM}${DTSYUM}yum -y install ${YUM_PKGS} ${YUM_DEVEL_EXTRA} && yum -y clean all"
         cat <<EOF
 FROM $DOCKER_BASE as intermediate
@@ -613,10 +612,7 @@ if dobuild; then
     BOOST_ROOT="$SDK_HOME"
     OPENJPEG_HOME="$SDK_HOME"
     THIRD_PARTY_TOOLS_HOME="$SDK_HOME"
-    PYTHON_HOME="$SDK_HOME"
-    PYTHON_PATH="$SDK_HOME/lib/python${PYVER}"
-    PYTHON_INCLUDE="$SDK_HOME/include/python${PYVER}"
-    export PKG_CONFIG_PATH LD_LIBRARY_PATH PATH BOOST_ROOT OPENJPEG_HOME THIRD_PARTY_TOOLS_HOME PYTHON_HOME PYTHON_PATH PYTHON_INCLUDE
+    export PKG_CONFIG_PATH LD_LIBRARY_PATH PATH BOOST_ROOT OPENJPEG_HOME THIRD_PARTY_TOOLS_HOME PYTHON_HOME
 fi
 
 if [ "${UBUNTU:-0}" = 20.04 ]; then
@@ -800,6 +796,8 @@ checkpoint
 
 build x265 # (for ffmpeg and libheif)
 build libde265 # (for libheif)
+build dav1d # (for ffmpeg and libheif)
+build aom # (for ffmpeg and libheif)
 build libheif # (for imagemagick and openimageio)
 
 checkpoint
@@ -846,8 +844,6 @@ build libbluray # (for ffmpeg)
 build openh264 # (for ffmpeg)
 build snappy # (for ffmpeg)
 checkpoint
-build dav1d # (for ffmpeg)
-build aom # (for ffmpeg)
 build ffmpeg
 build ruby # (necessary for qtwebkit)
 build breakpad
@@ -862,21 +858,6 @@ checkpoint
 
 # pysetup
 if dobuild; then
-    if [ "$PYV" = "3" ]; then
-        export PYTHON_PATH=$SDK_HOME/lib/python${PYVER}
-        export PYTHON_INCLUDE=$SDK_HOME/include/python${PYVER}
-        PY_EXE=$SDK_HOME/bin/python${PYV}
-        PY_LIB=$SDK_HOME/lib/libpython${PYVER}.so
-        PY_INC=$SDK_HOME/include/python${PYVER}
-        USE_PY3=true
-    else
-        PY_EXE=$SDK_HOME/bin/python${PYV}
-        PY_LIB=$SDK_HOME/lib/libpython${PYVER}.so
-        PY_INC=$SDK_HOME/include/python${PYVER}
-        USE_PY3=false
-    fi
-
-
     # add qt5 to lib path to build shiboken2 and pyside2
     LD_LIBRARY_PATH="$QT5PREFIX/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     #LD_RUN_PATH="$LD_LIBRARY_PATH"
@@ -892,6 +873,8 @@ build qt4
 checkpoint
 
 build qt4webkit
+
+checkpoint
 
 if dobuild; then
     # add qt4 to lib path to build shiboken and pyside
@@ -940,7 +923,7 @@ checkpoint
 
 if [ "${GEN_DOCKERFILE:-}" = "1" ] || [ "${GEN_DOCKERFILE:-}" = "2" ]; then
     cat <<EOF
-RUN rm -rf $SDK_HOME/var/log/Natron-Linux-x86_64-SDK
+RUN xz $SDK_HOME/var/log/Natron-Linux-x86_64-SDK/*
 FROM $DOCKER_BASE
 MAINTAINER https://github.com/NatronGitHub/Natron
 WORKDIR /home

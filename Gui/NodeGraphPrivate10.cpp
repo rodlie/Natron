@@ -146,6 +146,19 @@ NodeGraphPrivate::pasteNodesInternal(const NodeClipBoard & clipboard,
     }
 } // pasteNodesInternal
 
+// Trim underscore followed by digits at the end of baseName (see #732).
+static
+void trimNumber(std::string &baseName)
+{
+    std::size_t found_underscore = baseName.rfind('_');
+    if (found_underscore != std::string::npos && found_underscore != (baseName.size() - 1)) {
+        std::size_t found_nondigit = baseName.find_last_not_of("0123456789");
+        if (found_nondigit == found_underscore) {
+            baseName.erase(found_underscore);
+        }
+    }
+}
+
 NodeGuiPtr
 NodeGraphPrivate::pasteNode(const NodeSerializationPtr & internalSerialization,
                             const NodeGuiSerializationPtr & guiSerialization,
@@ -176,23 +189,27 @@ NodeGraphPrivate::pasteNode(const NodeSerializationPtr & internalSerialization,
     NodeGuiPtr gui = boost::dynamic_pointer_cast<NodeGui>(gui_i);
     assert(gui);
 
-    std::string name;
     if ( ( grp == group.lock() ) && ( !internalSerialization->getNode() || ( internalSerialization->getNode()->getGroup() == group.lock() ) ) ) {
-        //We pasted the node in the same group, give it another label
-        int no = 1;
-        std::string label = internalSerialization->getNodeLabel();
-        do {
-            if (no > 1) {
-                std::stringstream ss;
-                ss << internalSerialization->getNodeLabel();
-                ss << '_';
-                ss << no;
-                label = ss.str();
-            }
-            ++no;
-        } while ( grp->checkIfNodeLabelExists( label, n.get() ) );
-
-        n->setLabel(label);
+        // We pasted the node in the same group, give it another label.
+        // If the label is available, use it as is.
+        // Else look for a similar name by adding a (different) number suffix.
+        std::string name = internalSerialization->getNodeLabel();
+        if ( grp->checkIfNodeLabelExists( name, n.get() ) ) {
+            std::string baseName = name;
+            trimNumber(baseName);
+            int no = 1;
+            do {
+                name = baseName;
+                if (no > 1) {
+                    name += '_';
+                    std::stringstream ss;
+                    ss << no;
+                    name += ss.str();
+                }
+                ++no;
+            } while ( grp->checkIfNodeLabelExists( name, n.get() ) );
+        }
+        n->setLabel(name);
     } else {
         //If we paste the node in a different graph, it can keep its scriptname/label
     }

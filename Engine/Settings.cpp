@@ -193,6 +193,18 @@ Settings::initializeKnobsGeneral()
                                                  "Disabling this will no longer save un-saved project.").arg( QString::fromUtf8(NATRON_APPLICATION_NAME) ) );
     _generalTab->addKnob(_autoSaveUnSavedProjects);
 
+    _saveVersions = AppManager::createKnob<KnobInt>( this, tr("Save versions") );
+    _saveVersions->setName("saveVersions");
+    _saveVersions->disableSlider();
+    _saveVersions->setMinimum(0);
+    _saveVersions->setMaximum(32);
+    _saveVersions->setHintToolTip( tr("Number of versions created (for backup) when saving newer versions of a file.\n"
+                                      "This option keeps saved versions of your file in the same directory, adding "
+                                      ".~1~, .~2~, etc., with the number increasing to the number of versions you specify.\n"
+                                      "Older files will be named with a higher number. E.g. with the default setting of 2, "
+                                      "you will have three versions of your file: *.ntp (last saved), *.ntp.~1~ (second "
+                                      "last saved), *.~2~ (third last saved).") );
+    _generalTab->addKnob(_saveVersions);
 
     _hostName = AppManager::createKnob<KnobChoice>( this, tr("Appear to plug-ins as") );
     _hostName->setName("pluginHostName");
@@ -1128,15 +1140,23 @@ Settings::initializeKnobsViewers()
     _maximumNodeViewerUIOpened->setHintToolTip( tr("Controls the maximum amount of nodes that can have their interface showing up at the same time in the viewer") );
     _viewersTab->addKnob(_maximumNodeViewerUIOpened);
 
-    _viewerKeys = AppManager::createKnob<KnobBool>( this, tr("Use number keys for the viewer") );
-    _viewerKeys->setName("viewerNumberKeys");
-    _viewerKeys->setHintToolTip( tr("When enabled, the row of number keys on the keyboard "
+    _viewerNumberKeys = AppManager::createKnob<KnobBool>( this, tr("Use number keys for the viewer") );
+    _viewerNumberKeys->setName("viewerNumberKeys");
+    _viewerNumberKeys->setHintToolTip( tr("When enabled, the row of number keys on the keyboard "
                                     "is used for switching input (<key> connects input to A side, "
                                     "<shift-key> connects input to B side), even if the corresponding "
                                     "character in the current keyboard layout is not a number.\n"
                                     "This may have to be disabled when using a remote display connection "
                                     "to Linux from a different OS.") );
-    _viewersTab->addKnob(_viewerKeys);
+    _viewersTab->addKnob(_viewerNumberKeys);
+
+    _viewerOverlaysPath = AppManager::createKnob<KnobBool>( this, tr("Only display overlays for the viewer render path") );
+    _viewerOverlaysPath->setName("viewerOverlaysPath");
+    _viewerOverlaysPath->setHintToolTip( tr("When disabled, overlays for all the non-minimized open "
+                                            "properties panels are displayed. When enabled, overlays are "
+                                            "displayed only for the render path for the current viewer "
+                                            "inputs.") );
+    _viewersTab->addKnob(_viewerOverlaysPath);
 } // Settings::initializeKnobsViewers
 
 void
@@ -1447,6 +1467,7 @@ Settings::setDefaultValues()
 #endif
     _autoSaveUnSavedProjects->setDefaultValue(true);
     _autoSaveDelay->setDefaultValue(5, 0);
+    _saveVersions->setDefaultValue(1);
     _hostName->setDefaultValue(0);
     _customHostName->setDefaultValue(NATRON_ORGANIZATION_DOMAIN_TOPLEVEL "." NATRON_ORGANIZATION_DOMAIN_SUB "." NATRON_APPLICATION_NAME);
 
@@ -1533,7 +1554,8 @@ Settings::setDefaultValues()
     _autoProxyWhenScrubbingTimeline->setDefaultValue(true);
     _autoProxyLevel->setDefaultValue(1);
     _maximumNodeViewerUIOpened->setDefaultValue(2);
-    _viewerKeys->setDefaultValue(true);
+    _viewerNumberKeys->setDefaultValue(true);
+    _viewerOverlaysPath->setDefaultValue(true);
 
     // Nodegraph
     _autoScroll->setDefaultValue(false);
@@ -2480,9 +2502,15 @@ Settings::getMaxOpenedNodesViewerContext() const
 }
 
 bool
-Settings::isViewerKeysEnabled() const
+Settings::viewerNumberKeys() const
 {
-    return _viewerKeys->getValue();
+    return _viewerNumberKeys->getValue();
+}
+
+bool
+Settings::viewerOverlaysPath() const
+{
+    return _viewerOverlaysPath->getValue();
 }
 
 ///////////////////////////////////////////////////////
@@ -2876,6 +2904,13 @@ Settings::isAutoSaveEnabledForUnsavedProjects() const
 {
     return _autoSaveUnSavedProjects->getValue();
 }
+
+int
+Settings::saveVersions() const
+{
+    return _saveVersions->getValue();
+}
+
 
 bool
 Settings::isSnapToNodeEnabled() const

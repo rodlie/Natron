@@ -1202,7 +1202,7 @@ Node::loadKnob(const KnobIPtr & knob,
         break;
 
     }
-  
+
 } // Node::loadKnob
 
 
@@ -1349,7 +1349,7 @@ Node::Implementation::abortPreview_blocking(bool allowPreviewRenders)
         assert(!mustQuitPreview);
         ++mustQuitPreview;
         while (mustQuitPreview) {
-            mustQuitPreviewCond.wait(&mustQuitPreviewMutex);
+            mustQuitPreviewCond.wait(l.mutex());
         }
     }
 }
@@ -2358,7 +2358,7 @@ Node::initializeDefaultKnobs(bool loadingSerialization)
 
 
     if (lastKnobBeforeAdvancedOption && mainPage) {
-        
+
         KnobsVec mainPageChildren = mainPage->getChildren();
         int i = 0;
         for (KnobsVec::iterator it = mainPageChildren.begin(); it != mainPageChildren.end(); ++it, ++i) {
@@ -3164,9 +3164,9 @@ renderPreview(const Image & srcImg,
               bool convertToSrgb,
               unsigned int* dstPixels)
 {
-#ifdef DEBUG
-    // Uncomment if using plugins that generate FP exceptions
-    // boost_adaptbx::floating_point::exception_trapping trap(0);
+#if defined(DEBUG) && !defined(DEBUG_NAN)
+    // Some plugins generate FP exceptions
+    boost_adaptbx::floating_point::exception_trapping trap(0);
 #endif
     ///recompute it after the rescaling
     const RectI & srcBounds = srcImg.getBounds();
@@ -4404,7 +4404,7 @@ Node::lock(const ImagePtr & image)
         std::find(_imp->imagesBeingRendered.begin(), _imp->imagesBeingRendered.end(), image);
 
     while ( it != _imp->imagesBeingRendered.end() ) {
-        _imp->imagesBeingRenderedCond.wait(&_imp->imagesBeingRenderedMutex);
+        _imp->imagesBeingRenderedCond.wait(l.mutex());
         it = std::find(_imp->imagesBeingRendered.begin(), _imp->imagesBeingRendered.end(), image);
     }
     ///Okay the image is not used by any other thread, claim that we want to use it
@@ -4896,7 +4896,7 @@ Node::onEffectKnobValueChanged(KnobI* what,
 
     bool ret = true;
     if ( what == _imp->previewEnabledKnob.lock().get() ) {
-        if ( (reason == eValueChangedReasonUserEdited) || (reason == eValueChangedReasonSlaveRefresh) ) {
+        if ( (reason == eValueChangedReasonUserEdited) || (reason == eValueChangedReasonSlaveRefresh) || (reason == eValueChangedReasonNatronInternalEdited) ) {
             Q_EMIT previewKnobToggled();
         }
     } else if ( what == _imp->renderButton.lock().get() ) {
@@ -5035,7 +5035,7 @@ Node::onEffectKnobValueChanged(KnobI* what,
         }
         _imp->effect->onEnableOpenGLKnobValueChanged(enabled);
     } else if (what == _imp->processAllLayersKnob.lock().get() ) {
-        
+
         std::map<int, ChannelSelector>::iterator foundOutput = _imp->channelsSelectors.find(-1);
         if (foundOutput != _imp->channelsSelectors.end()) {
             _imp->onLayerChanged(foundOutput->first, foundOutput->second);
@@ -5119,7 +5119,7 @@ Node::onOpenGLEnabledKnobChangedOnProject(bool activated)
         }
     }
     _imp->effect->onEnableOpenGLKnobValueChanged(enabled);
-    
+
 }
 
 bool
@@ -5181,14 +5181,14 @@ Node::Implementation::onLayerChanged(int inputNb,
 
         ///Disable all input selectors as it doesn't make sense to edit them whilst output is All
         for (std::map<int, ChannelSelector>::iterator it = channelsSelectors.begin(); it != channelsSelectors.end(); ++it) {
-            
+
             NodePtr inp;
             if (it->first >= 0) {
                 inp = _publicInterface->getInput(it->first);
             }
             bool mustBeSecret = (it->first >= 0 && !inp.get()) || outputIsAll;
             it->second.layer.lock()->setSecret(mustBeSecret);
-            
+
         }
     }
     if (!isRefreshingInputRelatedData) {
@@ -5666,7 +5666,7 @@ Node::setNodeIsRenderingInternal(std::list<NodeWPtr>& markedNodes)
     if ( QThread::currentThread() != qApp->thread() ) {
         QMutexLocker k(&_imp->nodeIsDequeuingMutex);
         while ( _imp->nodeIsDequeuing && !aborted() ) {
-            _imp->nodeIsDequeuingCond.wait(&_imp->nodeIsDequeuingMutex);
+            _imp->nodeIsDequeuingCond.wait(k.mutex());
         }
     }
 
@@ -7247,9 +7247,9 @@ Node::refreshChannelSelectors()
 
 
         KnobChoicePtr channelKnob = it->second.channel.lock();
-        
+
         hasChanged |= channelKnob->populateChoices(choices);
-        
+
     }
     //Notify the effect channels have changed (the viewer needs this)
     _imp->effect->onChannelsSelectorRefreshed();

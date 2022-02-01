@@ -312,6 +312,7 @@ GCC_DIAG_SUGGEST_OVERRIDE_ON
 public:
 
     TrackerNodePrivate* _p;
+
     KnobButtonWPtr addTrackButton;
     KnobButtonWPtr trackRangeButton;
     KnobButtonWPtr trackBwButton;

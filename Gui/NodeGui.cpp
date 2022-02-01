@@ -434,6 +434,8 @@ NodeGui::ensurePanelCreated(bool minimized, bool hideUnmodified)
     if (_settingsPanel) {
         QObject::connect( _settingsPanel, SIGNAL(nameChanged(QString)), this, SLOT(setName(QString)) );
         QObject::connect( _settingsPanel, SIGNAL(closeChanged(bool)), this, SLOT(onSettingsPanelClosed(bool)) );
+        QObject::connect( _settingsPanel, SIGNAL(minimized()), this, SLOT(onSettingsPanelMinimized()) );
+        QObject::connect( _settingsPanel, SIGNAL(maximized()), this, SLOT(onSettingsPanelMaximized()) );
         QObject::connect( _settingsPanel, SIGNAL(colorChanged(QColor)), this, SLOT(onSettingsPanelColorChanged(QColor)) );
 
         _graph->getGui()->setNodeViewerInterface(thisShared);
@@ -495,6 +497,32 @@ NodeGui::onSettingsPanelClosed(bool closed)
         }
     }
     Q_EMIT settingsPanelClosed(closed);
+}
+
+void
+NodeGui::onSettingsPanelMinimized()
+{
+    NodePtr internalNode = getNode();
+    if (internalNode && internalNode->hasAnyPersistentMessage()) {
+        const std::list<ViewerTab*>& viewers = getDagGui()->getGui()->getViewersList();
+        for (std::list<ViewerTab*>::const_iterator it = viewers.begin(); it != viewers.end(); ++it) {
+            (*it)->getViewer()->updatePersistentMessage();
+        }
+    }
+    Q_EMIT settingsPanelMinimized();
+}
+
+void
+NodeGui::onSettingsPanelMaximized()
+{
+    NodePtr internalNode = getNode();
+    if (internalNode && internalNode->hasAnyPersistentMessage()) {
+        const std::list<ViewerTab*>& viewers = getDagGui()->getGui()->getViewersList();
+        for (std::list<ViewerTab*>::const_iterator it = viewers.begin(); it != viewers.end(); ++it) {
+            (*it)->getViewer()->updatePersistentMessage();
+        }
+    }
+    Q_EMIT settingsPanelMaximized();
 }
 
 NodeSettingsPanel*
@@ -2102,23 +2130,23 @@ NodeGui::setVisibleSettingsPanel(bool b, bool m, bool h)
     }
     if (_settingsPanel) {
         _settingsPanel->setClosed(!b);
+        if (b) {
+            // also maximize (but don't minimize when closing)
+            _settingsPanel->minimizeOrMaximize(false);
+        }
     }
 }
 
 bool
 NodeGui::isSettingsPanelVisible() const
 {
-    if (_settingsPanel) {
-        return !_settingsPanel->isClosed();
-    } else {
-        return false;
-    }
+    return _settingsPanel && !_settingsPanel->isClosed() && !_settingsPanel->isMinimized();
 }
 
 bool
 NodeGui::isSettingsPanelMinimized() const
 {
-    return _settingsPanel ? _settingsPanel->isMinimized() : false;
+    return _settingsPanel && _settingsPanel->isMinimized();
 }
 
 void
@@ -4052,8 +4080,6 @@ GroupKnobDialog::GroupKnobDialog(Gui* gui,
     refreshUserParamsGUI();
 }
 
-typedef boost::shared_ptr<GroupKnobDialog> GroupKnobDialogPtr;
-
 void
 NodeGui::showGroupKnobAsDialog(KnobGroup* group)
 {
@@ -4061,18 +4087,18 @@ NodeGui::showGroupKnobAsDialog(KnobGroup* group)
     assert(group);
     bool showDialog = group->getValue();
     if (showDialog) {
-        assert(!_activeNodeCustomModalDialog);
-        GroupKnobDialogPtr dialog( new GroupKnobDialog(getDagGui()->getGui(), group) );
-        _activeNodeCustomModalDialog = dialog;
-        dialog->move( QCursor::pos() );
-        int accepted = dialog->exec();
+        _activeNodeCustomModalDialog = new GroupKnobDialog(getDagGui()->getGui(), group);
+        _activeNodeCustomModalDialog->move( QCursor::pos() );
+        int accepted = _activeNodeCustomModalDialog->exec();
         Q_UNUSED(accepted);
         // Notify dialog closed
         group->onValueChanged(false, ViewSpec::all(), 0, eValueChangedReasonUserEdited, 0);
-        _activeNodeCustomModalDialog.reset();
-    } else {
+        _activeNodeCustomModalDialog->deleteLater();
+        _activeNodeCustomModalDialog = 0;
+    } else if (_activeNodeCustomModalDialog) {
         _activeNodeCustomModalDialog->close();
-        _activeNodeCustomModalDialog.reset();
+        _activeNodeCustomModalDialog->deleteLater();
+        _activeNodeCustomModalDialog = 0;
     }
 }
 
