@@ -416,5 +416,5 @@ macx {
 HEADERS += TaskBarMac.h
 OBJECTIVE_SOURCES += \
     $$PWD/../Gui/QtMac.mm \
-    TaskBarMac.mm
+    $$PWD/../Gui/TaskBarMac.mm
 }

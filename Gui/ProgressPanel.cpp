@@ -147,10 +147,9 @@ ProgressPanel::ProgressPanel(Gui* gui)
     : QWidget(gui)
     , PanelWidget(this, gui)
     , _imp( new ProgressPanelPrivate() )
-    , _taskbar(NULL)
+    , _taskbar(0)
 {
-    _taskbar = new TaskBar(gui);
-    _taskbar->setProgressRange(0.0, 100.0);
+    _taskbar = new TaskBar(this);
 
     _imp->mainLayout = new QVBoxLayout(this);
     _imp->mainLayout->setContentsMargins(0, 0, 0, 0);
