@@ -23,6 +23,7 @@ CONFIG += staticlib
 CONFIG -= qt
 
 include(../global.pri)
+include(../config.pri)
 
 # disable warnings, since this is an external library
 QMAKE_CFLAGS_WARN_ON=-Wno-deprecated
