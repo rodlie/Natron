@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -1463,7 +1463,7 @@ FileGathererThread::abortGathering()
     QMutexLocker k(&_imp->abortRequestsMutex);
     ++_imp->abortRequests;
     while (_imp->abortRequests > 0) {
-        _imp->abortRequestsCond.wait(&_imp->abortRequestsMutex);
+        _imp->abortRequestsCond.wait(k.mutex());
     }
 }
 
@@ -1487,7 +1487,7 @@ FileGathererThread::quitGatherer()
     {
         QMutexLocker k(&_imp->mustQuitMutex);
         while (_imp->mustQuit) {
-            _imp->mustQuitCond.wait(&_imp->mustQuitMutex);
+            _imp->mustQuitCond.wait(k.mutex());
         }
     }
 }
@@ -1544,7 +1544,7 @@ FileGathererThread::run()
         {
             QMutexLocker l(&_imp->startCountMutex);
             while (_imp->startCount <= 0) {
-                _imp->startCountCond.wait(&_imp->startCountMutex);
+                _imp->startCountCond.wait(l.mutex());
             }
             _imp->startCount = 0;
         }

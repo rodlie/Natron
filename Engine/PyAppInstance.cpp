@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -334,6 +334,9 @@ App::renderInternal(bool forceBlocking,
 
     std::list<AppInstance::RenderWork> l;
     l.push_back(w);
+
+    PythonGILUnlocker pgl;
+
     getInternalApp()->startWritersRendering(forceBlocking, l);
 }
 
@@ -378,6 +381,9 @@ App::renderInternal(bool forceBlocking,
 
         l.push_back(w);
     }
+
+    PythonGILUnlocker pgl;
+
     getInternalApp()->startWritersRendering(forceBlocking, l);
 }
 
@@ -416,13 +422,23 @@ App::saveTempProject(const QString& filename)
 bool
 App::saveProject(const QString& filename)
 {
-    return getInternalApp()->save( filename.toStdString() );
+    std::string outFile = filename.toStdString();
+    std::map<std::string, std::string> env;
+    getInternalApp()->getProject()->getEnvironmentVariables(env);
+    Project::expandVariable(env, outFile);
+
+    return getInternalApp()->save(outFile);
 }
 
 bool
 App::saveProjectAs(const QString& filename)
 {
-    return getInternalApp()->saveAs( filename.toStdString() );
+    std::string outFile = filename.toStdString();
+    std::map<std::string, std::string> env;
+    getInternalApp()->getProject()->getEnvironmentVariables(env);
+    Project::expandVariable(env, outFile);
+
+    return getInternalApp()->saveAs(outFile);
 }
 
 App*

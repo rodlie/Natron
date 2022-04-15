@@ -218,6 +218,7 @@ catDll libheif-
 catDll libde265-
 catDll libx265
 catDll libdav1d
+catDll libaom
 
 if [ "${DISABLE_BREAKPAD:-}" != "1" ]; then
     catDll libBreakdown

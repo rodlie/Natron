@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -179,6 +179,8 @@ public:
 
     bool isAutoSaveEnabledForUnsavedProjects() const;
 
+    int saveVersions() const;
+
     bool isSnapToNodeEnabled() const;
 
     bool isCheckForUpdatesEnabled() const;
@@ -252,7 +254,8 @@ public:
     bool isAutoProxyEnabled() const;
     unsigned int getAutoProxyMipMapLevel() const;
     int getMaxOpenedNodesViewerContext() const;
-    bool isViewerKeysEnabled() const;
+    bool viewerNumberKeys() const;
+    bool viewerOverlaysPath() const;
     ///////////////////////////////////////////////////////
 
     bool areRGBPixelComponentsSupported() const;
@@ -430,6 +433,7 @@ private:
 #endif
     KnobBoolPtr _autoSaveUnSavedProjects;
     KnobIntPtr _autoSaveDelay;
+    KnobIntPtr _saveVersions;
     KnobChoicePtr _hostName;
     KnobStringPtr _customHostName;
 
@@ -533,7 +537,8 @@ private:
     KnobBoolPtr _autoProxyWhenScrubbingTimeline;
     KnobChoicePtr _autoProxyLevel;
     KnobIntPtr _maximumNodeViewerUIOpened;
-    KnobBoolPtr _viewerKeys;
+    KnobBoolPtr _viewerNumberKeys;
+    KnobBoolPtr _viewerOverlaysPath;
 
     // Nodegraph
     KnobPagePtr _nodegraphTab;

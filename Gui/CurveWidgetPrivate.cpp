@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -76,7 +76,8 @@ CurveWidgetPrivate::CurveWidgetPrivate(Gui* gui,
     , _selectedCurveColor(255, 255, 89, 255)
     , _nextCurveAddedColor()
     , textRenderer()
-    , _font( new QFont(appFont, appFontSize) )
+    , _screenPixelRatio(0.)
+    , _textFont()
     , _curves()
     , _selectedKeyFrames()
     , _mustSetDragOrientation(false)
@@ -89,7 +90,7 @@ CurveWidgetPrivate::CurveWidgetPrivate(Gui* gui,
     , _selectedKeyFramesCrossVertLine()
     , _selectedKeyFramesCrossHorizLine()
     , _timeline(timeline)
-    , _timelineEnabled(false)
+    , _timelineEnabled(bool(timeline))
     , _selectedDerivative()
     , _evaluateOnPenUp(false)
     , _keyDragLastMovement()
@@ -116,7 +117,6 @@ CurveWidgetPrivate::~CurveWidgetPrivate()
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
 
-    delete _font;
     _curves.clear();
 }
 
@@ -285,12 +285,11 @@ CurveWidgetPrivate::createMenu()
 } // createMenu
 
 void
-CurveWidgetPrivate::drawSelectionRectangle()
+CurveWidgetPrivate::drawSelectionRectangle(double screenPixelRatio)
 {
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
     assert( QGLContext::currentContext() == _widget->context() );
-
     {
         GLProtectAttrib a(GL_HINT_BIT | GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_CURRENT_BIT);
 
@@ -311,7 +310,7 @@ CurveWidgetPrivate::drawSelectionRectangle()
         glEnd();
 
 
-        glLineWidth(1.5);
+        glLineWidth(1.5 * screenPixelRatio);
 
         glColor4f(0.5, 0.5, 0.5, 1.);
         glBegin(GL_LINE_LOOP);
@@ -360,7 +359,7 @@ CurveWidgetPrivate::refreshTimelinePositions()
 }
 
 void
-CurveWidgetPrivate::drawTimelineMarkers()
+CurveWidgetPrivate::drawTimelineMarkers(double screenPixelRatio)
 {
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
@@ -389,6 +388,7 @@ CurveWidgetPrivate::drawTimelineMarkers()
 
         double leftBound, rightBound;
         _gui->getApp()->getFrameRange(&leftBound, &rightBound);
+        glLineWidth(1.5 * screenPixelRatio);
         glBegin(GL_LINES);
         glVertex2f( leftBound, btmRight.y() );
         glVertex2f( leftBound, topLeft.y() );
@@ -422,7 +422,7 @@ CurveWidgetPrivate::drawTimelineMarkers()
 } // CurveWidgetPrivate::drawTimelineMarkers
 
 void
-CurveWidgetPrivate::drawCurves()
+CurveWidgetPrivate::drawCurves(double screenPixelRatio)
 {
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
@@ -434,12 +434,12 @@ CurveWidgetPrivate::drawCurves()
     int count = (int)visibleCurves.size();
 
     for (int i = 0; i < count; ++i) {
-        visibleCurves[i]->drawCurve(i, count);
+        visibleCurves[i]->drawCurve(i, count, screenPixelRatio);
     }
 }
 
 void
-CurveWidgetPrivate::drawScale()
+CurveWidgetPrivate::drawScale(double screenPixelRatio)
 {
     glCheckError();
     // always running in the main thread
@@ -454,7 +454,7 @@ CurveWidgetPrivate::drawScale()
         return;
     }
 
-    QFontMetrics fontM(*_font);
+    QFontMetrics fm(*_textFont);
     const double smallestTickSizePixel = 10.; // tick size (in pixels) for alpha = 0.
     const double largestTickSizePixel = 500.; // tick size (in pixels) for alpha = 1.
     double gridR, gridG, gridB;
@@ -469,7 +469,6 @@ CurveWidgetPrivate::drawScale()
     scaleColor.setRgbF( Image::clamp(scaleR, 0., 1.),
                         Image::clamp(scaleG, 0., 1.),
                         Image::clamp(scaleB, 0., 1.) );
-
 
     {
         GLProtectAttrib a(GL_CURRENT_BIT | GL_COLOR_BUFFER_BIT | GL_ENABLE_BIT);
@@ -493,7 +492,7 @@ CurveWidgetPrivate::drawScale()
             ticks_fill(half_tick, ticks_max, m1, m2, &ticks);
             const double smallestTickSize = range * smallestTickSizePixel / rangePixel;
             const double largestTickSize = range * largestTickSizePixel / rangePixel;
-            const double minTickSizeTextPixel = (axis == 0) ? fontM.width( QLatin1String("00") ) : fontM.height(); // AXIS-SPECIFIC
+            const double minTickSizeTextPixel = ( (axis == 0) ? fm.width( QLatin1String("00") ) : fm.height() ) / _screenPixelRatio; // AXIS-SPECIFIC
             const double minTickSizeText = range * minTickSizeTextPixel / rangePixel;
             for (int i = m1; i <= m2; ++i) {
                 double value = i * smallTickSize + offset;
@@ -503,6 +502,7 @@ CurveWidgetPrivate::drawScale()
                 glCheckError();
                 glColor4f(gridR, gridG, gridB, alpha);
 
+                glLineWidth(1.5 * screenPixelRatio);
                 glBegin(GL_LINES);
                 if (axis == 0) {
                     glVertex2f( value, btmLeft.y() ); // AXIS-SPECIFIC
@@ -517,22 +517,22 @@ CurveWidgetPrivate::drawScale()
                 if (tickSize > minTickSizeText) {
                     const int tickSizePixel = rangePixel * tickSize / range;
                     const QString s = QString::number(value);
-                    const int sSizePixel = (axis == 0) ? fontM.width(s) : fontM.height(); // AXIS-SPECIFIC
+                    const double sSizePixel = ( (axis == 0) ? fm.width(s) : fm.height() ) / _screenPixelRatio; // AXIS-SPECIFIC
                     if (tickSizePixel > sSizePixel) {
-                        const int sSizeFullPixel = sSizePixel + minTickSizeTextPixel;
+                        const double sSizeFullPixel = sSizePixel + minTickSizeTextPixel;
                         double alphaText = 1.0; //alpha;
                         if (tickSizePixel < sSizeFullPixel) {
                             // when the text size is between sSizePixel and sSizeFullPixel,
                             // draw it with a lower alpha
                             alphaText *= (tickSizePixel - sSizePixel) / (double)minTickSizeTextPixel;
                         }
-                        alphaText = std::min(alphaText, alpha); // don't draw more opaque than tcks
+                        //alphaText = std::min(alphaText, alpha); // don't draw more opaque than ticks
                         QColor c = scaleColor;
                         c.setAlpha(255 * alphaText);
                         if (axis == 0) {
-                            _widget->renderText(value, btmLeft.y(), s, c, *_font, Qt::AlignHCenter); // AXIS-SPECIFIC
+                            _widget->renderText(value, btmLeft.y(), s, c, *_textFont, Qt::AlignHCenter); // AXIS-SPECIFIC
                         } else {
-                            _widget->renderText(btmLeft.x(), value, s, c, *_font, Qt::AlignVCenter); // AXIS-SPECIFIC
+                            _widget->renderText(btmLeft.x(), value, s, c, *_textFont, Qt::AlignVCenter); // AXIS-SPECIFIC
                         }
                     }
                 }
@@ -543,6 +543,7 @@ CurveWidgetPrivate::drawScale()
 
     glCheckError();
     glColor4f(gridR, gridG, gridB, 1.);
+    glLineWidth(1.5 * screenPixelRatio);
     glBegin(GL_LINES);
     glVertex2f(AXIS_MIN, 0);
     glVertex2f(AXIS_MAX, 0);
@@ -555,7 +556,7 @@ CurveWidgetPrivate::drawScale()
 } // drawScale
 
 void
-CurveWidgetPrivate::drawSelectedKeyFramesBbox()
+CurveWidgetPrivate::drawSelectedKeyFramesBbox(double screenPixelRatio)
 {
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
@@ -576,9 +577,8 @@ CurveWidgetPrivate::drawSelectedKeyFramesBbox()
         double xMid = ( topLeft.x() + btmRight.x() ) / 2.;
         double yMid = ( topLeft.y() + btmRight.y() ) / 2.;
 
-        glLineWidth(1.5);
-
         glColor4f(0.5, 0.5, 0.5, 1.);
+        glLineWidth(1.5 * screenPixelRatio);
         glBegin(GL_LINE_LOOP);
         glVertex2f( topLeft.x(), btmRight.y() );
         glVertex2f( topLeft.x(), topLeft.y() );
@@ -587,6 +587,7 @@ CurveWidgetPrivate::drawSelectedKeyFramesBbox()
         glEnd();
 
 
+        glLineWidth(1.5 * screenPixelRatio);
         glBegin(GL_LINES);
         glVertex2f( std::max( _selectedKeyFramesCrossHorizLine.p1().x(), topLeft.x() ), _selectedKeyFramesCrossHorizLine.p1().y() );
         glVertex2f( std::min( _selectedKeyFramesCrossHorizLine.p2().x(), btmRight.x() ), _selectedKeyFramesCrossHorizLine.p2().y() );
@@ -623,7 +624,7 @@ CurveWidgetPrivate::drawSelectedKeyFramesBbox()
         }
         glEnd();
 
-        glPointSize(BOUNDING_BOX_HANDLE_SIZE);
+        glPointSize(BOUNDING_BOX_HANDLE_SIZE * screenPixelRatio);
         glBegin(GL_POINTS);
         glVertex2f( topLeft.x(), topLeft.y() );
         glVertex2f( btmRight.x(), topLeft.y() );
@@ -770,7 +771,7 @@ CurveWidgetPrivate::isNearbyKeyFrameText(const QPoint& pt) const
                 topLeftWidget.ry() += yOffset;
 
                 QString coordStr =  QString::fromUtf8("x: %1, y: %2").arg( (*it2)->key.getTime() ).arg( (*it2)->key.getValue() );
-                QPointF btmRightWidget( topLeftWidget.x() + fm.width(coordStr), topLeftWidget.y() + fm.height() );
+                QPointF btmRightWidget( topLeftWidget.x() + fm.width(coordStr) / _screenPixelRatio, topLeftWidget.y() + fm.height() / _screenPixelRatio );
 
                 if ( (pt.x() >= topLeftWidget.x() - CLICK_DISTANCE_FROM_CURVE_ACCEPTANCE) && (pt.x() <= btmRightWidget.x() + CLICK_DISTANCE_FROM_CURVE_ACCEPTANCE) &&
                      ( pt.y() >= topLeftWidget.y() - CLICK_DISTANCE_FROM_CURVE_ACCEPTANCE) && ( pt.y() <= btmRightWidget.y() + CLICK_DISTANCE_FROM_CURVE_ACCEPTANCE) ) {
@@ -835,8 +836,8 @@ CurveWidgetPrivate::isNearbySelectedTangentText(const QPoint & pt) const
 
                 QString leftCoordStr =  QString( tr("l: %1") ).arg(std::floor( ( (*it2)->key.getLeftDerivative() * rounding ) + 0.5 ) / rounding);
                 QString rightCoordStr =  QString( tr("r: %1") ).arg(std::floor( ( (*it2)->key.getRightDerivative() * rounding ) + 0.5 ) / rounding);
-                QPointF btmRight_LeftTanWidget( topLeft_LeftTanWidget.x() + fm.width(leftCoordStr), topLeft_LeftTanWidget.y() + fm.height() );
-                QPointF btmRight_RightTanWidget( topLeft_RightTanWidget.x() + fm.width(rightCoordStr), topLeft_RightTanWidget.y() + fm.height() );
+                QPointF btmRight_LeftTanWidget( topLeft_LeftTanWidget.x() + fm.width(leftCoordStr) / _screenPixelRatio, topLeft_LeftTanWidget.y() + fm.height() / _screenPixelRatio );
+                QPointF btmRight_RightTanWidget( topLeft_RightTanWidget.x() + fm.width(rightCoordStr) / _screenPixelRatio, topLeft_RightTanWidget.y() + fm.height() / _screenPixelRatio );
 
                 if ( (pt.x() >= topLeft_LeftTanWidget.x() - CLICK_DISTANCE_FROM_CURVE_ACCEPTANCE) && (pt.x() <= btmRight_LeftTanWidget.x() + CLICK_DISTANCE_FROM_CURVE_ACCEPTANCE) &&
                      ( pt.y() >= topLeft_LeftTanWidget.y() - CLICK_DISTANCE_FROM_CURVE_ACCEPTANCE) && ( pt.y() <= btmRight_LeftTanWidget.y() + CLICK_DISTANCE_FROM_CURVE_ACCEPTANCE) ) {

@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -150,15 +150,7 @@ ViewerGL::textFont() const
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
 
-    return _imp->textFont;
-}
-
-void
-ViewerGL::setTextFont(const QFont & f)
-{
-    // always running in the main thread
-    assert( qApp && qApp->thread() == QThread::currentThread() );
-    _imp->textFont = f;
+    return *_imp->_textFont;
 }
 
 /**
@@ -264,6 +256,16 @@ ViewerGL::paintGL()
         return;
     }
     glCheckError();
+
+
+    {
+        double screenPixelRatio = getScreenPixelRatio();
+        if (screenPixelRatio != _imp->_screenPixelRatio) {
+            _imp->_screenPixelRatio = screenPixelRatio;
+            _imp->_textFont.reset(new QFont(appFont, appFontSize * screenPixelRatio));
+        }
+    }
+    assert(_imp->_textFont);
 
     double zoomLeft, zoomRight, zoomBottom, zoomTop;
     {
@@ -579,14 +581,13 @@ ViewerGL::drawOverlay(unsigned int mipMapLevel)
 
     glCheckError();
 
+    double screenPixelRatio = getScreenPixelRatio();
 
     {
         GLProtectAttrib a(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT);
 
         glDisable(GL_BLEND);
-
-
-
+        glLineWidth(1. * screenPixelRatio);
 
         int activeInputs[2];
         getInternalNode()->getActiveInputs(activeInputs[0], activeInputs[1]);
@@ -599,7 +600,8 @@ ViewerGL::drawOverlay(unsigned int mipMapLevel)
 
             // Draw format
             {
-                renderText(canonicalFormat.right(), canonicalFormat.bottom(), _imp->currentViewerInfo_resolutionOverlay[i], _imp->textRenderingColor, _imp->textFont);
+                assert(_imp->_textFont);
+                renderText(canonicalFormat.right(), canonicalFormat.bottom(), _imp->currentViewerInfo_resolutionOverlay[i], _imp->textRenderingColor, *_imp->_textFont);
 
 
                 QPoint topRight( canonicalFormat.right(), canonicalFormat.top() );
@@ -607,6 +609,7 @@ ViewerGL::drawOverlay(unsigned int mipMapLevel)
                 QPoint btmLeft( canonicalFormat.left(), canonicalFormat.bottom() );
                 QPoint btmRight( canonicalFormat.right(), canonicalFormat.bottom() );
 
+                glLineWidth(1. * screenPixelRatio);
                 glBegin(GL_LINES);
 
                 glColor4f( _imp->displayWindowOverlayColor.redF(),
@@ -636,10 +639,11 @@ ViewerGL::drawOverlay(unsigned int mipMapLevel)
 
 
             if (dataW != canonicalFormat) {
+                assert(_imp->_textFont);
                 renderText(dataW.right(), dataW.top(),
-                           _imp->currentViewerInfo_topRightBBOXoverlay[i], _imp->rodOverlayColor, _imp->textFont);
+                           _imp->currentViewerInfo_topRightBBOXoverlay[i], _imp->rodOverlayColor, *_imp->_textFont);
                 renderText(dataW.left(), dataW.bottom(),
-                           _imp->currentViewerInfo_btmLeftBBOXoverlay[i], _imp->rodOverlayColor, _imp->textFont);
+                           _imp->currentViewerInfo_btmLeftBBOXoverlay[i], _imp->rodOverlayColor, *_imp->_textFont);
                 glCheckError();
 
                 QPointF topRight2( dataW.right(), dataW.top() );
@@ -648,6 +652,7 @@ ViewerGL::drawOverlay(unsigned int mipMapLevel)
                 QPointF btmRight2( dataW.right(), dataW.bottom() );
                 glLineStipple(2, 0xAAAA);
                 glEnable(GL_LINE_STIPPLE);
+                glLineWidth(1. * screenPixelRatio);
                 glBegin(GL_LINES);
                 glColor4f( _imp->rodOverlayColor.redF(),
                            _imp->rodOverlayColor.greenF(),
@@ -676,12 +681,12 @@ ViewerGL::drawOverlay(unsigned int mipMapLevel)
             userRoIEnabled = _imp->userRoIEnabled;
         }
         if (userRoIEnabled) {
-            drawUserRoI();
+            drawUserRoI(screenPixelRatio);
         }
 
         ViewerCompositingOperatorEnum compOperator = _imp->viewerTab->getCompositingOperator();
         if ( operatorIsWipe(compOperator) ) {
-            drawWipeControl();
+            drawWipeControl(screenPixelRatio);
         }
 
 
@@ -698,9 +703,9 @@ ViewerGL::drawOverlay(unsigned int mipMapLevel)
         glCheckErrorIgnoreOSXBug();
 
         if (_imp->pickerState == ePickerStateRectangle) {
-                drawPickerRectangle();
+                drawPickerRectangle(screenPixelRatio);
         } else if (_imp->pickerState == ePickerStatePoint) {
-                drawPickerPixel();
+                drawPickerPixel(screenPixelRatio);
         }
     } // GLProtectAttrib a(GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_CURRENT_BIT | GL_ENABLE_BIT);
     glCheckError();
@@ -711,7 +716,7 @@ ViewerGL::drawOverlay(unsigned int mipMapLevel)
 } // drawOverlay
 
 void
-ViewerGL::drawUserRoI()
+ViewerGL::drawUserRoI(double screenPixelRatio)
 {
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
@@ -746,6 +751,7 @@ ViewerGL::drawUserRoI()
         }
 
         ///base rect
+        glLineWidth(1. * screenPixelRatio);
         glBegin(GL_LINE_LOOP);
         glVertex2f(userRoI.x1, userRoI.y1); //bottom left
         glVertex2f(userRoI.x1, userRoI.y2); //top left
@@ -753,7 +759,7 @@ ViewerGL::drawUserRoI()
         glVertex2f(userRoI.x2, userRoI.y1); //bottom right
         glEnd();
 
-
+        glLineWidth(1. * screenPixelRatio);
         glBegin(GL_LINES);
         ///border ticks
         double borderTickWidth = USER_ROI_BORDER_TICK_SIZE * zoomScreenPixelWidth;
@@ -851,7 +857,7 @@ ViewerGL::drawUserRoI()
 } // drawUserRoI
 
 void
-ViewerGL::drawWipeControl()
+ViewerGL::drawWipeControl(double screenPixelRatio)
 {
     double wipeAngle;
     QPointF wipeCenter;
@@ -929,7 +935,7 @@ ViewerGL::drawWipeControl()
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glEnable(GL_LINE_SMOOTH);
             glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-            glLineWidth(1.5);
+            glLineWidth(1.5 * screenPixelRatio);
             glBegin(GL_LINES);
             if ( (_imp->hs == eHoverStateWipeRotateHandle) || (_imp->ms == eMouseStateRotatingWipeHandle) ) {
                 glColor4f(0., 1. * l, 0., 1.);
@@ -942,7 +948,6 @@ ViewerGL::drawWipeControl()
             glVertex2d( wipeCenter.x(), wipeCenter.y() );
             glVertex2d( mixPos.x(), mixPos.y() );
             glEnd();
-            glLineWidth(1.);
 
             ///if hovering the rotate handle or dragging it show a small bended arrow
             if ( (_imp->hs == eHoverStateWipeRotateHandle) || (_imp->ms == eMouseStateRotatingWipeHandle) ) {
@@ -960,13 +965,14 @@ ViewerGL::drawWipeControl()
                 //  center the oval at x_center, y_center
                 glTranslatef (arrowCenterX, 0., 0);
                 //  draw the oval using line segments
+                glLineWidth(1. * screenPixelRatio);
                 glBegin (GL_LINE_STRIP);
                 glVertex2f (0, arrowRadius.y);
                 glVertex2f (arrowRadius.x, 0.);
                 glVertex2f (0, -arrowRadius.y);
                 glEnd ();
 
-
+                glLineWidth(1. * screenPixelRatio);
                 glBegin(GL_LINES);
                 ///draw the top head
                 glVertex2f(0., arrowRadius.y);
@@ -987,8 +993,8 @@ ViewerGL::drawWipeControl()
                 glColor4f(baseColor[0], baseColor[1], baseColor[2], 1.);
             }
 
-            glPointSize(5.);
             glEnable(GL_POINT_SMOOTH);
+            glPointSize(5. * screenPixelRatio);
             glBegin(GL_POINTS);
             glVertex2d( wipeCenter.x(), wipeCenter.y() );
             if ( ( (_imp->hs == eHoverStateWipeMix) &&
@@ -998,7 +1004,7 @@ ViewerGL::drawWipeControl()
             }
             glVertex2d( mixPos.x(), mixPos.y() );
             glEnd();
-            glPointSize(1.);
+            glPointSize(1. * screenPixelRatio);
 
             _imp->drawArcOfCircle(wipeCenter, mixX, mixY, wipeAngle + M_PI_4 / 2, wipeAngle + 3. * M_PI_4 / 2);
         }
@@ -1006,7 +1012,7 @@ ViewerGL::drawWipeControl()
 } // drawWipeControl
 
 void
-ViewerGL::drawPickerRectangle()
+ViewerGL::drawPickerRectangle(double screenPixelRatio)
 {
     {
         GLProtectAttrib a(GL_CURRENT_BIT);
@@ -1015,6 +1021,7 @@ ViewerGL::drawPickerRectangle()
         QPointF topLeft = _imp->pickerRect.topLeft();
         QPointF btmRight = _imp->pickerRect.bottomRight();
         ///base rect
+        glLineWidth(1.5 * screenPixelRatio);
         glBegin(GL_LINE_LOOP);
         glVertex2f( topLeft.x(), btmRight.y() ); //bottom left
         glVertex2f( topLeft.x(), topLeft.y() ); //top left
@@ -1025,7 +1032,7 @@ ViewerGL::drawPickerRectangle()
 }
 
 void
-ViewerGL::drawPickerPixel()
+ViewerGL::drawPickerPixel(double screenPixelRatio)
 {
     {
         GLProtectAttrib a(GL_CURRENT_BIT | GL_ENABLE_BIT | GL_POINT_BIT | GL_COLOR_BUFFER_BIT);
@@ -1033,9 +1040,10 @@ ViewerGL::drawPickerPixel()
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_POINT_SMOOTH);
+        double zoomFactor;
         {
             QMutexLocker l(&_imp->zoomCtxMutex);
-            glPointSize( 1. * _imp->zoomCtx.factor() );
+            zoomFactor = _imp->zoomCtx.factor();
         }
 
         QPointF pos = _imp->lastPickerPos;
@@ -1045,6 +1053,7 @@ ViewerGL::drawPickerPixel()
             pos *= (1 << mipMapLevel);
         }
         glColor3f(0.9, 0.7, 0.);
+        glPointSize(zoomFactor * screenPixelRatio);
         glBegin(GL_POINTS);
         glVertex2d( pos.x(), pos.y() );
         glEnd();
@@ -1152,20 +1161,21 @@ ViewerGL::drawPersistentMessage()
     assert( qApp && qApp->thread() == QThread::currentThread() );
     assert( QGLContext::currentContext() == context() );
 
-    QFontMetrics metrics( _imp->textFont );
+    assert(_imp->_textFont);
     int offset =  10;
-    double metricsHeightZoomCoord;
+    double fmHeightZoomCoord;
     QPointF topLeft, bottomRight, offsetZoomCoord;
-
     {
+        QFontMetrics fm( *_imp->_textFont );
+        double fmHeight = fm.height() / _imp->_screenPixelRatio;
         QMutexLocker l(&_imp->zoomCtxMutex);
         topLeft = _imp->zoomCtx.toZoomCoordinates(0, 0);
-        bottomRight = _imp->zoomCtx.toZoomCoordinates( _imp->zoomCtx.screenWidth(), _imp->persistentMessages.size() * (metrics.height() + offset) );
+        bottomRight = _imp->zoomCtx.toZoomCoordinates( _imp->zoomCtx.screenWidth(), _imp->persistentMessages.size() * (fmHeight + offset) );
         offsetZoomCoord = _imp->zoomCtx.toZoomCoordinates(PERSISTENT_MESSAGE_LEFT_OFFSET_PIXELS, offset);
-        metricsHeightZoomCoord = topLeft.y() - _imp->zoomCtx.toZoomCoordinates( 0, metrics.height() ).y();
+        fmHeightZoomCoord = topLeft.y() - _imp->zoomCtx.toZoomCoordinates( 0, fmHeight ).y();
     }
     offsetZoomCoord.ry() = topLeft.y() - offsetZoomCoord.y();
-    QPointF textPos(offsetZoomCoord.x(),  topLeft.y() - (offsetZoomCoord.y() / 2.) - metricsHeightZoomCoord);
+    QPointF textPos(offsetZoomCoord.x(),  topLeft.y() - (offsetZoomCoord.y() / 2.) - fmHeightZoomCoord);
 
     {
         GLProtectAttrib a(GL_COLOR_BUFFER_BIT | GL_ENABLE_BIT);
@@ -1186,8 +1196,9 @@ ViewerGL::drawPersistentMessage()
 
 
         for (int j = 0; j < _imp->persistentMessages.size(); ++j) {
-            renderText(textPos.x(), textPos.y(), _imp->persistentMessages.at(j), _imp->textRenderingColor, _imp->textFont);
-            textPos.setY( textPos.y() - ( metricsHeightZoomCoord + offsetZoomCoord.y() ) ); /*metrics.height() * 2 * zoomScreenPixelHeight*/
+            assert(_imp->_textFont);
+            renderText(textPos.x(), textPos.y(), _imp->persistentMessages.at(j), _imp->textRenderingColor, *_imp->_textFont);
+            textPos.setY( textPos.y() - ( fmHeightZoomCoord + offsetZoomCoord.y() ) ); /*metrics.height() * 2 * zoomScreenPixelHeight*/
         }
         glCheckError();
     } // GLProtectAttrib a(GL_COLOR_BUFFER_BIT | GL_ENABLE_BIT);
@@ -2037,14 +2048,11 @@ ViewerGL::mouseReleaseEvent(QMouseEvent* e)
     _imp->pressureOnPress = 1;
     _imp->pointerTypeOnPress = ePenTypeLMB;
 
-    bool mustRedraw = false;
     if (_imp->ms == eMouseStateBuildingPickerRectangle) {
         updateRectangleColorPicker();
     }
 
     if (_imp->ms == eMouseStateSelecting) {
-        mustRedraw = true;
-
         if (_imp->hasMovedSincePress) {
             Q_EMIT selectionRectangleChanged(true);
         }
@@ -2056,7 +2064,8 @@ ViewerGL::mouseReleaseEvent(QMouseEvent* e)
 
     _imp->hasMovedSincePress = false;
 
-
+    // Always redraw if mouse state changes (e.g. from hovering something)
+    bool mustRedraw = (_imp->ms != eMouseStateUndefined);
     _imp->ms = eMouseStateUndefined;
     QPointF zoomPos;
     {
@@ -2506,8 +2515,10 @@ ViewerGL::penMotionInternal(int x,
     if (!cursorSet) {
         if ( _imp->viewerTab->getGui()->hasPickers() ) {
             setCursor( appPTR->getColorPickerCursor() );
-        } else if (!overlaysCaughtByPlugin) {
+            _imp->setColorPickerCursor = true;
+        } else if (!overlaysCaughtByPlugin && _imp->setColorPickerCursor) {
             unsetCursor();
+            _imp->setColorPickerCursor = false;
         }
     }
 
@@ -3297,8 +3308,8 @@ ViewerGL::renderText(double x,
     if ( (w <= 0) || (h <= 0) || (right <= left) || (top <= bottom) ) {
         return;
     }
-    double scalex = (right - left) / w;
-    double scaley = (top - bottom) / h;
+    double scalex = (right - left) / (w * _imp->_screenPixelRatio);
+    double scaley = (top - bottom) / (h * _imp->_screenPixelRatio);
     _imp->textRenderer.renderText(x, y, scalex, scaley, text, color, font, flags);
     glCheckError();
 }
@@ -3309,7 +3320,7 @@ ViewerGL::updatePersistentMessageToWidth(int w)
     // always running in the main thread
     assert( qApp && qApp->thread() == QThread::currentThread() );
 
-    if ( !_imp->viewerTab || !_imp->viewerTab->getGui() ) {
+    if ( !_imp->viewerTab || !_imp->viewerTab->getGui() || !_imp->_textFont ) {
         return;
     }
 
@@ -3352,10 +3363,12 @@ ViewerGL::updatePersistentMessageToWidth(int w)
     }
     _imp->persistentMessageType = type;
 
-    QFontMetrics fm(_imp->textFont);
+    assert(_imp->_textFont);
+    QFontMetrics fm(*_imp->_textFont);
 
     for (int i = 0; i < allMessages.size(); ++i) {
-        QStringList wordWrapped = wordWrap(fm, allMessages[i], w - PERSISTENT_MESSAGE_LEFT_OFFSET_PIXELS);
+        QStringList wordWrapped = wordWrap( fm, allMessages[i],
+                                           _imp->_screenPixelRatio * (w - PERSISTENT_MESSAGE_LEFT_OFFSET_PIXELS) );
         for (int j = 0; j < wordWrapped.size(); ++j) {
             _imp->persistentMessages.push_back(wordWrapped[j]);
         }
@@ -3629,7 +3642,7 @@ ViewerGL::getScreenPixelRatio() const
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return windowHandle()->devicePixelRatio()
 #else
-    return 1.;
+    return (_imp->viewerTab && _imp->viewerTab->getGui()) ? _imp->viewerTab->getGui()->devicePixelRatio() : 1.;
 #endif
 }
 #endif

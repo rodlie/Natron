@@ -5,18 +5,78 @@
 # History
 
 
-## Version 2.4.0
+## Version 2.4.3
 
 ### Known issues
 
-- Rendering sometimes silently stalls after X frames #248
-- Some image formats may have issues (PCX, PSB, CR2) #602
+- Crash when closing a project window on macOS 12+ (Qt4 only). #712
+- Rendering sometimes silently stalls after X frames. #248
+- Some image formats may have issues (PCX, PSB). #602
+- MTS video files are sometimes not read correctly. #186
+
+### Changes
+
+- Added support for render progress in taskbar icon (Windows/macOS). #766
+- Added palette support in color selector. #754
+- Allow creating a node with the same name that was just deleted. #732
+- Natron can now keep up to 32 project backups (see Preferences/General/Save versions). #562
+- Only display the overlays for nodes that are in the viewer render path and have their properties panel maximized. Can be disabled in Preferences/Viewer. #744
+- Fix rendering from Python (by calling app.render()) when nodes use Python expressions. #560
+- Fix drawing of closed Bezier overlays. #659
+- RotoPaint does not reconnect to the viewer at each stroke by default. Added a button to the viewer interface to re-enable this behavior. #641
+
+
+## Version 2.4.2
+
+### Changes
+
+- Fix OpenFX overlay actions being executed in the wrong order. #711
+- Fix enabling node preview from Python. #710
+- Do not display the "Loading project" splashscreen on macOS 12+ to avoid crash due to Qt4 bug. #712
+
+### Plugins
+
+- Fix bug in Transform plugin interact. #708
+- Fix EXR reader outputing the color plane only when an OCIO transform is applied. #714
+- The OpenColorIO plugins can now use OpenColorIO 2.1.
+
+
+## Version 2.4.1
+
+### Changes
+
+- Default number of render threads is more reasonable on multi-core systems: `min(num_cores, RAM/3.5Gb)`. #554
+- Fix checkerboard drawing on macOS Catalina and later. #614
+- Fix undoing "Reset to default" on parameters. #630
+- Fix NodeGraph manipulation and navigation issues. #491 #627
+- Fix Retina/High-DPI display issues on macOS, Windows and Linux/X11. #635
+- Fix multi-dimensional parameter linking (bug introduced in 2.4.0 #594). #631
+- Fix bug where any argument containing an integer between commas would be interpreted as a frame range. #644
+- Python: `app.saveProject`  and `app.saveProjectAs` now do project variable substitution, as in `app.saveProjectAs("[Variable]/output.ntp")`.
+- Fix ASCII curve import. #656
+- New color selection dialog for RGB and RGBA knobs. #210
+- Fix histogram smoothing (was 5 times too strong).
+- Add Python functions `guiApp.copySelectedNodes` and `guiApp.pasteNodes`. #390 #674 #675
+
+
+### Plugins
+
+- Transform, CornerPin, Position and Ramp nodes now display the motion path.
+- HueCorrect now has the ability to do hue vs. hue adjustments, with an option to change the background curve guide. #610
+- Merge: Fix behavior on most operators when A is not connected or A's RoD and B's RoD are disjoint. #647
+- Reformat: fix bugs when "turn" is checked with Resize Type = None or Type = Scale.
+- Write: Remove file first when overwriting. #666
+- Mirror: Fix crash. #660
+- SeNoise: Add option for colored noise.
+
+
+## Version 2.4.0
 
 ### Changes
 
 - Updated documentation. #572 #566 #551 #539 #538 #537 #520 #514
 - Handle console output on Windows. #524
-- Detect user installed fonts on Windows 10. #523 
+- Detect user installed fonts on Windows 10. #523
 - New Windows installer. #596
 - Improvements to SequenceFileDialog. #565
 - Snap timeline alpha cursor to nearest frame. #574
@@ -28,6 +88,7 @@
 - Default keyframe interpolation method for strokes and shapes is now "Smooth" (was "Linear"). #597
 - Fix animation of Roto Beziers with non-broken tangents. #102
 - Remember properties panels state when reopening project. #168
+- Fix slow nodegraph display on macOS 11 Big Sur. #606
 
 ### Plugins
 

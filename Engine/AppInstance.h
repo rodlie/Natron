@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -357,7 +357,7 @@ public:
 
     virtual void updateProjectLoadStatus(const QString& /*str*/) {}
 
-    virtual void closeLoadPRojectSplashScreen() {}
+    virtual void closeLoadProjectSplashScreen() {}
 
     std::string getAppIDString() const;
     const std::list<NodePtr>& getNodesBeingCreated() const;

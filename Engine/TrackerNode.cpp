@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -131,8 +131,8 @@ TrackerNode::initializeKnobs()
 {
     TrackerContextPtr context = getNode()->getTrackerContext();
     KnobPagePtr trackingPage = context->getTrackingPageKnob();
-    KnobButtonPtr addMarker = AppManager::createKnob<KnobButton>( this, tr(kTrackerUIParamAddTrackLabel) );
 
+    KnobButtonPtr addMarker = AppManager::createKnob<KnobButton>( this, tr(kTrackerUIParamAddTrackLabel) );
     addMarker->setName(kTrackerUIParamAddTrack);
     addMarker->setHintToolTip( tr(kTrackerUIParamAddTrackHint) );
     addMarker->setEvaluateOnChange(false);
@@ -731,6 +731,7 @@ TrackerNode::drawOverlay(double time,
     overlay->getPixelScale(pixelScaleX, pixelScaleY);
     double viewportSize[2];
     overlay->getViewportSize(viewportSize[0], viewportSize[1]);
+    double screenPixelRatio = overlay->getScreenPixelRatio();
 
     {
         GLProtectAttrib a(GL_CURRENT_BIT | GL_COLOR_BUFFER_BIT | GL_LINE_BIT | GL_POINT_BIT | GL_ENABLE_BIT | GL_HINT_BIT | GL_TRANSFORM_BIT);
@@ -792,7 +793,6 @@ TrackerNode::drawOverlay(double time,
                 ///Draw a custom interact, indicating the track isn't selected
                 glEnable(GL_LINE_SMOOTH);
                 glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-                glLineWidth(1.5f);
 
                 for (int l = 0; l < 2; ++l) {
                     // shadow (uses GL_PROJECTION)
@@ -812,11 +812,12 @@ TrackerNode::drawOverlay(double time,
                     double x = centerKnob->getValueAtTime(time, 0);
                     double y = centerKnob->getValueAtTime(time, 1);
 
-                    glPointSize(POINT_SIZE);
+                    glPointSize(POINT_SIZE * screenPixelRatio);
                     glBegin(GL_POINTS);
                     glVertex2d(x, y);
                     glEnd();
 
+                    glLineWidth(1.5f * screenPixelRatio);
                     glBegin(GL_LINES);
                     glVertex2d(x - CROSS_SIZE * pixelScaleX, y);
                     glVertex2d(x + CROSS_SIZE * pixelScaleX, y);
@@ -826,7 +827,7 @@ TrackerNode::drawOverlay(double time,
                     glVertex2d(x, y + CROSS_SIZE * pixelScaleY);
                     glEnd();
                 }
-                glPointSize(1.);
+                glPointSize(1. * screenPixelRatio);
             } else { // if (isSelected) {
                 glEnable(GL_LINE_SMOOTH);
                 glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
@@ -1001,6 +1002,7 @@ TrackerNode::drawOverlay(double time,
                     ///Draw center position
                     glEnable(GL_LINE_SMOOTH);
                     glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
+                    glLineWidth(1.5 * screenPixelRatio);
                     glBegin(GL_LINE_STRIP);
                     glColor3f(0.5 * l, 0.5 * l, 0.5 * l);
                     for (CenterPointsMap::iterator it = centerPoints.begin(); it != centerPoints.end(); ++it) {
@@ -1012,6 +1014,7 @@ TrackerNode::drawOverlay(double time,
                     glDisable(GL_LINE_SMOOTH);
 
                     glEnable(GL_POINT_SMOOTH);
+                    glPointSize(POINT_SIZE * screenPixelRatio);
                     glBegin(GL_POINTS);
                     if (!showErrorColor) {
                         glColor3f(0.5 * l, 0.5 * l, 0.5 * l);
@@ -1045,6 +1048,7 @@ TrackerNode::drawOverlay(double time,
 
 
                     glColor3f( (float)thisMarkerColor[0] * l, (float)thisMarkerColor[1] * l, (float)thisMarkerColor[2] * l );
+                    glLineWidth(1.5 * screenPixelRatio);
                     glBegin(GL_LINE_LOOP);
                     glVertex2d( topLeft.x(), topLeft.y() );
                     glVertex2d( topRight.x(), topRight.y() );
@@ -1052,6 +1056,7 @@ TrackerNode::drawOverlay(double time,
                     glVertex2d( btmLeft.x(), btmLeft.y() );
                     glEnd();
 
+                    glLineWidth(1.5f * screenPixelRatio);
                     glBegin(GL_LINE_LOOP);
                     glVertex2d( searchTopLeft.x(), searchTopLeft.y() );
                     glVertex2d( searchTopRight.x(), searchTopRight.y() );
@@ -1059,7 +1064,7 @@ TrackerNode::drawOverlay(double time,
                     glVertex2d( searchBtmLeft.x(), searchBtmRight.y() );
                     glEnd();
 
-                    glPointSize(POINT_SIZE);
+                    glPointSize(POINT_SIZE * screenPixelRatio);
                     glBegin(GL_POINTS);
 
                     ///draw center
@@ -1150,6 +1155,7 @@ TrackerNode::drawOverlay(double time,
                     glEnd();
 
                     if ( (offset.x() != 0) || (offset.y() != 0) ) {
+                        glLineWidth(1.5f * screenPixelRatio);
                         glBegin(GL_LINES);
                         glColor3f( (float)thisMarkerColor[0] * l * 0.5, (float)thisMarkerColor[1] * l * 0.5, (float)thisMarkerColor[2] * l * 0.5 );
                         glVertex2d( center.x(), center.y() );
@@ -1158,6 +1164,7 @@ TrackerNode::drawOverlay(double time,
                     }
 
                     ///now show small lines at handle positions
+                    glLineWidth(1.5f * screenPixelRatio);
                     glBegin(GL_LINES);
 
                     if ( isHoverOrDraggedMarker && ( (_imp->ui->hoverState == eDrawStateHoveringInnerMidLeft) || (_imp->ui->eventState == eMouseStateDraggingInnerMidLeft) ) ) {
@@ -1246,7 +1253,7 @@ TrackerNode::drawOverlay(double time,
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glEnable(GL_LINE_SMOOTH);
             glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-            glLineWidth(1.5);
+            glLineWidth(1.5 * screenPixelRatio);
             //GLProtectMatrix p(GL_PROJECTION); // useless (we do two glTranslate in opposite directions)
 
             const double addTrackSize = TO_DPIX(ADDTRACK_SIZE);
@@ -1265,6 +1272,7 @@ TrackerNode::drawOverlay(double time,
                     glColor4d(0., 1., 0., 0.8);
                 }
 
+                glLineWidth(1.5 * screenPixelRatio);
                 glBegin(GL_LINE_LOOP);
                 glVertex2d(_imp->ui->lastMousePos.x() - addTrackSize * 2 * pixelScaleX, _imp->ui->lastMousePos.y() - addTrackSize * 2 * pixelScaleY);
                 glVertex2d(_imp->ui->lastMousePos.x() - addTrackSize * 2 * pixelScaleX, _imp->ui->lastMousePos.y() + addTrackSize * 2 * pixelScaleY);
@@ -1273,6 +1281,7 @@ TrackerNode::drawOverlay(double time,
                 glEnd();
 
                 ///draw a cross at the cursor position
+                glLineWidth(1.5f * screenPixelRatio);
                 glBegin(GL_LINES);
                 glVertex2d( _imp->ui->lastMousePos.x() - addTrackSize * pixelScaleX, _imp->ui->lastMousePos.y() );
                 glVertex2d( _imp->ui->lastMousePos.x() + addTrackSize * pixelScaleX, _imp->ui->lastMousePos.y() );
@@ -1541,7 +1550,8 @@ TrackerNode::onOverlayPenMotion(double time,
 
     assert(overlay);
     overlay->getPixelScale(pixelScale.first, pixelScale.second);
-    bool didSomething = false;
+    bool didSomething = false; // Set if an actual action was performed based on mouse motion.
+    bool redraw = false; // Set if we just need a redraw (e.g., hover state changed).
     TrackerContextPtr context = getNode()->getTrackerContext();
     Point delta;
     delta.x = pos.x() - _imp->ui->lastMousePos.x();
@@ -1551,7 +1561,7 @@ TrackerNode::onOverlayPenMotion(double time,
     if (_imp->ui->hoverState != eDrawStateInactive) {
         _imp->ui->hoverState = eDrawStateInactive;
         _imp->ui->hoverMarker.reset();
-        didSomething = true;
+        redraw = true;
     }
 
     std::vector<TrackMarkerPtr> allMarkers;
@@ -1584,9 +1594,9 @@ TrackerNode::onOverlayPenMotion(double time,
             _imp->ui->hoverMarker = *it;
             hoverProcess = true;
         } else if ( ( (offset.x() != 0) || (offset.y() != 0) ) && _imp->ui->isNearbyPoint(QPointF( center.x() + offset.x(), center.y() + offset.y() ), viewportPos.x(), viewportPos.y(), POINT_TOLERANCE) ) {
+            redraw = _imp->ui->hoverState != eDrawStateHoveringCenter;
             _imp->ui->hoverState = eDrawStateHoveringCenter;
             _imp->ui->hoverMarker = *it;
-            didSomething = true;
         }
 
 
@@ -1729,7 +1739,7 @@ TrackerNode::onOverlayPenMotion(double time,
     }
 
     if (hoverProcess) {
-        didSomething = true;
+        redraw = true;
     }
 
     KnobDoublePtr centerKnob, offsetKnob, searchWndTopRight, searchWndBtmLeft;
@@ -2247,6 +2257,10 @@ TrackerNode::onOverlayPenMotion(double time,
         didSomething = true;
     }
     _imp->ui->lastMousePos = pos;
+
+    if (redraw) {
+        redrawOverlayInteract();
+    }
 
     return didSomething;
 } //penMotion

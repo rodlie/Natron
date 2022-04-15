@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -109,9 +109,13 @@ ViewerTab::drawOverlays(double time,
     for (NodesList::reverse_iterator it = nodes.rbegin(); it != nodes.rend(); ++it) {
         NodeGuiPtr nodeUi = boost::dynamic_pointer_cast<NodeGui>( (*it)->getNodeGui() );
 #ifdef NATRON_TRANSFORM_AFFECTS_OVERLAYS
+        if (!nodeUi) {
+            continue;
+        }
         double transformedTime;
         bool ok = _imp->getTimeTransform(time, view, *it, getInternalNode(), &transformedTime);
-        if (!nodeUi) {
+        if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+            // overlay is not visible in current viewer, even though its parameter panel is open.
             continue;
         }
         bool overlayDeemed = false;
@@ -218,9 +222,7 @@ ViewerTab::notifyOverlaysPenDown_internal(const NodePtr& node,
         if (didSmthing) {
             //http://openfx.sourceforge.net/Documentation/1.3/ofxProgrammingReference.html
             // if the instance returns kOfxStatOK, the host should not pass the pen motion
-
             // to any other interactive object it may own that shares the same view.
-            _imp->lastOverlayNode = node;
 
             return true;
         }
@@ -259,23 +261,15 @@ ViewerTab::notifyOverlaysPenDown(const RenderScale & renderScale,
     NodesList nodes;
     getGui()->getNodesEntitledForOverlays(nodes);
 
-
-    NodePtr lastOverlay = _imp->lastOverlayNode.lock();
-    if (lastOverlay) {
-        for (NodesList::iterator it = nodes.begin(); it != nodes.end(); ++it) {
-            if (*it == lastOverlay) {
-                if ( notifyOverlaysPenDown_internal(*it, renderScale, pen, viewportPos, pos, pressure, timestamp) ) {
-                    return true;
-                } else {
-                    nodes.erase(it);
-                    break;
-                }
-            }
+    ViewIdx view = getCurrentView();
+    for (NodesList::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
+        double transformedTime;
+        bool ok = _imp->getTimeTransform(timestamp, view, *it, getInternalNode(), &transformedTime);
+        if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+            // overlay is not visible in current viewer, even though its parameter panel is open.
+            continue;
         }
-    }
-
-    for (NodesList::reverse_iterator it = nodes.rbegin(); it != nodes.rend(); ++it) {
-        if ( notifyOverlaysPenDown_internal(*it, renderScale, pen, viewportPos, pos, pressure, timestamp) ) {
+        if ( notifyOverlaysPenDown_internal(*it, renderScale, pen, viewportPos, pos, pressure, transformedTime) ) {
             return true;
         }
     }
@@ -301,18 +295,20 @@ ViewerTab::notifyOverlaysPenDoubleClick(const RenderScale & renderScale,
     getGui()->getNodesEntitledForOverlays(nodes);
 
 
-    for (NodesList::reverse_iterator it = nodes.rbegin(); it != nodes.rend(); ++it) {
+    ViewIdx view = getCurrentView();
+    for (NodesList::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
         QPointF transformPos;
         double time = getGui()->getApp()->getTimeLine()->currentFrame();
 #ifndef NATRON_TRANSFORM_AFFECTS_OVERLAYS
         transformPos = pos;
 #else
-        ViewIdx view = getCurrentView();
         double transformedTime;
         bool ok = _imp->getTimeTransform(time, view, *it, getInternalNode(), &transformedTime);
-        if (ok) {
-            time = transformedTime;
+        if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+            // overlay is not visible in current viewer, even though its parameter panel is open.
+            continue;
         }
+        time = transformedTime;
 
         Transform::Matrix3x3 mat(1, 0, 0, 0, 1, 0, 0, 0, 1);
         ok = _imp->getOverlayTransform(time, view, *it, getInternalNode(), &mat);
@@ -346,9 +342,7 @@ ViewerTab::notifyOverlaysPenDoubleClick(const RenderScale & renderScale,
             if (didSmthing) {
                 //http://openfx.sourceforge.net/Documentation/1.3/ofxProgrammingReference.html
                 // if the instance returns kOfxStatOK, the host should not pass the pen motion
-
                 // to any other interactive object it may own that shares the same view.
-                _imp->lastOverlayNode = *it;
 
                 return true;
             }
@@ -375,6 +369,10 @@ ViewerTab::notifyOverlaysPenMotion_internal(const NodePtr& node,
 #else
     double transformedTime;
     bool ok = _imp->getTimeTransform(time, view, node, getInternalNode(), &transformedTime);
+    if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+        // overlay is not visible in current viewer, even though its parameter panel is open.
+        return false;
+    }
     if (ok) {
         /*
          * Do not allow interaction with retimed interacts otherwise the user may end up modifying keyframes at unexpected
@@ -428,14 +426,11 @@ ViewerTab::notifyOverlaysPenMotion_internal(const NodePtr& node,
 
             //http://openfx.sourceforge.net/Documentation/1.3/ofxProgrammingReference.html
             // if the instance returns kOfxStatOK, the host should not pass the pen motion
-
             // to any other interactive object it may own that shares the same view.
-            _imp->lastOverlayNode = node;
 
             return true;
         }
     }
-
 
     return false;
 } // ViewerTab::notifyOverlaysPenMotion_internal
@@ -463,38 +458,19 @@ ViewerTab::notifyOverlaysPenMotion(const RenderScale & renderScale,
         return false;
     }
 
-
     NodesList nodes;
     getGui()->getNodesEntitledForOverlays(nodes);
 
-
-    NodePtr lastOverlay = _imp->lastOverlayNode.lock();
-    if (lastOverlay) {
-        for (NodesList::iterator it = nodes.begin(); it != nodes.end(); ++it) {
-            if (*it == lastOverlay) {
-                if ( notifyOverlaysPenMotion_internal(*it, renderScale, viewportPos, pos, pressure, timestamp) ) {
-                    return true;
-                } else {
-                    nodes.erase(it);
-                    break;
-                }
-            }
-        }
-    }
-
-
-    for (NodesList::reverse_iterator it = nodes.rbegin(); it != nodes.rend(); ++it) {
+    for (NodesList::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
         if ( notifyOverlaysPenMotion_internal(*it, renderScale, viewportPos, pos, pressure, timestamp) ) {
             return true;
         }
     }
 
-
     if ( !didSomething && (getGui()->getApp()->getOverlayRedrawRequestsCount() > 0) ) {
         getGui()->getApp()->redrawAllViewers();
     }
     getGui()->getApp()->clearOverlayRedrawRequests();
-
 
     return didSomething;
 }
@@ -533,9 +509,6 @@ ViewerTab::notifyOverlaysPenUp(const RenderScale & renderScale,
     _imp->hasPenDown = false;
     _imp->hasCaughtPenMotionWhileDragging = false;
 
-
-    _imp->lastOverlayNode.reset();
-
     NodesList nodes;
     getGui()->getNodesEntitledForOverlays(nodes);
 
@@ -549,6 +522,10 @@ ViewerTab::notifyOverlaysPenUp(const RenderScale & renderScale,
 #else
         double transformedTime;
         bool ok = _imp->getTimeTransform(time, view, *it, getInternalNode(), &transformedTime);
+        if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+            // overlay is not visible in current viewer, even though its parameter panel is open.
+            continue;
+        }
         if (ok) {
             /*
              * Do not allow interaction with retimed interacts otherwise the user may end up modifying keyframes at unexpected
@@ -684,6 +661,10 @@ ViewerTab::notifyOverlaysKeyDown_internal(const NodePtr& node,
 #ifdef NATRON_TRANSFORM_AFFECTS_OVERLAYS
     double transformedTime;
     bool ok = _imp->getTimeTransform(time, ViewIdx(0), node, getInternalNode(), &transformedTime);
+    if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+        // overlay is not visible in current viewer, even though its parameter panel is open.
+        return false;
+    }
     if (ok) {
         /*
          * Do not allow interaction with retimed interacts otherwise the user may end up modifying keyframes at unexpected
@@ -696,7 +677,6 @@ ViewerTab::notifyOverlaysKeyDown_internal(const NodePtr& node,
         time = transformedTime;
     }
 #endif
-
 
     bool isInActiveViewerUI = _imp->hasInactiveNodeViewerContext(node);
     if (!isInActiveViewerUI) {
@@ -712,14 +692,11 @@ ViewerTab::notifyOverlaysKeyDown_internal(const NodePtr& node,
         if (didSmthing) {
             //http://openfx.sourceforge.net/Documentation/1.3/ofxProgrammingReference.html
             // if the instance returns kOfxStatOK, the host should not pass the pen motion
-
             // to any other interactive object it may own that shares the same view.
-            _imp->lastOverlayNode = node;
 
             return true;
         }
     }
-
 
     return false;
 } // ViewerTab::notifyOverlaysKeyDown_internal
@@ -749,29 +726,7 @@ ViewerTab::notifyOverlaysKeyDown(const RenderScale & renderScale,
     NodesList nodes;
     getGui()->getNodesEntitledForOverlays(nodes);
 
-    NodePtr lastOverlay = _imp->lastOverlayNode.lock();
-    if (lastOverlay) {
-        for (NodesList::iterator it = nodes.begin(); it != nodes.end(); ++it) {
-            if (*it == lastOverlay) {
-                if ( notifyOverlaysKeyDown_internal(*it, renderScale, natronKey, natronMod, qKey, qMods) ) {
-                    if (isModifier) {
-                        nodes.erase(it);
-                        break;
-                    }
-
-                    return true;
-                } else {
-                    nodes.erase(it);
-                    break;
-                }
-            }
-        }
-    }
-
-
-    for (NodesList::reverse_iterator it = nodes.rbegin();
-         it != nodes.rend();
-         ++it) {
+    for (NodesList::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
         if ( notifyOverlaysKeyDown_internal(*it, renderScale, natronKey, natronMod, qKey, qMods) ) {
             if (isModifier) {
                 continue;
@@ -805,8 +760,6 @@ ViewerTab::notifyOverlaysKeyUp(const RenderScale & renderScale,
         return false;
     }
 
-    _imp->lastOverlayNode.reset();
-
     double time = getGui()->getApp()->getTimeLine()->currentFrame();
     ViewIdx view = getCurrentView();
     NodesList nodes;
@@ -818,6 +771,10 @@ ViewerTab::notifyOverlaysKeyUp(const RenderScale & renderScale,
 #ifdef NATRON_TRANSFORM_AFFECTS_OVERLAYS
         double transformedTime;
         bool ok = _imp->getTimeTransform(time, ViewIdx(0), *it, getInternalNode(), &transformedTime);
+        if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+            // overlay is not visible in current viewer, even though its parameter panel is open.
+            continue;
+        }
         if (ok) {
             /*
              * Do not allow interaction with retimed interacts otherwise the user may end up modifying keyframes at unexpected
@@ -875,6 +832,10 @@ ViewerTab::notifyOverlaysKeyRepeat_internal(const NodePtr& node,
 #ifdef NATRON_TRANSFORM_AFFECTS_OVERLAYS
     double transformedTime;
     bool ok = _imp->getTimeTransform(time, ViewIdx(0), node, getInternalNode(), &transformedTime);
+    if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+        // overlay is not visible in current viewer, even though its parameter panel is open.
+        return false;
+    }
     if (ok) {
         /*
          * Do not allow interaction with retimed interacts otherwise the user may end up modifying keyframes at unexpected
@@ -902,9 +863,7 @@ ViewerTab::notifyOverlaysKeyRepeat_internal(const NodePtr& node,
         if (didSmthing) {
             //http://openfx.sourceforge.net/Documentation/1.3/ofxProgrammingReference.html
             // if the instance returns kOfxStatOK, the host should not pass the pen motion
-
             // to any other interactive object it may own that shares the same view.
-            _imp->lastOverlayNode = node;
 
             return true;
         }
@@ -927,22 +886,8 @@ ViewerTab::notifyOverlaysKeyRepeat(const RenderScale & renderScale,
     Key natronKey = QtEnumConvert::fromQtKey( qKey);
     KeyboardModifiers natronMod = QtEnumConvert::fromQtModifiers( qMods );
     NodesList nodes;
-    NodePtr lastOverlay = _imp->lastOverlayNode.lock();
-    if (lastOverlay) {
-        for (NodesList::iterator it = nodes.begin(); it != nodes.end(); ++it) {
-            if (*it == lastOverlay) {
-                if ( notifyOverlaysKeyRepeat_internal(*it, renderScale, natronKey, natronMod, qKey, qMods) ) {
-                    return true;
-                } else {
-                    nodes.erase(it);
-                    break;
-                }
-            }
-        }
-    }
 
-
-    for (NodesList::reverse_iterator it = nodes.rbegin(); it != nodes.rend(); ++it) {
+    for (NodesList::const_iterator it = nodes.begin(); it != nodes.end(); ++it) {
         if ( notifyOverlaysKeyRepeat_internal(*it, renderScale, natronKey, natronMod, qKey, qMods) ) {
             return true;
         }
@@ -987,6 +932,10 @@ ViewerTab::notifyOverlaysFocusGained(const RenderScale & renderScale)
 #ifdef NATRON_TRANSFORM_AFFECTS_OVERLAYS
         double transformedTime;
         bool ok = _imp->getTimeTransform(time, ViewIdx(0), *it, getInternalNode(), &transformedTime);
+        if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+            // overlay is not visible in current viewer, even though its parameter panel is open.
+            continue;
+        }
         if (ok) {
             time = transformedTime;
         }
@@ -1037,6 +986,10 @@ ViewerTab::notifyOverlaysFocusLost(const RenderScale & renderScale)
 #ifdef NATRON_TRANSFORM_AFFECTS_OVERLAYS
         double transformedTime;
         bool ok = _imp->getTimeTransform(time, ViewIdx(0), *it, getInternalNode(), &transformedTime);
+        if (!ok && appPTR->getCurrentSettings()->viewerOverlaysPath()) {
+            // overlay is not visible in current viewer, even though its parameter panel is open.
+            continue;
+        }
         if (ok) {
             time = transformedTime;
         }

@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -453,6 +453,10 @@ public Q_SLOTS:
 
     void onSettingsPanelClosed(bool closed);
 
+    void onSettingsPanelMinimized();
+
+    void onSettingsPanelMaximized();
+
     void onSettingsPanelColorChanged(const QColor & color);
 
     void togglePreview();
@@ -542,6 +546,10 @@ Q_SIGNALS:
     void positionChanged(int x, int y);
 
     void settingsPanelClosed(bool b);
+
+    void settingsPanelMinimized();
+
+    void settingsPanelMaximized();
 
     void previewImageComputed();
 
@@ -689,7 +697,7 @@ private:
     NodeGuiIndicatorPtr _passThroughIndicator;
     NodeWPtr _identityInput;
     bool identityStateSet;
-    NATRON_PYTHON_NAMESPACE::PyModalDialogPtr _activeNodeCustomModalDialog;
+    NATRON_PYTHON_NAMESPACE::PyModalDialog* _activeNodeCustomModalDialog;
 };
 
 NATRON_NAMESPACE_EXIT

@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -63,12 +63,23 @@ NATRON_NAMESPACE_ENTER
 AboutWindow::AboutWindow(QWidget* parent)
     : QDialog(parent)
 {
+    _scale = 1.;
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#if defined(Q_WS_WIN32)
+    // code from Gui::devicePixelRatio()
+    HDC wscreen = GetDC(winId());
+    FLOAT horizontalDPI = GetDeviceCaps(wscreen, LOGPIXELSX);
+    ReleaseDC(0, wscreen);
+    _scale = static_cast<qreal>(horizontalDPI) / 96.;
+#endif
+#endif
+
     setWindowTitle( tr("About %1").arg( QString::fromUtf8(NATRON_APPLICATION_NAME) ) );
     _mainLayout = new QVBoxLayout(this);
     setLayout(_mainLayout);
 
     _iconLabel = new Label(this);
-    _iconLabel->setPixmap( QPixmap( QString::fromUtf8(NATRON_APPLICATION_ICON_PATH) ).scaled(128, 128) );
+    _iconLabel->setPixmap( QPixmap( QString::fromUtf8(NATRON_APPLICATION_ICON_PATH) ).scaled(128 * _scale, 128 * _scale) );
     _mainLayout->addWidget(_iconLabel);
 
     _tabWidget = new QTabWidget(this);
@@ -158,6 +169,10 @@ AboutWindow::AboutWindow(QWidget* parent)
 #elif _OPENMP == 201511
 // since GCC 6.1
 #define OPENMP_VERSION_STRING "4.5"
+#elif _OPENMP == 201811
+#define OPENMP_VERSION_STRING "5.0"
+#elif _OPENMP == 202011
+#define OPENMP_VERSION_STRING "5.1"
 #else
 #define OPENMP_VERSION_STRING STRINGIZE_CPP_NAME(_OPENMP)
 #endif
@@ -307,33 +322,40 @@ AboutWindow::AboutWindow(QWidget* parent)
         //#define MAC_OS_X_VERSION_10_11_2    101102
         //#define MAC_OS_X_VERSION_10_11_3    101103
         //#define MAC_OS_X_VERSION_10_11_4    101104
-        osVer += QString::fromUtf8(" %1.%2.%3-%4.%5.%6")
+        //#define MAC_OS_X_VERSION_10_12      101200
+        //#define MAC_OS_X_VERSION_10_12_1    101201
+        //#define MAC_OS_X_VERSION_10_12_2    101202
+        //#define MAC_OS_X_VERSION_10_12_4    101204
+        //#define MAC_OS_X_VERSION_10_13      101300
+        //#define MAC_OS_X_VERSION_10_13_1    101301
+        //#define MAC_OS_X_VERSION_10_13_2    101302
+        //#define MAC_OS_X_VERSION_10_13_4    101304
+        //#define MAC_OS_X_VERSION_10_14      101400
+        //#define MAC_OS_X_VERSION_10_14_1    101401
+        //#define MAC_OS_X_VERSION_10_14_4    101404
+        //#define MAC_OS_X_VERSION_10_15      101500
+        //#define MAC_OS_VERSION_11_0         110000
+        //#define MAC_OS_VERSION_11_1         110100
+        //#define MAC_OS_VERSION_11_3         110300
+        const bool version_available = true;
 #if MAC_OS_X_VERSION_MIN_REQUIRED < 100000
-        .arg(MAC_OS_X_VERSION_MIN_REQUIRED / 100)
-        .arg( (MAC_OS_X_VERSION_MIN_REQUIRED % 100) / 10)
-        .arg(MAC_OS_X_VERSION_MIN_REQUIRED % 10)
+        const unsigned major = MAC_OS_X_VERSION_MIN_REQUIRED / 100;
+        const unsigned minor = (MAC_OS_X_VERSION_MIN_REQUIRED % 100) / 10;
+        const unsigned patch = MAC_OS_X_VERSION_MIN_REQUIRED % 10;
 #else
-        .arg(MAC_OS_X_VERSION_MIN_REQUIRED / 10000)
-        .arg((MAC_OS_X_VERSION_MIN_REQUIRED % 10000) / 100)
-        .arg(MAC_OS_X_VERSION_MIN_REQUIRED % 100)
+        const unsigned major = MAC_OS_X_VERSION_MIN_REQUIRED / 10000;
+        const unsigned minor = (MAC_OS_X_VERSION_MIN_REQUIRED % 10000) / 100;
+        const unsigned patch = MAC_OS_X_VERSION_MIN_REQUIRED % 100;
 #endif
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 100000
-        .arg(MAC_OS_X_VERSION_MAX_ALLOWED / 100)
-        .arg( (MAC_OS_X_VERSION_MAX_ALLOWED % 100) / 10)
-        .arg(MAC_OS_X_VERSION_MAX_ALLOWED % 10)
-#else
-        .arg(MAC_OS_X_VERSION_MAX_ALLOWED / 10000)
-        .arg((MAC_OS_X_VERSION_MAX_ALLOWED % 10000) / 100)
-        .arg(MAC_OS_X_VERSION_MAX_ALLOWED % 100)
-#endif
-        ;
 #else
         //#define BOOST_VERSION_NUMBER(major,minor,patch) ( (((major)%100)*10000000) + (((minor)%100)*100000) + ((patch)%100000) )
+        const bool version_available = BOOST_OS != BOOST_VERSION_NUMBER_NOT_AVAILABLE;
         const unsigned major = BOOST_OS/10000000;
         const unsigned minor = (BOOST_OS-10000000*major)/100000;
         const unsigned patch = BOOST_OS % 100000;
+#endif
         // coverity[unsigned_compare]
-        if (BOOST_OS != BOOST_VERSION_NUMBER_NOT_AVAILABLE && major > 0) {
+        if (version_available && major > 0) {
             osVer += QString::fromUtf8(" %1").arg(major);
             // coverity[unsigned_compare]
             if (minor > 0 || patch > 0) {
@@ -343,7 +365,6 @@ AboutWindow::AboutWindow(QWidget* parent)
                 }
             }
         }
-#endif
         QString gitStr = QString::fromUtf8("<p>%1</p>").arg(tr("This software was compiled from the source "
                                                                "code branch %1 at version %2 using %3 targeting %4 for %5.")
                                                             .arg( QString::fromUtf8("<a href=\"https://github.com/NatronGitHub/Natron/tree/" GIT_BRANCH "\">" GIT_BRANCH "</a>") ) // %1
@@ -530,6 +551,7 @@ AboutWindow::AboutWindow(QWidget* parent)
         readmeIndex->setSelected(true);
     }
     _tabWidget->addTab( thirdPartyContainer, QString::fromUtf8("Third-Party components") );
+    resize(560 * _scale, 460 * _scale);
 }
 
 void

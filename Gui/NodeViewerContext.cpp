@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -159,6 +159,8 @@ NodeViewerContext::createGui()
     QObject::connect( _imp->viewer, SIGNAL(selectionCleared()), this, SLOT(onViewerSelectionCleared()), Qt::UniqueConnection );
     NodeGuiPtr node = _imp->getNode();
     QObject::connect( node.get(), SIGNAL(settingsPanelClosed(bool)), this, SLOT(onNodeSettingsPanelClosed(bool)), Qt::UniqueConnection );
+    QObject::connect( node.get(), SIGNAL(settingsPanelMinimized()), this, SLOT(onNodeSettingsPanelMinimized()), Qt::UniqueConnection );
+    QObject::connect( node.get(), SIGNAL(settingsPanelMaximized()), this, SLOT(onNodeSettingsPanelMaximized()), Qt::UniqueConnection );
     KnobsVec knobsOrdered = node->getNode()->getEffectInstance()->getViewerUIKnobs();
 
 
@@ -266,6 +268,18 @@ NodeViewerContext::onNodeSettingsPanelClosed(bool closed)
         // Set the viewer interface for this plug-in to be the one of this node
         _imp->viewerTab->setPluginViewerInterface(node);
     }
+}
+
+void
+NodeViewerContext::onNodeSettingsPanelMinimized()
+{
+    return onNodeSettingsPanelClosed(true);
+}
+
+void
+NodeViewerContext::onNodeSettingsPanelMaximized()
+{
+    return onNodeSettingsPanelClosed(false);
 }
 
 int

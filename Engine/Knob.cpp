@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -260,10 +260,8 @@ KnobI::restoreLinks(const NodesList & allNodes,
                     const std::map<std::string, std::string>& oldNewScriptNamesMapping,
                     bool throwOnFailure)
 {
-    int i = 0;
     KnobIPtr thisKnob = shared_from_this();
     for (std::vector<Link>::const_iterator l = _links.begin(); l != _links.end(); ++l) {
-
         KnobIPtr linkedKnob = findMaster(thisKnob, allNodes, l->nodeNameFull, l->nodeName, l->trackName, l->knobName, oldNewScriptNamesMapping);
         if (!linkedKnob) {
             if (throwOnFailure) {
@@ -287,7 +285,8 @@ KnobI::restoreLinks(const NodesList & allNodes,
        } else if (l->dimension == -1) {
             setKnobAsAliasOfThis(linkedKnob, true);
         } else {
-            slaveTo(i, linkedKnob, l->dimension);
+            assert(l->slaveDimension >= 0);
+            slaveTo(l->slaveDimension, linkedKnob, l->dimension);
         }
     }
     _links.clear();
@@ -3059,6 +3058,8 @@ catchErrors(PyObject* mainModule,
     return true;
 }
 
+///The return value must be Py_DECRREF
+/// The Python GIL must be held before calling this, so the the PyObject remains valid.
 bool
 KnobHelper::executeExpression(double time,
                               ViewIdx view,
@@ -3079,12 +3080,17 @@ KnobHelper::executeExpression(double time,
 }
 
 
+/// The return value must be Py_DECRREF
+/// The expression must put its result in the Python variable named "ret"
+/// The Python GIL must be held before calling this, so the the PyObject remains valid.
 bool
 KnobHelper::executeExpression(const std::string& expr,
                               PyObject** ret,
                               std::string* error)
 {
-    PythonGILLocker pgl;
+#if PY_VERSION_HEX >= 0x030400F0
+    assert(PyGILState_Check());  // Not available prior to Python 3.4
+#endif
 
     //returns a new ref, this function's documentation is not clear onto what it returns...
     //https://docs.python.org/2/c-api/veryhigh.html
