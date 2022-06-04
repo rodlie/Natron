@@ -6,8 +6,9 @@ PortGroup               github 1.0
 PortGroup               cmake 1.1
 PortGroup               active_variants 1.1
 PortGroup               compiler_blacklist_versions 1.0
+PortGroup               boost 1.0
 
-github.setup            OpenImageIO oiio 2.1.15.0
+github.setup            OpenImageIO oiio 2.2.18.0
 revision                100
 name                    openimageio
 categories              graphics
@@ -18,17 +19,17 @@ long_description        OpenImageIO is a library for reading and writing images,
                         related classes, utilities, and applications.
 platforms               darwin
 
-checksums               rmd160  753c686d7e6aeb8cf51d807d5acb1d680b895d64 \
-                        sha256  95b90ba22b73765cbcbd9e11891769c2e78696ad24d4af77ef3f3c8674422401 \
-                        size    29051047
+checksums           rmd160  ff8376f038694bf7e37a81de1351a46162780a10 \
+                    sha256  b8dd189fbc97f1b172528e324daa904f74a166bad62c32e7166ca6c866734a29 \
+                    size    29246567
 
 compiler.cxx_standard   2011
 # error: multiple overloads of 'address' instantiate to the same signature 'const_pointer (const_reference) const noexcept'
 # http://lists.llvm.org/pipermail/llvm-bugs/2013-November/031552.html
 # Seen on OSX 10.9 and older.
 compiler.blacklist-append {clang < 700}
-# error: thread-local storage is not supported for the current target
-compiler.blacklist-append {clang < 800}
+
+compiler.thread_local_storage yes
 
 github.master_sites     ${github.homepage}/archive
 distname                Release-${version}
@@ -50,14 +51,12 @@ configure.args-append   -DBUILD_MISSING_DEPS=OFF \
 depends_lib-append      port:robin-map \
                         port:zlib \
                         port:bzip2 \
-                        port:boost \
-                        path:lib/libjpeg.dylib:jpeg \
+                        path:include/turbojpeg.h:libjpeg-turbo \
                         port:libpng \
                         port:tiff \
                         port:ilmbase \
                         port:openexr \
-                        port:squish \
-                        port:libfmt
+                        port:squish
 
 # optional components
 
@@ -122,6 +121,7 @@ configure.args-append \
     -DUSE_LIBRAW:BOOL=TRUE \
     -DUSE_OPENGL:BOOL=FALSE \
     -DUSE_WEBP:BOOL=TRUE \
+    -DBUILD_FMT_FORCE:BOOL=TRUE \
     -DSTOP_ON_WARNING:BOOL=FALSE
 
 # optional components
@@ -177,6 +177,8 @@ variant ptex description {Use PTex.} {
 }
 
 variant openvdb description {Use OpenVDB.} {
+    # OpenVDB header files use C++14 features
+    configure.args-append   -DCMAKE_CXX_STANDARD=14
     configure.args-delete -DUSE_TBB:BOOL=FALSE
     configure.args-append -DUSE_TBB:BOOL=TRUE
     configure.args-delete -DUSE_OPENVDB:BOOL=FALSE

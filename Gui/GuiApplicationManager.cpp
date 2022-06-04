@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -1091,7 +1091,7 @@ GuiApplicationManager::hideSplashScreen()
     if (_imp->_splashScreen) {
         _imp->_splashScreen->hide();
         _imp->_splashScreen->close();
-        delete _imp->_splashScreen;
+        _imp->_splashScreen->deleteLater();
         _imp->_splashScreen = 0;
     }
 }

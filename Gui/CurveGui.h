@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -124,7 +124,7 @@ public:
     virtual double evaluate(bool useExpr, double x) const = 0;
     virtual CurvePtr  getInternalCurve() const;
 
-    void drawCurve(int curveIndex, int curvesCount);
+    void drawCurve(int curveIndex, int curvesCount, double screenPixelRatio);
 
     virtual Curve::YRange getCurveYRange() const;
     virtual bool areKeyFramesTimeClampedToIntegers() const;

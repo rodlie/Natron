@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -232,7 +232,6 @@ RotoPaint::initializeKnobs()
     QObject::connect( context.get(), SIGNAL(selectionChanged(int)), this, SLOT(onSelectionChanged(int)) );
     QObject::connect( context.get(), SIGNAL(itemLockedChanged(int)), this, SLOT(onCurveLockedChanged(int)) );
     QObject::connect( context.get(), SIGNAL(breakMultiStroke()), this, SLOT(onBreakMultiStrokeTriggered()) );
-
 
     /// Initializing the viewer interface
     KnobButtonPtr autoKeyingEnabled = AppManager::createKnob<KnobButton>( this, tr(kRotoUIParamAutoKeyingEnabledLabel) );
@@ -479,6 +478,19 @@ RotoPaint::initializeKnobs()
     generalPage->addKnob(buildUp);
     _imp->ui->buildUpButton = buildUp;
 
+    KnobButtonPtr autoConnectViewer = AppManager::createKnob<KnobButton>( this, tr(kRotoUIParamAutoConnectViewerLabel) );
+    autoConnectViewer->setName(kRotoUIParamAutoConnectViewer);
+    autoConnectViewer->setHintToolTip( tr(kRotoUIParamAutoConnectViewerHint) );
+    autoConnectViewer->setEvaluateOnChange(false);
+    autoConnectViewer->setCheckable(true);
+    autoConnectViewer->setDefaultValue(false);
+    autoConnectViewer->setSecretByDefault(true);
+    autoConnectViewer->setInViewerContextCanHaveShortcut(true);
+    autoConnectViewer->setIconLabel(NATRON_IMAGES_PATH "visible.png", true);
+    autoConnectViewer->setIconLabel(NATRON_IMAGES_PATH "unvisible.png", false);
+    generalPage->addKnob(autoConnectViewer);
+    _imp->ui->autoConnectViewerButton = autoConnectViewer;
+
     KnobDoublePtr effectStrength = AppManager::createKnob<KnobDouble>( this, tr(kRotoUIParamEffectLabel) );
     effectStrength->setName(kRotoUIParamEffect);
     effectStrength->setInViewerContextLabel( tr(kRotoUIParamEffectLabel) );
@@ -582,6 +594,8 @@ RotoPaint::initializeKnobs()
     pressureHardness->setInViewerContextItemSpacing(ROTOPAINT_VIEWER_UI_SECTIONS_SPACING_PX);
     addKnobToViewerUI(buildUp);
     buildUp->setInViewerContextItemSpacing(ROTOPAINT_VIEWER_UI_SECTIONS_SPACING_PX);
+    addKnobToViewerUI(autoConnectViewer);
+    autoConnectViewer->setInViewerContextItemSpacing(ROTOPAINT_VIEWER_UI_SECTIONS_SPACING_PX);
     addKnobToViewerUI(effectStrength);
     effectStrength->setInViewerContextItemSpacing(ROTOPAINT_VIEWER_UI_SECTIONS_SPACING_PX);
     addKnobToViewerUI(timeOffsetSb);
@@ -1673,6 +1687,7 @@ RotoPaint::drawOverlay(double time,
     std::list<RotoDrawableItemPtr> drawables = getNode()->getRotoContext()->getCurvesByRenderOrder();
     std::pair<double, double> pixelScale;
     std::pair<double, double> viewportSize;
+    double screenPixelRatio = getCurrentViewportForOverlays()->getScreenPixelRatio();
 
     getCurrentViewportForOverlays()->getPixelScale(pixelScale.first, pixelScale.second);
     getCurrentViewportForOverlays()->getViewportSize(viewportSize.first, viewportSize.second);
@@ -1686,11 +1701,9 @@ RotoPaint::drawOverlay(double time,
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_LINE_SMOOTH);
         glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-        glLineWidth(1.5);
 
 
         double cpWidth = kControlPointMidSize * 2;
-        glPointSize(cpWidth);
         for (std::list<RotoDrawableItemPtr>::const_iterator it = drawables.begin(); it != drawables.end(); ++it) {
             if ( !(*it)->isGloballyActivated() ) {
                 continue;
@@ -1727,6 +1740,7 @@ RotoPaint::drawOverlay(double time,
                 glColor4dv(curveColor);
 
                 for (std::list<std::list<std::pair<Point, double> > >::iterator itStroke = strokes.begin(); itStroke != strokes.end(); ++itStroke) {
+                    glLineWidth(1.5 * screenPixelRatio);
                     glBegin(GL_LINE_STRIP);
                     for (std::list<std::pair<Point, double> >::const_iterator it2 = itStroke->begin(); it2 != itStroke->end(); ++it2) {
                         glVertex2f(it2->first.x, it2->first.y);
@@ -1741,12 +1755,16 @@ RotoPaint::drawOverlay(double time,
 
                 RectD bbox = isBezier->getBoundingBox(time);
 
+                // Is the Bezier a closed curve? Only if not an open Bezier, and it's finished.
+                const bool isLoop = !isBezier->isOpenBezier() && isBezier->isCurveFinished();
+
                 // To decomment you must transform the viewport by the OpenGL transform first
                 //if ( !getCurrentViewportForOverlays()->isVisibleInViewport(bbox) ) {
                 //                  continue;
                 //            }
 
                 std::list<ParametricPoint > points;
+
                 isBezier->evaluateAtTime_DeCasteljau(true, time, 0,
 #ifdef ROTO_BEZIER_EVAL_ITERATIVE
                                                      100,
@@ -1763,8 +1781,8 @@ RotoPaint::drawOverlay(double time,
                     curveColor[0] = 0.8; curveColor[1] = 0.8; curveColor[2] = 0.8; curveColor[3] = 1.;
                 }
                 glColor4dv(curveColor);
-
-                glBegin(GL_LINE_STRIP);
+                glLineWidth(1.5 * screenPixelRatio);
+                glBegin(isLoop ? GL_LINE_LOOP : GL_LINE_STRIP);
                 for (std::list<ParametricPoint >::const_iterator it2 = points.begin(); it2 != points.end(); ++it2) {
                     glVertex2f(it2->x, it2->y);
                 }
@@ -1792,7 +1810,8 @@ RotoPaint::drawOverlay(double time,
                     if ( !featherPoints.empty() ) {
                         glLineStipple(2, 0xAAAA);
                         glEnable(GL_LINE_STIPPLE);
-                        glBegin(GL_LINE_STRIP);
+                        glLineWidth(1.5 * screenPixelRatio);
+                        glBegin(isLoop ? GL_LINE_LOOP : GL_LINE_STRIP);
                         for (std::list<ParametricPoint >::const_iterator it2 = featherPoints.begin(); it2 != featherPoints.end(); ++it2) {
                             glVertex2f(it2->x, it2->y);
                         }
@@ -1883,6 +1902,9 @@ RotoPaint::drawOverlay(double time,
                             colorChanged = true;
                         }
 
+                        glEnable(GL_POINT_SMOOTH);
+                        glPointSize(cpWidth * screenPixelRatio);
+                        // code below draws GL_POINTS
                         for (SelectedCPs::const_iterator cpIt = _imp->ui->selectedCps.begin();
                              cpIt != _imp->ui->selectedCps.end();
                              ++cpIt) {
@@ -1936,6 +1958,8 @@ RotoPaint::drawOverlay(double time,
                         }
 
                         if (drawFeather) {
+                            glEnable(GL_POINT_SMOOTH);
+                            glPointSize(cpWidth * screenPixelRatio);
                             glBegin(GL_POINTS);
                             glVertex2f(xF, yF);
                             glEnd();
@@ -1960,6 +1984,7 @@ RotoPaint::drawOverlay(double time,
                             ///draw a link between the feather point and the control point.
                             ///Also extend that link of 20 pixels beyond the feather point.
 
+                            glLineWidth(1.5 * screenPixelRatio);
                             glBegin(GL_LINE_STRIP);
                             glVertex2f(x, y);
                             glVertex2f(xF, yF);
@@ -1992,6 +2017,7 @@ RotoPaint::drawOverlay(double time,
                                         glColor4dv(curveColor);
                                     }
 
+                                    glLineWidth(1.5 * screenPixelRatio);
                                     glBegin(GL_LINES);
                                     glVertex2f(x, y);
                                     glVertex2f(featherPoint.x, featherPoint.y);
@@ -2065,6 +2091,7 @@ RotoPaint::drawOverlay(double time,
 
                     if ( ( (_imp->ui->selectedTool == eRotoToolClone) || (_imp->ui->selectedTool == eRotoToolReveal) ) &&
                          ( ( _imp->ui->cloneOffset.first != 0) || ( _imp->ui->cloneOffset.second != 0) ) ) {
+                        glLineWidth(1.5 * screenPixelRatio);
                         glBegin(GL_LINES);
 
                         if (_imp->ui->state == eEventStateDraggingCloneOffset) {
@@ -2551,6 +2578,11 @@ RotoPaint::onOverlayPenDown(double time,
 
                         _imp->ui->selectedCps.clear();
                         _imp->ui->setCurrentTool( _imp->ui->selectAllAction.lock() );
+
+                        // continue editing the tangent
+
+                        //->ui->tangentBeingDragged = *it;
+                        //_imp->ui->state = eEventStateDraggingRightTangent;
                     } else {
                         BezierCPPtr fp = _imp->ui->builtBezier->getFeatherPointAtIndex(i);
                         assert(fp);
@@ -2676,7 +2708,8 @@ RotoPaint::onOverlayPenMotion(double time,
     if (!context) {
         return false;
     }
-    bool didSomething = false;
+    bool didSomething = false; // Set if an actual action was performed based on mouse motion.
+    bool redraw = false; // Set if we just need a redraw (e.g., hover state changed).
     HoverStateEnum lastHoverState = _imp->ui->hoverState;
     ///Set the cursor to the appropriate case
     bool cursorSet = false;
@@ -2692,7 +2725,6 @@ RotoPaint::onOverlayPenMotion(double time,
         } else {
             setCurrentCursor(eCursorBlank);
         }
-        didSomething = true;
         cursorSet = true;
     }
 
@@ -2700,34 +2732,28 @@ RotoPaint::onOverlayPenMotion(double time,
          && ( _imp->ui->state != eEventStateDraggingLeftTangent) &&
          ( _imp->ui->state != eEventStateDraggingRightTangent) ) {
         double bboxTol = cpTol;
+        HoverStateEnum newState = _imp->ui->hoverState;
         if ( _imp->ui->isNearbyBBoxBtmLeft(pos, bboxTol, pixelScale) ) {
-            _imp->ui->hoverState = eHoverStateBboxBtmLeft;
-            didSomething = true;
+            newState = eHoverStateBboxBtmLeft;
         } else if ( _imp->ui->isNearbyBBoxBtmRight(pos, bboxTol, pixelScale) ) {
-            _imp->ui->hoverState = eHoverStateBboxBtmRight;
-            didSomething = true;
+            newState = eHoverStateBboxBtmRight;
         } else if ( _imp->ui->isNearbyBBoxTopRight(pos, bboxTol, pixelScale) ) {
-            _imp->ui->hoverState = eHoverStateBboxTopRight;
-            didSomething = true;
+            newState = eHoverStateBboxTopRight;
         } else if ( _imp->ui->isNearbyBBoxTopLeft(pos, bboxTol, pixelScale) ) {
-            _imp->ui->hoverState = eHoverStateBboxTopLeft;
-            didSomething = true;
+            newState = eHoverStateBboxTopLeft;
         } else if ( _imp->ui->isNearbyBBoxMidTop(pos, bboxTol, pixelScale) ) {
-            _imp->ui->hoverState = eHoverStateBboxMidTop;
-            didSomething = true;
+            newState = eHoverStateBboxMidTop;
         } else if ( _imp->ui->isNearbyBBoxMidRight(pos, bboxTol, pixelScale) ) {
-            _imp->ui->hoverState = eHoverStateBboxMidRight;
-            didSomething = true;
+            newState = eHoverStateBboxMidRight;
         } else if ( _imp->ui->isNearbyBBoxMidBtm(pos, bboxTol, pixelScale) ) {
-            _imp->ui->hoverState = eHoverStateBboxMidBtm;
-            didSomething = true;
+            newState = eHoverStateBboxMidBtm;
         } else if ( _imp->ui->isNearbyBBoxMidLeft(pos, bboxTol, pixelScale) ) {
-            _imp->ui->hoverState = eHoverStateBboxMidLeft;
-            didSomething = true;
-        } else {
-            _imp->ui->hoverState = eHoverStateNothing;
-            didSomething = true;
+            newState = eHoverStateBboxMidLeft;
+        } else if (lastHoverState != eHoverStateNothing) {
+            newState = eHoverStateNothing;
         }
+        redraw = _imp->ui->hoverState != newState;
+        _imp->ui->hoverState = newState;
     }
     const bool featherVisible = _imp->ui->isFeatherVisible();
 
@@ -2789,23 +2815,24 @@ RotoPaint::onOverlayPenMotion(double time,
             nearbyFeatherBar = _imp->ui->isNearbyFeatherBar(time, pixelScale, pos);
             if (nearbyFeatherBar.first && nearbyFeatherBar.second) {
                 _imp->ui->featherBarBeingHovered = nearbyFeatherBar;
+                redraw = true;
             }
         }
         if (!nearbyFeatherBar.first || !nearbyFeatherBar.second) {
-            _imp->ui->featherBarBeingHovered.first.reset();
-            _imp->ui->featherBarBeingHovered.second.reset();
+            if (_imp->ui->featherBarBeingHovered.first || _imp->ui->featherBarBeingHovered.second) {
+                _imp->ui->featherBarBeingHovered.first.reset();
+                _imp->ui->featherBarBeingHovered.second.reset();
+                redraw = true;
+            }
         }
 
-        if ( (_imp->ui->state != eEventStateNone) || _imp->ui->featherBarBeingHovered.first || cursorSet || (lastHoverState != eHoverStateNothing) ) {
-            didSomething = true;
+        if ( (_imp->ui->state != eEventStateNone) || _imp->ui->featherBarBeingHovered.first || (lastHoverState != _imp->ui->hoverState) ) {
+            redraw = true;
+        }
+        if (!cursorSet) {
+            setCurrentCursor(eCursorDefault);
         }
     }
-
-
-    if (!cursorSet) {
-        setCurrentCursor(eCursorDefault);
-    }
-
 
     double dx = pos.x() - _imp->ui->lastMousePos.x();
     double dy = pos.y() - _imp->ui->lastMousePos.y();
@@ -2848,6 +2875,7 @@ RotoPaint::onOverlayPenMotion(double time,
         assert(_imp->ui->builtBezier);
         bool isOpenBezier = _imp->ui->selectedTool == eRotoToolOpenBezier;
         pushUndoCommand( new MakeBezierUndoCommand(_imp->ui, _imp->ui->builtBezier, isOpenBezier, false, dx, dy, time) );
+        didSomething = true;
         break;
     }
     case eEventStateBuildingEllipse: {
@@ -3009,8 +3037,7 @@ RotoPaint::onOverlayPenMotion(double time,
             if ( _imp->ui->strokeBeingPaint->appendPoint(false, p) ) {
                 _imp->ui->lastMousePos = pos;
                 context->evaluateChange_noIncrement();
-
-                return true;
+                didSomething = true;
             }
         }
         break;
@@ -3064,6 +3091,10 @@ RotoPaint::onOverlayPenMotion(double time,
         break;
     } // switch
     _imp->ui->lastMousePos = pos;
+
+    if (redraw) {
+        redrawOverlayInteract();
+    }
 
     return didSomething;
 } // onOverlayPenMotion

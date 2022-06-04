@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -178,7 +178,7 @@ public:
             std::find(textureBeingRendered.begin(), textureBeingRendered.end(), entry);
 
         while ( it != textureBeingRendered.end() ) {
-            textureBeingRenderedCond.wait(&textureBeingRenderedMutex);
+            textureBeingRenderedCond.wait(l.mutex());
             it = std::find(textureBeingRendered.begin(), textureBeingRendered.end(), entry);
         }
         ///Okay the image is not used by any other thread, claim that we want to use it

@@ -5,17 +5,24 @@ PortGroup           xcodeversion 1.0
 PortGroup           muniversal 1.0
 PortGroup           compiler_blacklist_versions 1.0
 PortGroup           active_variants 1.1
+
+# For 'TARGET_OS_OSX', 'TARGET_CPU_ARM64' macros
+PortGroup           legacysupport 1.1
+
 # https://trac.macports.org/ticket/59246
+# https://trac.macports.org/ticket/59308
 PortGroup           xcode_workaround 1.0
 
 name                ffmpeg
+set my_name         ffmpeg
 conflicts           ffmpeg-devel
 # Please increase the revision of mpv whenever ffmpeg's version is updated.
 epoch               1
-version             4.2.3
+version             4.4.1
+revision            0
 license             LGPL-2.1+
 categories          multimedia
-maintainers         {devans @dbevans} {jeremyhu @jeremyhu} openmaintainer
+maintainers         {devans @dbevans} {jeremyhu @jeremyhu} {mascguy @mascguy} openmaintainer
 
 description         FFmpeg is a complete solution to play, record, convert and \
                     stream audio and video.
@@ -51,16 +58,18 @@ long_description    FFmpeg is a complete solution to record, convert and \
 platforms           darwin
 homepage            https://ffmpeg.org/
 master_sites        ${homepage}releases/
-
+distname            ${my_name}-${version}
+dist_subdir         ${my_name}
 use_xz              yes
 
-checksums           rmd160  a59b9f88a0b3c2e3a343c1d3a821c7bd41970f28 \
-                    sha256  9df6c90aed1337634c1fb026fb01c154c29c82a64ea71291ff2da9aacb9aad31 \
-                    size    9101192
+checksums           rmd160  ebb1f042b2ba4f13be86339d30522cd73eb6da3e \
+                    sha256  eadbad9e9ab30b25f5520fbfde99fae4a92a1ae3c0257a8d68569a4651e30e02 \
+                    size    9557516
 
 depends_build       port:pkgconfig \
                     port:gmake \
                     port:ld64 \
+                    port:cctools \
                     port:texinfo
 
 depends_lib         port:lame \
@@ -87,11 +96,19 @@ depends_lib         port:lame \
 
 patchfiles          patch-libavcodec-audiotoolboxenc.c.diff
 
-#
+# fix an upstream bug that overrides the max_b_frames setting
+# https://trac.ffmpeg.org/ticket/9231
+# this bug is fixed upstream in commit 55d9d6767967794edcdd6e1bbd8840fc6f4e9315
+# and should therefore be available in the next release version.
+patchfiles-append   patch-libavcodec-videotoolboxenc.c.diff
+
 # enable auto configure of asm optimizations
 # requires Xcode 3.1 or better on Leopard
 #
 minimum_xcodeversions {9 3.1}
+
+# requires a C11 compiler
+compiler.c_standard 2011
 
 if {[lsearch [get_canonical_archs] i386] != -1} {
     # clang-3.1 hits https://trac.macports.org/ticket/30137 (<rdar://problem/11542429>)
@@ -99,13 +116,9 @@ if {[lsearch [get_canonical_archs] i386] != -1} {
     compiler.blacklist-append {clang < 422.1.7}
 }
 
-platform darwin powerpc {
-    # https://trac.macports.org/ticket/55124
-    # requires newer compiler than gcc4.2 to build
-    compiler.blacklist
-    compiler.whitelist    macports-gcc-6
-    universal_variant     no
-}
+# warning: unknown warning option '-Werror=partial-availability'; did you mean '-Werror=availability'? [-Wunknown-warning-option]
+# warning: unknown warning option '-Wno-bool-operation'; did you mean '-Wno-bool-conversion'? [-Wunknown-warning-option]
+compiler.blacklist-append {clang < 800}
 
 # The old ffmpeg port was GPL-2+ as base and had a no_gpl variant, so this keeps us consistent
 # Also, -gpl2 causes other ports to fail to build due to the missing libpostproc (#35473)
@@ -132,6 +145,7 @@ configure.args      --enable-swscale \
                     --enable-fontconfig \
                     --enable-libfreetype \
                     --enable-libfribidi \
+                    --enable-zlib \
                     --disable-libjack \
                     --disable-libopencore-amrnb \
                     --disable-libopencore-amrwb \
@@ -146,9 +160,16 @@ configure.args      --enable-swscale \
                     --disable-sdl2 \
                     --disable-securetransport \
                     --mandir=${prefix}/share/man \
-                    --enable-shared --enable-pthreads \
+                    --enable-shared \
+                    --enable-pthreads \
                     --cc=${configure.cc}
 
+
+# zimg doesn't currently build on 10.7 and below, so only enable it on supported systems
+if { ${os.platform} eq "darwin" && ${os.major} > 11 } {
+    configure.args-append   --enable-libzimg
+    depends_lib-append      port:zimg
+}
 
 platform darwin {
     # disable asm on Tiger
@@ -177,11 +198,17 @@ platform darwin {
         configure.args-replace --disable-audiotoolbox --enable-audiotoolbox
     }
 
-    # libsdl2 requires minimum Xcode 10.7 SDK to build successfully
-    # but builds on Snow Leopard
     if {${os.major} > 9} {
+        # libsdl2 requires minimum Xcode 10.7 SDK to build successfully
+        # but builds on Snow Leopard
         configure.args-replace --disable-sdl2 --enable-sdl2
         depends_lib-append     port:libsdl2
+
+        # Dav1d: 10.6+ No PowerPC or Apple Silicon (for now)
+        if {![regexp -all (arm64|ppc*) [get_canonical_archs]]} {
+            configure.args-append   --enable-libdav1d
+            depends_lib-append      port:dav1d
+        }
     }
 
     # VideoToolbox, a new hardware acceleration framework, is supported on 10.8+ and "here to stay".
@@ -201,7 +228,9 @@ platform darwin {
     }
 
     # avfoundation is only available on 10.7+
-    if {${os.major} < 11} {
+    # as of ffmpeg 3.4.1 build fails on 10.7 as well
+    # libavdevice/avfoundation.m:207:14: error: expected method to read dictionary element not found on object of type 'NSDictionary *'
+    if {${os.major} < 12} {
         configure.args-append --disable-indev=avfoundation
     }
 }
@@ -229,7 +258,19 @@ platform powerpc {
     # absence of altivec is not automatically detected
     if {[catch {sysctl hw.vectorunit} result] || $result == 0} {
         configure.args-append --disable-altivec
+
+        # as this machine is a G3, force a local build so we don't download a buildbot-built
+        # version possibly built on a G4+ or cross-compiled from an Intel system
+        archive_sites
     }
+
+    # might be needed for any gcc build...
+    #Undefined symbols:
+    #  "___atomic_fetch_sub_8", referenced from:
+    #      _fifo_thread_dispatch_message.part.4 in fifo.o
+    configure.ldflags-append -latomic
+
+
 }
 
 platform darwin 8 {
@@ -240,7 +281,10 @@ platform darwin 8 {
 
 configure.universal_args-delete --disable-dependency-tracking
 
-if {[variant_isset universal]} {
+if {![info exists universal_possible]} {
+    set universal_possible [expr {${os.universal_supported} && [llength ${configure.universal_archs}] >= 2}]
+}
+if {${universal_possible} && [variant_isset universal]} {
     foreach arch ${configure.universal_archs} {
         set merger_host($arch) ""
         lappend merger_configure_args($arch) --arch=${arch}
@@ -351,69 +395,47 @@ variant nonfree description {enable nonfree code, libraries and binaries will no
 
 if {[variant_isset nonfree]} {
 notes "
-*******
-******* This build of ${name} includes nonfree code as follows:
-*******
-*******     libfdk-aac
-*******
-******* The following libraries and binaries may not be redistributed:
-*******
-*******     ffmpeg
-*******     libavcodec
-*******     libavdevice
-*******     libavfilter
-*******     libavformat
-*******     libavutil
-*******
-******* To remove this restriction remove the variant +nonfree
-*******
+This build of ${name} includes nonfree code as follows:
+  libfdk-aac
+The following libraries and binaries may not be redistributed:
+  ffmpeg
+  libavcodec
+  libavdevice
+  libavfilter
+  libavformat
+  libavutil
+To remove this restriction remove the variant +nonfree
 "
 } elseif {[variant_isset gpl3]} {
 notes "
-*******
-******* This build of ${name} includes GPLed code and
-******* is therefore licensed under GPL v3 or later.
-*******
-******* The following modules are GPLed:
-*******
-*******      postproc
-*******      libsambaclient
-*******      libx264
-*******      libx265
-*******      libxvid
-*******
-******* To include all nonfree, GPLed and LGPL code use variant +nonfree.
-******* To remove nonfree and GPLed code leaving only LGPL code remove the
-******* +gpl2 and +gpl3 variants.
-*******
+This build of ${name} includes GPLed code and is therefore licensed under GPL v3 or later.
+The following modules are GPLed:
+  postproc
+  libsambaclient
+  libx264
+  libx265
+  libxvid
+To include all nonfree, GPLed and LGPL code use variant +nonfree.
+To remove nonfree and GPLed code leaving only LGPL code remove the +gpl2 and +gpl3 variants.
 "
 } elseif {[variant_isset gpl2]} {
 notes "
-*******
-******* This build of ${name} includes GPLed code and
-******* is therefore licensed under GPL v2 or later.
-*******
-******* The following modules are GPLed:
-*******
-*******      postproc
-*******      libx264
-*******      libx265
-*******      libxvid
-*******
-******* To include all nonfree, GPLed and LGPL code use variant +nonfree.
-******* To remove nonfree and GPLed code leaving only LGPL code remove the
-******* +gpl2 variant.
-*******
+This build of ${name} includes GPLed code and is therefore licensed under GPL v2 or later.
+The following modules are GPLed:
+  postproc
+  libx264
+  libx265
+  libxvid
+To include all nonfree, GPLed and LGPL code use variant +nonfree.
+To remove nonfree and GPLed code leaving only LGPL code remove the +gpl2 variant.
 "
 } else {
 notes "
-*******
-******* This build of ${name} includes no GPLed or nonfree
-******* code and is therefore licensed under LGPL v2.1 or later.
-*******
+This build of ${name} includes no GPLed or nonfree code\
+and is therefore licensed under LGPL v2.1 or later.
 "
 }
 
 livecheck.type      regex
 livecheck.url       ${master_sites}
-livecheck.regex     "${name}-(\\d+(?:\\.\\d+)*)${extract.suffix}"
+livecheck.regex     "${my_name}-(\\d+(?:\\.\\d+)*)${extract.suffix}"

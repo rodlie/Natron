@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -37,8 +37,6 @@
 
 #include <boost/scoped_ptr.hpp>
 GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_OFF
-// /usr/local/include/boost/bind/arg.hpp:37:9: warning: unused typedef 'boost_static_assert_typedef_37' [-Wunused-local-typedef]
-#include <boost/bind.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_ON
 
@@ -54,6 +52,9 @@ GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_ON
 #include <ofxNatron.h>
 
 #include "Global/FStreamsSupport.h"
+#ifdef DEBUG
+#include "Global/FloatingPointExceptions.h"
+#endif
 
 #include "Engine/AbortableRenderInfo.h"
 #include "Engine/AppInstance.h"
@@ -1201,7 +1202,7 @@ Node::loadKnob(const KnobIPtr & knob,
         break;
 
     }
-  
+
 } // Node::loadKnob
 
 
@@ -1348,7 +1349,7 @@ Node::Implementation::abortPreview_blocking(bool allowPreviewRenders)
         assert(!mustQuitPreview);
         ++mustQuitPreview;
         while (mustQuitPreview) {
-            mustQuitPreviewCond.wait(&mustQuitPreviewMutex);
+            mustQuitPreviewCond.wait(l.mutex());
         }
     }
 }
@@ -1845,7 +1846,7 @@ Node::createNodePage(const KnobPagePtr& settingsPage)
 
 
     KnobStringPtr knobChangedCallback = AppManager::createKnob<KnobString>(_imp->effect.get(), tr("After param changed callback"), 1, false);
-    knobChangedCallback->setHintToolTip( tr("Set here the name of a function defined in Python which will be called for each  "
+    knobChangedCallback->setHintToolTip( tr("Name of a Python function to be called at each  "
                                             "parameter change. Either define this function in the Script Editor "
                                             "or in the init.py script or even in the script of a Python group plug-in.\n"
                                             "The signature of the callback is: callback(thisParam, thisNode, thisGroup, app, userEdited) where:\n"
@@ -1861,8 +1862,8 @@ Node::createNodePage(const KnobPagePtr& settingsPage)
     _imp->knobChangedCallback = knobChangedCallback;
 
     KnobStringPtr inputChangedCallback = AppManager::createKnob<KnobString>(_imp->effect.get(), tr("After input changed callback"), 1, false);
-    inputChangedCallback->setHintToolTip( tr("Set here the name of a function defined in Python which will be called after "
-                                             "each connection is changed for the inputs of the node. "
+    inputChangedCallback->setHintToolTip( tr("Name of a Python function to be called after "
+                                             "an input connection of the node is changed. "
                                              "Either define this function in the Script Editor "
                                              "or in the init.py script or even in the script of a Python group plug-in.\n"
                                              "The signature of the callback is: callback(inputIndex, thisNode, thisGroup, app):\n"
@@ -1881,10 +1882,10 @@ Node::createNodePage(const KnobPagePtr& settingsPage)
     if (isGroup) {
         KnobStringPtr onNodeCreated = AppManager::createKnob<KnobString>(_imp->effect.get(), tr("After Node Created"), 1, false);
         onNodeCreated->setName("afterNodeCreated");
-        onNodeCreated->setHintToolTip( tr("Add here the name of a Python-defined function that will be called each time a node "
-                                          "is created in the group. This will be called in addition to the After Node Created "
+        onNodeCreated->setHintToolTip( tr("Name of a Python function to be called each time a node "
+                                          "is created in the group. This is called in addition to the After Node Created "
                                           " callback of the project for the group node and all nodes within it (not recursively).\n"
-                                          "The boolean variable userEdited will be set to True if the node was created "
+                                          "The boolean variable userEdited is set to True if the node was created "
                                           "by the user or False otherwise (such as when loading a project, or pasting a node).\n"
                                           "The signature of the callback is: callback(thisNode, app, userEdited) where:\n"
                                           "- thisNode: the node which has just been created\n"
@@ -2357,7 +2358,7 @@ Node::initializeDefaultKnobs(bool loadingSerialization)
 
 
     if (lastKnobBeforeAdvancedOption && mainPage) {
-        
+
         KnobsVec mainPageChildren = mainPage->getChildren();
         int i = 0;
         for (KnobsVec::iterator it = mainPageChildren.begin(); it != mainPageChildren.end(); ++it, ++i) {
@@ -3163,6 +3164,10 @@ renderPreview(const Image & srcImg,
               bool convertToSrgb,
               unsigned int* dstPixels)
 {
+#if defined(DEBUG) && !defined(DEBUG_NAN)
+    // Some plugins generate FP exceptions
+    boost_adaptbx::floating_point::exception_trapping trap(0);
+#endif
     ///recompute it after the rescaling
     const RectI & srcBounds = srcImg.getBounds();
     double yZoomFactor = *dstHeight / (double)srcBounds.height();
@@ -4399,7 +4404,7 @@ Node::lock(const ImagePtr & image)
         std::find(_imp->imagesBeingRendered.begin(), _imp->imagesBeingRendered.end(), image);
 
     while ( it != _imp->imagesBeingRendered.end() ) {
-        _imp->imagesBeingRenderedCond.wait(&_imp->imagesBeingRenderedMutex);
+        _imp->imagesBeingRenderedCond.wait(l.mutex());
         it = std::find(_imp->imagesBeingRendered.begin(), _imp->imagesBeingRendered.end(), image);
     }
     ///Okay the image is not used by any other thread, claim that we want to use it
@@ -4891,7 +4896,7 @@ Node::onEffectKnobValueChanged(KnobI* what,
 
     bool ret = true;
     if ( what == _imp->previewEnabledKnob.lock().get() ) {
-        if ( (reason == eValueChangedReasonUserEdited) || (reason == eValueChangedReasonSlaveRefresh) ) {
+        if ( (reason == eValueChangedReasonUserEdited) || (reason == eValueChangedReasonSlaveRefresh) || (reason == eValueChangedReasonNatronInternalEdited) ) {
             Q_EMIT previewKnobToggled();
         }
     } else if ( what == _imp->renderButton.lock().get() ) {
@@ -5030,7 +5035,7 @@ Node::onEffectKnobValueChanged(KnobI* what,
         }
         _imp->effect->onEnableOpenGLKnobValueChanged(enabled);
     } else if (what == _imp->processAllLayersKnob.lock().get() ) {
-        
+
         std::map<int, ChannelSelector>::iterator foundOutput = _imp->channelsSelectors.find(-1);
         if (foundOutput != _imp->channelsSelectors.end()) {
             _imp->onLayerChanged(foundOutput->first, foundOutput->second);
@@ -5114,7 +5119,7 @@ Node::onOpenGLEnabledKnobChangedOnProject(bool activated)
         }
     }
     _imp->effect->onEnableOpenGLKnobValueChanged(enabled);
-    
+
 }
 
 bool
@@ -5176,14 +5181,14 @@ Node::Implementation::onLayerChanged(int inputNb,
 
         ///Disable all input selectors as it doesn't make sense to edit them whilst output is All
         for (std::map<int, ChannelSelector>::iterator it = channelsSelectors.begin(); it != channelsSelectors.end(); ++it) {
-            
+
             NodePtr inp;
             if (it->first >= 0) {
                 inp = _publicInterface->getInput(it->first);
             }
             bool mustBeSecret = (it->first >= 0 && !inp.get()) || outputIsAll;
             it->second.layer.lock()->setSecret(mustBeSecret);
-            
+
         }
     }
     if (!isRefreshingInputRelatedData) {
@@ -5661,7 +5666,7 @@ Node::setNodeIsRenderingInternal(std::list<NodeWPtr>& markedNodes)
     if ( QThread::currentThread() != qApp->thread() ) {
         QMutexLocker k(&_imp->nodeIsDequeuingMutex);
         while ( _imp->nodeIsDequeuing && !aborted() ) {
-            _imp->nodeIsDequeuingCond.wait(&_imp->nodeIsDequeuingMutex);
+            _imp->nodeIsDequeuingCond.wait(k.mutex());
         }
     }
 
@@ -6521,7 +6526,9 @@ Node::declareNodeVariableToPython(const std::string& nodeName)
     if (getScriptName_mt_safe().empty()) {
         return;
     }
-
+    if ( NATRON_PYTHON_NAMESPACE::isKeyword(nodeName) ) {
+        throw std::runtime_error(nodeName + " is a Python keyword");
+    }
 
     PythonGILLocker pgl;
     PyObject* mainModule = appPTR->getMainModule();
@@ -7240,9 +7247,9 @@ Node::refreshChannelSelectors()
 
 
         KnobChoicePtr channelKnob = it->second.channel.lock();
-        
+
         hasChanged |= channelKnob->populateChoices(choices);
-        
+
     }
     //Notify the effect channels have changed (the viewer needs this)
     _imp->effect->onChannelsSelectorRefreshed();

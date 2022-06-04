@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -42,6 +42,7 @@ CLANG_DIAG_ON(uninitialized)
 #include "Gui/PanelWidget.h"
 #include "Gui/GuiFwd.h"
 
+#include "Gui/TaskBar.h"
 
 NATRON_NAMESPACE_ENTER
 
@@ -146,6 +147,7 @@ private:
     virtual void enterEvent(QEvent* e) OVERRIDE FINAL;
     virtual void leaveEvent(QEvent* e) OVERRIDE FINAL;
     boost::scoped_ptr<ProgressPanelPrivate> _imp;
+    TaskBar *_taskbar;
 };
 
 NATRON_NAMESPACE_EXIT

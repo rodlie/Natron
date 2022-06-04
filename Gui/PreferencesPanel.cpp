@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -1390,15 +1390,15 @@ ShortcutDelegate::paint(QPainter * painter,
 
     if (isTopLevel) {
         font.setBold(true);
-        font.setPixelSize(13);
-        pen.setColor(Qt::black);
+        font.setPointSize(13);
+        pen.setColor(Qt::gray);
     } else {
         font.setBold(false);
-        font.setPixelSize(11);
+        font.setPointSize(11);
         if ( item->isDisabled() ) {
-            pen.setColor(Qt::black);
+            pen.setColor(Qt::gray);
         } else {
-            pen.setColor( QColor(200, 200, 200) );
+            pen.setColor(Qt::lightGray);
         }
     }
     painter->setFont(font);

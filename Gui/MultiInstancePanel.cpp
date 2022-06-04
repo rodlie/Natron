@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -57,10 +57,6 @@ CLANG_DIAG_OFF(uninitialized)
 CLANG_DIAG_ON(deprecated)
 CLANG_DIAG_ON(uninitialized)
 
-GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_OFF
-// /usr/local/include/boost/bind/arg.hpp:37:9: warning: unused typedef 'boost_static_assert_typedef_37' [-Wunused-local-typedef]
-#include <boost/bind.hpp>
-GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_ON
 #include <boost/weak_ptr.hpp>
 
 #include <ofxNatron.h>
@@ -454,6 +450,12 @@ std::string
 MultiInstancePanel::getScriptName_mt_safe() const
 {
     return _imp->getMainInstance()->getScriptName_mt_safe();
+}
+
+std::string
+MultiInstancePanel::getFullyQualifiedName() const
+{
+    return _imp->getMainInstance()->getFullyQualifiedName();
 }
 
 void
@@ -910,6 +912,7 @@ public:
         , _panel(panel)
         , _nodes(nodes)
     {
+        setText( tr("Remove instance(s)") );
     }
 
     virtual ~RemoveNodeCommand()
@@ -923,7 +926,6 @@ public:
         _panel->setRedrawOnSelectionChanged(true);
         _panel->getMainInstance()->getApp()->triggerAutoSave();
         _panel->getMainInstance()->getApp()->redrawAllViewers();
-        setText( tr("Remove instance(s)") );
     }
 
     virtual void redo() OVERRIDE FINAL
@@ -933,7 +935,6 @@ public:
         _panel->setRedrawOnSelectionChanged(true);
         _panel->getMainInstance()->getApp()->triggerAutoSave();
         _panel->getMainInstance()->getApp()->redrawAllViewers();
-        setText( tr("Remove instance(s)") );
     }
 };
 

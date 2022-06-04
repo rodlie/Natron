@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -416,7 +416,7 @@ NodeGui::restoreStateAfterCreation()
 }
 
 void
-NodeGui::ensurePanelCreated()
+NodeGui::ensurePanelCreated(bool minimized, bool hideUnmodified)
 {
     if (_panelCreated) {
         return;
@@ -434,6 +434,8 @@ NodeGui::ensurePanelCreated()
     if (_settingsPanel) {
         QObject::connect( _settingsPanel, SIGNAL(nameChanged(QString)), this, SLOT(setName(QString)) );
         QObject::connect( _settingsPanel, SIGNAL(closeChanged(bool)), this, SLOT(onSettingsPanelClosed(bool)) );
+        QObject::connect( _settingsPanel, SIGNAL(minimized()), this, SLOT(onSettingsPanelMinimized()) );
+        QObject::connect( _settingsPanel, SIGNAL(maximized()), this, SLOT(onSettingsPanelMaximized()) );
         QObject::connect( _settingsPanel, SIGNAL(colorChanged(QColor)), this, SLOT(onSettingsPanelColorChanged(QColor)) );
 
         _graph->getGui()->setNodeViewerInterface(thisShared);
@@ -470,6 +472,14 @@ NodeGui::ensurePanelCreated()
         panel->setRedrawOnSelectionChanged(true);
     }
 
+    if (hideUnmodified) {
+        _settingsPanel->restoreHideUnmodifiedState(true);
+    }
+
+    if (minimized) {
+        _settingsPanel->restoreMinimizedState(true);
+    }
+
     const std::list<ViewerTab*>& viewers = getDagGui()->getGui()->getViewersList();
     for (std::list<ViewerTab*>::const_iterator it = viewers.begin(); it != viewers.end(); ++it) {
         (*it)->getViewer()->updatePersistentMessage();
@@ -487,6 +497,32 @@ NodeGui::onSettingsPanelClosed(bool closed)
         }
     }
     Q_EMIT settingsPanelClosed(closed);
+}
+
+void
+NodeGui::onSettingsPanelMinimized()
+{
+    NodePtr internalNode = getNode();
+    if (internalNode && internalNode->hasAnyPersistentMessage()) {
+        const std::list<ViewerTab*>& viewers = getDagGui()->getGui()->getViewersList();
+        for (std::list<ViewerTab*>::const_iterator it = viewers.begin(); it != viewers.end(); ++it) {
+            (*it)->getViewer()->updatePersistentMessage();
+        }
+    }
+    Q_EMIT settingsPanelMinimized();
+}
+
+void
+NodeGui::onSettingsPanelMaximized()
+{
+    NodePtr internalNode = getNode();
+    if (internalNode && internalNode->hasAnyPersistentMessage()) {
+        const std::list<ViewerTab*>& viewers = getDagGui()->getGui()->getViewersList();
+        for (std::list<ViewerTab*>::const_iterator it = viewers.begin(); it != viewers.end(); ++it) {
+            (*it)->getViewer()->updatePersistentMessage();
+        }
+    }
+    Q_EMIT settingsPanelMaximized();
 }
 
 NodeSettingsPanel*
@@ -624,7 +660,7 @@ NodeGui::createGui()
     _persistentMessage = new NodeGraphSimpleTextItem(getDagGui(), this, false);
     _persistentMessage->setZValue(depth + 3);
     QFont f = _persistentMessage->font();
-    f.setPixelSize(25);
+    f.setPointSize(25);
     bool antialias = appPTR->getCurrentSettings()->isNodeGraphAntiAliasingEnabled();
     if (!antialias) {
         f.setStyleStrategy(QFont::NoAntialias);
@@ -2087,30 +2123,30 @@ NodeGui::initializeKnobs()
 }
 
 void
-NodeGui::setVisibleSettingsPanel(bool b)
+NodeGui::setVisibleSettingsPanel(bool b, bool m, bool h)
 {
     if (!_panelCreated) {
-        ensurePanelCreated();
+        ensurePanelCreated(m, h);
     }
     if (_settingsPanel) {
         _settingsPanel->setClosed(!b);
+        if (b) {
+            // also maximize (but don't minimize when closing)
+            _settingsPanel->minimizeOrMaximize(false);
+        }
     }
 }
 
 bool
 NodeGui::isSettingsPanelVisible() const
 {
-    if (_settingsPanel) {
-        return !_settingsPanel->isClosed();
-    } else {
-        return false;
-    }
+    return _settingsPanel && !_settingsPanel->isClosed() && !_settingsPanel->isMinimized();
 }
 
 bool
 NodeGui::isSettingsPanelMinimized() const
 {
-    return _settingsPanel ? _settingsPanel->isMinimized() : false;
+    return _settingsPanel && _settingsPanel->isMinimized();
 }
 
 void
@@ -3419,8 +3455,8 @@ NodeGui::setName(const QString & newName)
     try {
         node->setScriptName(stdName);
     } catch (const std::exception& e) {
-        //Dialogs::errorDialog(tr("Rename").toStdString(), tr("Could not set node script-name to ").toStdString() + stdName + ": " + e.what());
-        //return;
+        Dialogs::errorDialog(tr("Rename").toStdString(), tr("Could not set node script-name to ").toStdString() + stdName + ": " + e.what());
+        return;
     }
 
     _settingNameFromGui = true;
@@ -3540,7 +3576,8 @@ NodeGui::drawHostOverlay(double time,
                          ViewIdx view)
 {
     if (_hostOverlay) {
-        NatronOverlayInteractSupport::OGLContextSaver s( _hostOverlay->getLastCallingViewport() );
+        OverlaySupport* overlaySupport = _hostOverlay->getLastCallingViewport();
+        NatronOverlayInteractSupport::OGLContextSaver s( overlaySupport );
         _hostOverlay->draw(time, renderScale, view);
     }
 }
@@ -4043,8 +4080,6 @@ GroupKnobDialog::GroupKnobDialog(Gui* gui,
     refreshUserParamsGUI();
 }
 
-typedef boost::shared_ptr<GroupKnobDialog> GroupKnobDialogPtr;
-
 void
 NodeGui::showGroupKnobAsDialog(KnobGroup* group)
 {
@@ -4052,18 +4087,18 @@ NodeGui::showGroupKnobAsDialog(KnobGroup* group)
     assert(group);
     bool showDialog = group->getValue();
     if (showDialog) {
-        assert(!_activeNodeCustomModalDialog);
-        GroupKnobDialogPtr dialog( new GroupKnobDialog(getDagGui()->getGui(), group) );
-        _activeNodeCustomModalDialog = dialog;
-        dialog->move( QCursor::pos() );
-        int accepted = dialog->exec();
+        _activeNodeCustomModalDialog = new GroupKnobDialog(getDagGui()->getGui(), group);
+        _activeNodeCustomModalDialog->move( QCursor::pos() );
+        int accepted = _activeNodeCustomModalDialog->exec();
         Q_UNUSED(accepted);
         // Notify dialog closed
         group->onValueChanged(false, ViewSpec::all(), 0, eValueChangedReasonUserEdited, 0);
-        _activeNodeCustomModalDialog.reset();
-    } else {
+        _activeNodeCustomModalDialog->deleteLater();
+        _activeNodeCustomModalDialog = 0;
+    } else if (_activeNodeCustomModalDialog) {
         _activeNodeCustomModalDialog->close();
-        _activeNodeCustomModalDialog.reset();
+        _activeNodeCustomModalDialog->deleteLater();
+        _activeNodeCustomModalDialog = 0;
     }
 }
 

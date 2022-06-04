@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -299,6 +299,10 @@ NATRON_NAMESPACE_ENTER
 #define kRotoUIParamBuildUpLabel "Build-Up"
 #define kRotoUIParamBuildUpHint "When build-up is enabled, the next brush stroke will build up " \
     "when painted over itself"
+
+#define kRotoUIParamAutoConnectViewer "autoConnectViewerButton"
+#define kRotoUIParamAutoConnectViewerLabel "Auto-connect Viewer"
+#define kRotoUIParamAutoConnectViewerHint "Auto-connect the viewer(s) to the RotoPaint node when using one of the paint tools."
 
 #define kRotoUIParamEffect "effectSpinbox"
 #define kRotoUIParamEffectLabel "Effect Strength"
@@ -610,6 +614,7 @@ public:
     KnobDoubleWPtr hardnessSpinbox;
     KnobButtonWPtr pressureHardnessButton;
     KnobButtonWPtr buildUpButton;
+    KnobButtonWPtr autoConnectViewerButton;
     KnobDoubleWPtr effectSpinBox;
     KnobIntWPtr timeOffsetSpinBox;
     KnobChoiceWPtr timeOffsetModeChoice;

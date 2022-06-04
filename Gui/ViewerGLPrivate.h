@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -172,7 +172,8 @@ struct ViewerGL::Implementation
     const QColor textRenderingColor;
     const QColor displayWindowOverlayColor;
     const QColor rodOverlayColor;
-    QFont textFont;
+    double _screenPixelRatio;
+    boost::scoped_ptr<QFont> _textFont;
     bool overlay; /*!< True if the user enabled overlay display*/
     bool updatingTexture;
     QColor clearColor;
@@ -184,6 +185,7 @@ struct ViewerGL::Implementation
     QPoint lastMousePosition; //< in widget coordinates
     QPointF lastDragStartPos; //< in zoom coordinates
     bool hasMovedSincePress;
+    bool setColorPickerCursor; //< was the color picker cursor set?
 
     /////// currentViewerInfo
     QString currentViewerInfo_btmLeftBBOXoverlay[2]; /*!< The string holding the bottom left corner coordinates of the dataWindow*/

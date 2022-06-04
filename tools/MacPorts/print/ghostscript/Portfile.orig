@@ -4,7 +4,8 @@ PortSystem          1.0
 PortGroup           muniversal 1.0
 
 name                ghostscript
-version             9.52
+version             9.54.0
+revision            1
 categories          print
 license             AGPL-3 BSD
 maintainers         nomaintainer
@@ -15,7 +16,8 @@ long_description    Ghostscript is the well-known PostScript interpreter which \
 platforms           darwin
 homepage            https://www.ghostscript.com/
 master_sites        https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs[strsed ${version} {g/\.//}]:source \
-                    sourceforge:gs-fonts:fonts \
+                    sourceforge:project/gs-fonts/gs-fonts/6.0%20%28misc%2C%20AFPL%29/:otherfonts \
+                    sourceforge:project/gs-fonts/gs-fonts/8.11%20%28base%2035%2C%20GPL%29/:stdfonts \
                     https://github.com/adobe-type-tools/mapping-resources-pdf/archive/:misc
 
 # Note: please update ghostscript-fonts-hiragino Portfile to keep version in sync
@@ -26,22 +28,29 @@ set mappingresources_commit \
 
 distname            ghostpdl-${version}
 distfiles           ${distname}.tar.gz:source \
-                    ghostscript-fonts-other-6.0.tar.gz:fonts \
-                    ghostscript-fonts-std-8.11.tar.gz:fonts \
+                    ghostscript-fonts-other-6.0.tar.gz:otherfonts \
+                    ghostscript-fonts-std-8.11.tar.gz:stdfonts \
                     ${mappingresources_commit}.zip:misc
 
 patchfiles          patch-base_unix-dll.mak.diff \
                     patch-base_unixinst.mak.diff
 
-# backport upstream fix to fix ghostpdl build; see:
-#  https://trac.macports.org/ticket/60540#comment:2
-#  https://bugs.ghostscript.com/show_bug.cgi?id=702474
-patchfiles-append    patch-6756b355c238.diff
+# Fix newline issue in configure.ac
+# https://bugs.ghostscript.com/show_bug.cgi?id=703880
+patchfiles-append   patch-configure.ac.diff
 
-checksums           ghostpdl-9.52.tar.gz \
-                    rmd160  1e719f907c8dc6dd0000bf2c547eee54fd583b9f \
-                    sha256  8f6e48325c106ae033bbae3e55e6c0b9ee5c6b57e54f7cd24fb80a716a93b06a \
-                    size    58554799 \
+# Fix issue with GCC pragmas inside function bodies
+# https://trac.macports.org/ticket/63105
+patchfiles-append   patch-base_scommon.h.diff
+
+# Fix for CVE-2021-3781
+# https://git.ghostscript.com/?p=ghostpdl.git;a=commitdiff;h=a9bd3dec9fde
+patchfiles-append   patch-cve-2021-3781.diff
+
+checksums           ghostpdl-9.54.0.tar.gz \
+                    rmd160  a48ecd441c761a9401a5e4a34ea90afd6936d419 \
+                    sha256  63e54cddcdf48ea296b6315353f86b8a622d4e46959b10d536297e006b85687b \
+                    size    78771565 \
                     ghostscript-fonts-other-6.0.tar.gz \
                     rmd160  ab60dbf71e7d91283a106c3df381cadfe173082f \
                     sha256  4fa051e341167008d37fe34c19d241060cd17b13909932cd7ca7fe759243c2de \
@@ -58,7 +67,7 @@ checksums           ghostpdl-9.52.tar.gz \
 depends_lib         port:fontconfig \
                     port:freetype \
                     port:jbig2dec \
-                    port:jpeg \
+                    path:include/turbojpeg.h:libjpeg-turbo \
                     port:libiconv \
                     port:libidn \
                     port:libpaper \
@@ -83,6 +92,10 @@ post-extract {
         move ${worksrcpath}/${d} ${worksrcpath}/${d}_local
     }
 
+    # https://trac.macports.org/ticket/62832
+    delete ${worksrcpath}/tesseract
+    delete ${worksrcpath}/leptonica
+
     #move ${workpath}/MappingOther/Adobe-CNS1-ETen-B5 ${workpath}/MappingOther/Adobe-CNS1-ETenms-B5
     copy -force {*}[glob ${workpath}/mapping-resources-pdf-${mappingresources_commit}/pdf2unicode/*] ${worksrcpath}/Resource/CMap
     copy -force {*}[glob ${workpath}/mapping-resources-pdf-${mappingresources_commit}/pdf2other/*]    ${worksrcpath}/Resource/CMap
@@ -94,7 +107,7 @@ post-patch {
 
     # Ensure that MacPorts perl is used everywhere
     fs-traverse f ${worksrcpath} {
-        if [string match *.pl ${f}] {
+        if {[string match *.pl ${f}]} {
             reinplace s|/usr/bin/perl|${prefix}/bin/perl| ${f}
         }
     }
@@ -112,8 +125,7 @@ configure.cppflags-replace \
                     -I${prefix}/include \
                     -isystem${prefix}/include
 
-configure.args      --enable-gpdl \
-                    --disable-compile-inits \
+configure.args      --disable-compile-inits \
                     --disable-cups \
                     --disable-dbus \
                     --disable-gtk \
@@ -121,7 +133,6 @@ configure.args      --enable-gpdl \
                     --without-xps \
                     --without-gpdl \
                     --without-x \
-                    --without-luratech \
                     --with-system-libtiff
 
 build.target        so
@@ -185,10 +196,6 @@ post-destroot {
         xinstall -m 644 {*}[glob -directory ${worksrcpath}/pcl/urwfonts *.ttf] \
             ${destroot}${prefix}/share/${name}/urwfonts
     }
-
-    # install missing header
-    xinstall -m 0644 ${worksrcpath}/base/gserrors.h \
-            ${destroot}${prefix}/include/ghostscript/
 }
 
 post-activate {
@@ -229,4 +236,4 @@ default_variants    +x11
 
 livecheck.type      regex
 livecheck.url       ${homepage}releases.html
-livecheck.regex     ">Ghostscript (\\d+(?:\\.\\d+)*)<"
+livecheck.regex     "Ghostscript (\\d+(?:\\.\\d+)*)"

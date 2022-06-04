@@ -1,6 +1,6 @@
 # ***** BEGIN LICENSE BLOCK *****
 # This file is part of Natron <https://natrongithub.github.io/>,
-# (C) 2018-2020 The Natron developers
+# (C) 2018-2022 The Natron developers
 # (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
 #
 # Natron is free software: you can redistribute it and/or modify
@@ -80,6 +80,7 @@ SOURCES += \
     ChannelsComboBox.cpp \
     ClickableLabel.cpp \
     ColoredFrame.cpp \
+    ColorSelectorWidget.cpp \
     ComboBox.cpp \
     CurveEditor.cpp \
     CurveEditorUndoRedo.cpp \
@@ -183,6 +184,7 @@ SOURCES += \
     PropertiesBinWrapper.cpp \
     PyGuiApp.cpp \
     PythonPanels.cpp \
+    QtColorTriangle.cpp \
     QtEnumConvert.cpp \
     RenderStatsDialog.cpp \
     ResizableMessageBox.cpp \
@@ -201,6 +203,7 @@ SOURCES += \
     TabGroup.cpp \
     TabWidget.cpp \
     TableModelView.cpp \
+    TaskBar.cpp \
     TextRenderer.cpp \
     TimeLineGui.cpp \
     ToolButton.cpp \
@@ -235,6 +238,7 @@ HEADERS += \
     ChannelsComboBox.h \
     ClickableLabel.h \
     ColoredFrame.h \
+    ColorSelectorWidget.h \
     ComboBox.h \
     CurveEditor.h \
     CurveEditorUndoRedo.h \
@@ -324,6 +328,7 @@ HEADERS += \
     PyGuiApp.h \
     Pyside_Gui_Python.h \
     PythonPanels.h \
+    QtColorTriangle.h \
     QtEnumConvert.h \
     RegisteredTabs.h \
     RenderStatsDialog.h \
@@ -343,6 +348,7 @@ HEADERS += \
     TabGroup.h \
     TabWidget.h \
     TableModelView.h \
+    TaskBar.h \
     TextRenderer.h \
     TimeLineGui.h \
     ToolButton.h \
@@ -407,6 +413,8 @@ OTHER_FILES += \
     Resources/Images/splashscreen.svg
 
 macx {
+HEADERS += TaskBarMac.h
 OBJECTIVE_SOURCES += \
-    $$PWD/../Gui/QtMac.mm
+    $$PWD/../Gui/QtMac.mm \
+    $$PWD/../Gui/TaskBarMac.mm
 }

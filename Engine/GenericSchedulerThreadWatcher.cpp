@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -116,7 +116,7 @@ GenericWatcher::stopWatching()
             _imp->startRequestsCond.wakeOne();
         }
         while (_imp->mustQuit) {
-            _imp->mustQuitCond.wait(&_imp->mustQuitMutex);
+            _imp->mustQuitCond.wait(quitLocker.mutex());
         }
     }
 
@@ -160,7 +160,7 @@ GenericWatcher::run()
         {
             QMutexLocker l(&_imp->startRequestsMutex);
             while (_imp->startRequests <= 0) {
-                _imp->startRequestsCond.wait(&_imp->startRequestsMutex);
+                _imp->startRequestsCond.wait(l.mutex());
             }
             ///We got the request, reset it back to 0
             _imp->startRequests = 0;

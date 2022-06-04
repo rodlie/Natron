@@ -40,8 +40,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Natron'
-copyright = u'2013-2020 The Natron documentation authors, licensed under CC BY-SA 4.0'
+project = 'Natron'
+copyright = '2013-2022 The Natron documentation authors, licensed under CC BY-SA 4.0'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -52,11 +52,13 @@ copyright = u'2013-2020 The Natron documentation authors, licensed under CC BY-S
 version_21 = '2.1.10'
 version_22 = '2.2.10'
 version_23 = '2.3.16'
+version_24 = '2.4.3'
+version_25 = '2.5.0'
 version_30 = '3.0.0'
 
 # The version for this branch
 # The full version, including alpha/beta/rc tags.
-release = version_23
+release = version_24
 #
 # The short X.Y version.
 version = '.'.join(release.split('.')[0:2])
@@ -188,7 +190,7 @@ htmlhelp_basename = 'Natrondoc'
 
 # -- Options for LaTeX output --------------------------------------------------
 
-mypreamble=ur'''\renewcommand{\code}[1]{\texttt{\footnotesize{}#1}}
+mypreamble=r'''\renewcommand{\code}[1]{\texttt{\footnotesize{}#1}}
 '''
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
@@ -204,8 +206,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'Natron.tex', u'Natron Documentation',
-   u'The Natron documentation authors', 'manual'),
+  ('index', 'Natron.tex', 'Natron Documentation',
+   'The Natron documentation authors', 'manual'),
 ]
 
 #geometry = 'margin=1in,marginparwidth=0.5in'
@@ -238,8 +240,8 @@ latex_use_parts = True
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'natron', u'Natron Documentation',
-     [u'The Natron documentation authors'], 1)
+    ('index', 'natron', 'Natron Documentation',
+     ['The Natron documentation authors'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -252,8 +254,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'Natron', u'Natron Documentation',
-   u'The Natron documentation authors', 'Natron', 'Open-source, cross-platform, nodal video compositing software.',
+  ('index', 'Natron', 'Natron Documentation',
+   'The Natron documentation authors', 'Natron', 'Open-source, cross-platform, nodal video compositing software.',
    'Miscellaneous'),
 ]
 

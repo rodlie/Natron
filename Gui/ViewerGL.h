@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -79,9 +79,6 @@ public:
 
     virtual QSize sizeHint() const OVERRIDE FINAL;
     const QFont & textFont() const;
-
-    void setTextFont(const QFont & f);
-
 
     /**
      *@returns Returns true if the viewer is displaying something.
@@ -571,13 +568,13 @@ private:
     /**
      * @brief Called by drawOverlay to draw the user region of interest.
      **/
-    void drawUserRoI();
+    void drawUserRoI(double screenPixelRatio);
 
-    void drawPickerRectangle();
+    void drawPickerRectangle(double screenPixelRatio);
 
-    void drawPickerPixel();
+    void drawPickerPixel(double screenPixelRatio);
 
-    void drawWipeControl();
+    void drawWipeControl(double screenPixelRatio);
 
     /**
      *@brief Draws the persistent message if it is on.

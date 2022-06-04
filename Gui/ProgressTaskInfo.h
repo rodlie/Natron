@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -38,6 +38,7 @@
 
 #include "Gui/GuiFwd.h"
 
+#include "Gui/TaskBar.h"
 
 NATRON_NAMESPACE_ENTER
 
@@ -122,6 +123,12 @@ public:
 
     ProcessHandlerPtr getProcess() const;
 
+    void setTaskBar(TaskBar *taskbar);
+
+    void updateTaskBarProgress(ProgressTaskStatusEnum status, double progress);
+
+    void updateTaskBarState(TaskBar::ProgressState state);
+
 public Q_SLOTS:
 
     void onShowProgressPanelTimerTimeout();
@@ -170,6 +177,7 @@ private:
     void clearItems();
 
     boost::scoped_ptr<ProgressTaskInfoPrivate> _imp;
+    TaskBar *_taskbar;
 };
 
 NATRON_NAMESPACE_EXIT

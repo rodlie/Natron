@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -231,7 +231,7 @@ GenericSchedulerThreadPrivate::waitForThreadsToQuit_internal(bool allowBlockingF
     {
         QMutexLocker k(&mustQuitMutex);
         while (mustQuit) {
-            mustQuitCond.wait(&mustQuitMutex);
+            mustQuitCond.wait(k.mutex());
         }
     }
 
@@ -408,7 +408,7 @@ GenericSchedulerThreadPrivate::waitForAbortToComplete_internal(bool allowBlockin
         QMutexLocker k(&abortRequestedMutex);
 
         while (abortRequested > 0) {
-            abortRequestedCond.wait(&abortRequestedMutex);
+            abortRequestedCond.wait(k.mutex());
         }
     }
     _p->onWaitForAbortCompleted();
@@ -575,7 +575,7 @@ GenericSchedulerThread::run()
         {
             QMutexLocker l(&_imp->startRequestsMutex);
             while (_imp->startRequests <= 0) {
-                _imp->startRequestsCond.wait(&_imp->startRequestsMutex);
+                _imp->startRequestsCond.wait(l.mutex());
             }
             ///We got the request
             if (_imp->startRequests > 0) {
@@ -602,7 +602,7 @@ GenericSchedulerThread::requestExecutionOnMainThread(const GenericThreadExecOnMa
     Q_EMIT executionOnMainThreadRequested(inArgs);
 
     while (_imp->executingOnMainThread) {
-        _imp->executingOnMainThreadCond.wait(&_imp->executingOnMainThreadMutex);
+        _imp->executingOnMainThreadCond.wait(processLocker.mutex());
     }
 }
 

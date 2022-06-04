@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -37,8 +37,6 @@
 
 #if !defined(SBK_RUN) && !defined(Q_MOC_RUN)
 GCC_DIAG_UNUSED_LOCAL_TYPEDEFS_OFF
-// /usr/local/include/boost/bind/arg.hpp:37:9: warning: unused typedef 'boost_static_assert_typedef_37' [-Wunused-local-typedef]
-#include <boost/bind.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -553,6 +551,12 @@ std::string
 EffectInstance::getScriptName_mt_safe() const
 {
     return getNode()->getScriptName_mt_safe();
+}
+
+std::string
+EffectInstance::getFullyQualifiedName() const
+{
+    return getNode()->getFullyQualifiedName();
 }
 
 int
@@ -2213,7 +2217,12 @@ EffectInstance::Implementation::tiledRenderingFunctor(const RectToRender & rectT
 #endif
     EffectTLSDataPtr tls = tlsData->getOrCreateTLSData();
 
-    assert( !rectToRender.rect.isNull() );
+    if ( rectToRender.rect.isNull() ) {
+        // should never happen, but crashes when loading
+        // https://github.com/NatronGitHub/Natron/files/4630686/maskissue.log
+        //assert(false);
+        return eRenderingFunctorRetOK;
+    }
 
     /*
      * renderMappedRectToRender is in the mapped mipmap level, i.e the expected mipmap level of the render action of the plug-in
@@ -2757,7 +2766,7 @@ EffectInstance::Implementation::renderHandler(const EffectTLSDataPtr& tls,
     for (std::map<ImagePlaneDesc, EffectInstance::PlaneToRender>::const_iterator it = outputPlanes.begin(); it != outputPlanes.end(); ++it) {
         bool unPremultRequired = unPremultIfNeeded && it->second.tmpImage->getComponentsCount() == 4 && it->second.renderMappedImage->getComponentsCount() == 3;
 
-        if ( frameArgs->doNansHandling && it->second.tmpImage->checkForNaNs(actionArgs.roi) ) {
+        if ( frameArgs->doNansHandling && it->second.tmpImage->checkForNaNsAndFix(actionArgs.roi) ) {
             QString warning = QString::fromUtf8( _publicInterface->getNode()->getScriptName_mt_safe().c_str() );
             warning.append( QString::fromUtf8(": ") );
             warning.append( tr("rendered rectangle (") );

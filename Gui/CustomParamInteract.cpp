@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -34,6 +34,7 @@
 #include <QtCore/QByteArray>
 
 #include "Gui/KnobGui.h"
+#include "Gui/Gui.h"
 #include "Gui/QtEnumConvert.h"
 #include "Gui/GuiApplicationManager.h"
 
@@ -198,7 +199,8 @@ CustomParamInteract::getScreenPixelRatio() const
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     return windowHandle()->devicePixelRatio()
 #else
-    return 1.;
+    KnobGuiPtr k = _imp->knob.lock();
+    return (k && k->getGui()) ? k->getGui()->devicePixelRatio() : 1.;
 #endif
 }
 #endif

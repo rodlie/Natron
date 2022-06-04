@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -72,7 +72,7 @@ namespace NATRON_PYTHON_NAMESPACE { }
 #define NATRON_NAMESPACE_ANONYMOUS_EXIT }
 
 #define NATRON_APPLICATION_DESCRIPTION "Open-source, cross-platform, nodal video compositing software."
-#define NATRON_COPYRIGHT "(C) 2018-2020 The Natron developers. (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat."
+#define NATRON_COPYRIGHT "(C) 2018-2022 The Natron developers. (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat."
 #define NATRON_ORGANIZATION_NAME "INRIA"
 #define NATRON_ORGANIZATION_DOMAIN_TOPLEVEL "fr"
 #define NATRON_ORGANIZATION_DOMAIN_SUB "inria"
@@ -121,7 +121,17 @@ namespace NATRON_PYTHON_NAMESPACE { }
 #define NATRON_VERSION_MINOR_30 0
 #define NATRON_VERSION_REVISION_30 0
 
-// RB-2: 2.3.16
+// RB-2.5: 2.5.0
+#define NATRON_VERSION_MAJOR_25 2
+#define NATRON_VERSION_MINOR_25 5
+#define NATRON_VERSION_REVISION_25 0
+
+// RB-2.4: 2.4.3
+#define NATRON_VERSION_MAJOR_24 2
+#define NATRON_VERSION_MINOR_24 4
+#define NATRON_VERSION_REVISION_24 3
+
+// RB-2.3: 2.3.16
 #define NATRON_VERSION_MAJOR_23 2
 #define NATRON_VERSION_MINOR_23 3
 #define NATRON_VERSION_REVISION_23 16
@@ -137,9 +147,9 @@ namespace NATRON_PYTHON_NAMESPACE { }
 #define NATRON_VERSION_REVISION_21 10
 
 // The Natron version for this branch
-#define NATRON_VERSION_MAJOR NATRON_VERSION_MAJOR_23
-#define NATRON_VERSION_MINOR NATRON_VERSION_MINOR_23
-#define NATRON_VERSION_REVISION NATRON_VERSION_REVISION_23
+#define NATRON_VERSION_MAJOR NATRON_VERSION_MAJOR_24
+#define NATRON_VERSION_MINOR NATRON_VERSION_MINOR_24
+#define NATRON_VERSION_REVISION NATRON_VERSION_REVISION_24
 
 
 #define NATRON_LATEST_VERSION_URL "https://natrongithub.github.io/LATEST_VERSION.txt"
@@ -367,6 +377,9 @@ CLANG_DIAG_PRAGMA( ignored CLANG_DIAG_JOINSTR(-W, x) )
 #  endif
 #  define GCC_ONLY_DIAG_OFF(x) GCC_DIAG_OFF(x)
 #  define GCC_ONLY_DIAG_ON(x) GCC_DIAG_ON(x)
+// We disable -Wpragmas because GCC doesn't provide an has_warning equivalent
+// and some forks/patches may not following the warning/version association.
+GCC_ONLY_DIAG_OFF(pragmas)  // warning: unknown option after '#pragma GCC diagnostic' kind
 #endif
 
 

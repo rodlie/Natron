@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -82,7 +82,8 @@ ViewerGL::Implementation::Implementation(ViewerGL* this_,
     , textRenderingColor(200, 200, 200, 255)
     , displayWindowOverlayColor(125, 125, 125, 255)
     , rodOverlayColor(100, 100, 100, 255)
-    , textFont(appFont, appFontSize)
+    , _screenPixelRatio(0.)
+    , _textFont()
     , overlay(true)
     , updatingTexture(false)
     , clearColor(0, 0, 0, 255)
@@ -94,6 +95,7 @@ ViewerGL::Implementation::Implementation(ViewerGL* this_,
     , lastMousePosition()
     , lastDragStartPos()
     , hasMovedSincePress(false)
+    , setColorPickerCursor(false)
     , currentViewerInfo_btmLeftBBOXoverlay()
     , currentViewerInfo_topRightBBOXoverlay()
     , currentViewerInfo_resolutionOverlay()
@@ -337,22 +339,22 @@ ViewerGL::Implementation::drawRenderingVAO(unsigned int mipMapLevel,
         rectClippedToRoI.y2 -= pixelCenterOffset;
         ///Vertices are in canonical coords
         GLfloat vertices[32] = {
-            (GLfloat)rod.left(),                                (GLfloat)rod.top(),    //0
-            (GLfloat)(rectClippedToRoI.x1 + pixelCenterOffset), (GLfloat)rod.top(),          //1
-            (GLfloat)(rectClippedToRoI.x2 - pixelCenterOffset), (GLfloat)rod.top(),    //2
-            (GLfloat)rod.right(),                               (GLfloat)rod.top(),   //3
-            (GLfloat)rod.left(),                                (GLfloat)(rectClippedToRoI.y2 - pixelCenterOffset), //4
-            (GLfloat)rectClippedToRoI.x1,                       (GLfloat)rectClippedToRoI.y2,       //5
-            (GLfloat)rectClippedToRoI.x2,                       (GLfloat)rectClippedToRoI.y2, //6
-            (GLfloat)rod.right(),                               (GLfloat)rectClippedToRoI.y2, //7
-            (GLfloat)rod.left(),                                (GLfloat)rectClippedToRoI.y1,        //8
-            (GLfloat)rectClippedToRoI.x1,                       (GLfloat)rectClippedToRoI.y1,             //9
-            (GLfloat)rectClippedToRoI.x2,                       (GLfloat)rectClippedToRoI.y1,       //10
-            (GLfloat)rod.right(),                               (GLfloat)rectClippedToRoI.y1,       //11
-            (GLfloat)rod.left(),                                (GLfloat)rod.bottom(), //12
-            (GLfloat)rectClippedToRoI.x1,                       (GLfloat)rod.bottom(),       //13
-            (GLfloat)rectClippedToRoI.x2,                       (GLfloat)rod.bottom(), //14
-            (GLfloat)rod.right(),                               (GLfloat)rod.bottom() //15
+            (GLfloat)rod.left(),          (GLfloat)rod.top(),    //0
+            (GLfloat)rectClippedToRoI.x1, (GLfloat)rod.top(),          //1
+            (GLfloat)rectClippedToRoI.x2, (GLfloat)rod.top(),    //2
+            (GLfloat)rod.right(),         (GLfloat)rod.top(),   //3
+            (GLfloat)rod.left(),          (GLfloat)rectClippedToRoI.y2, //4
+            (GLfloat)rectClippedToRoI.x1, (GLfloat)rectClippedToRoI.y2,       //5
+            (GLfloat)rectClippedToRoI.x2, (GLfloat)rectClippedToRoI.y2, //6
+            (GLfloat)rod.right(),         (GLfloat)rectClippedToRoI.y2, //7
+            (GLfloat)rod.left(),          (GLfloat)rectClippedToRoI.y1,        //8
+            (GLfloat)rectClippedToRoI.x1, (GLfloat)rectClippedToRoI.y1,             //9
+            (GLfloat)rectClippedToRoI.x2, (GLfloat)rectClippedToRoI.y1,       //10
+            (GLfloat)rod.right(),         (GLfloat)rectClippedToRoI.y1,       //11
+            (GLfloat)rod.left(),          (GLfloat)rod.bottom(), //12
+            (GLfloat)rectClippedToRoI.x1, (GLfloat)rod.bottom(),       //13
+            (GLfloat)rectClippedToRoI.x2, (GLfloat)rod.bottom(), //14
+            (GLfloat)rod.right(),         (GLfloat)rod.bottom() //15
         };
 
         //        GLfloat texBottom =  0;
@@ -697,6 +699,7 @@ ViewerGL::Implementation::unbindTextureAndReleaseShader(bool useShader)
 void
 ViewerGL::Implementation::drawSelectionRectangle()
 {
+    double screenPixelRatio = _this->getScreenPixelRatio();
     {
         GLProtectAttrib a(GL_HINT_BIT | GL_ENABLE_BIT | GL_LINE_BIT | GL_COLOR_BUFFER_BIT | GL_CURRENT_BIT);
 
@@ -717,8 +720,7 @@ ViewerGL::Implementation::drawSelectionRectangle()
         glEnd();
 
 
-        glLineWidth(1.5);
-
+        glLineWidth(1.5 * screenPixelRatio);
         glBegin(GL_LINE_LOOP);
         glVertex2f( topLeft.x(), btmRight.y() );
         glVertex2f( topLeft.x(), topLeft.y() );
@@ -733,48 +735,19 @@ ViewerGL::Implementation::drawSelectionRectangle()
 void
 ViewerGL::Implementation::drawCheckerboardTexture(const RectD& rod)
 {
-    ///We divide by 2 the tiles count because one texture is 4 tiles actually
-    QPointF topLeft, btmRight;
-    double screenW, screenH;
-    QPointF rodBtmLeft;
-    QPointF rodTopRight;
-    {
-        QMutexLocker l(&zoomCtxMutex);
-        topLeft = zoomCtx.toZoomCoordinates(0, 0);
-        screenW = zoomCtx.screenWidth();
-        screenH = zoomCtx.screenHeight();
-        btmRight = zoomCtx.toZoomCoordinates(screenW - 1, screenH - 1);
-        rodBtmLeft = zoomCtx.toWidgetCoordinates(rod.x1, rod.y1);
-        rodTopRight = zoomCtx.toWidgetCoordinates(rod.x2, rod.y2);
-    }
-    double xTilesCountF = screenW / (checkerboardTileSize * 4); //< 4 because the texture contains 4 tiles
-    double yTilesCountF = screenH / (checkerboardTileSize * 4);
-    GLuint savedTexture;
+    // Re-use drawCheckerboardTexture(const QPolygonF& polygon).
+    // Another solution would be to use glScissor, but:
+    // - glScissor is not used often in OpenGL, and often has bugs in OpenGL implementations.
+    // - glScissor seems to have a bug, at least on macOS Catalina and Big Sur (10.15/11.x).
+    // See:
+    // - https://discuss.pixls.us/t/checker-mask-offset-issue/24784
+    // - https://github.com/NatronGitHub/Natron/issues/614
+    // glScissor-based implementation available from:
+    // https://github.com/NatronGitHub/Natron/blob/c8e931817493afaf44bac0ca8f78c982b4c50a31/Gui/ViewerGLPrivate.cpp#L735
 
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, (GLint*)&savedTexture);
-    {
-        GLProtectAttrib a(GL_SCISSOR_BIT | GL_ENABLE_BIT);
-
-        glEnable(GL_SCISSOR_TEST);
-        glScissor( rodBtmLeft.x(), screenH - rodBtmLeft.y(), rodTopRight.x() - rodBtmLeft.x(), rodBtmLeft.y() - rodTopRight.y() );
-
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, checkerboardTextureID);
-        glBegin(GL_POLYGON);
-        glTexCoord2d(0., 0.);
-        glVertex2d( topLeft.x(), btmRight.y() );
-        glTexCoord2d(0., yTilesCountF);
-        glVertex2d( topLeft.x(), topLeft.y() );
-        glTexCoord2d(xTilesCountF, yTilesCountF);
-        glVertex2d( btmRight.x(), topLeft.y() );
-        glTexCoord2d(xTilesCountF, 0.);
-        glVertex2d( btmRight.x(), btmRight.y() );
-        glEnd();
-
-        //glDisable(GL_SCISSOR_TEST);
-    } // GLProtectAttrib a(GL_SCISSOR_BIT | GL_ENABLE_BIT);
-    glBindTexture(GL_TEXTURE_2D, savedTexture);
-    glCheckError();
+    QPolygonF polygon;
+    polygon << QPointF(rod.x1, rod.y1) << QPointF(rod.x2, rod.y1) << QPointF(rod.x2, rod.y2) << QPointF(rod.x1, rod.y2);
+    drawCheckerboardTexture(polygon);
 }
 
 void
@@ -804,8 +777,10 @@ ViewerGL::Implementation::drawCheckerboardTexture(const QPolygonF& polygon)
         for (QPolygonF::const_iterator it = polygon.begin();
              it != polygon.end();
              ++it) {
+            // Count the y texture coordinate from the top, so that the checkerboard texture doesn't
+            // change when we enable wipe (which removes space from the bottom of the window).
             glTexCoord2d( xTilesCountF * ( it->x() - topLeft.x() )  / ( btmRight.x() - topLeft.x() ),
-                          yTilesCountF * ( it->y() - btmRight.y() ) / ( topLeft.y() - btmRight.y() ) );
+                          yTilesCountF * ( topLeft.y() - it->y() ) / ( topLeft.y() - btmRight.y() ) );
             glVertex2d( it->x(), it->y() );
         }
         glEnd();

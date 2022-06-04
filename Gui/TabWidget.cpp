@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -1541,12 +1541,12 @@ TabBar::makePixmapForDrag(int index)
     QImage tabBarImg = tabBarPixmap.toImage();
     QImage currentTabImg = currentTabPixmap.toImage();
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
+#if defined(Q_WS_MACX) && (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
     ///Prevent a bug with grabWidget and retina display on Qt4
-    bool isHighDPI = _tabWidget->getGui()->isHighDPI();
-    if (isHighDPI) {
-        tabBarImg = tabBarImg.scaled(tabBarImg.width() / 2., tabBarImg.height() / 2.);
-        currentTabImg = currentTabImg.scaled(currentTabImg.width() / 2., currentTabImg.height() / 2.);
+    qreal devicePixelRatio = _tabWidget->getGui()->devicePixelRatio();
+    if (devicePixelRatio > 1) {
+        tabBarImg = tabBarImg.scaled(tabBarImg.width() / devicePixelRatio, tabBarImg.height() / devicePixelRatio);
+        currentTabImg = currentTabImg.scaled(currentTabImg.width() / devicePixelRatio, currentTabImg.height() / devicePixelRatio);
     }
 #endif
 
@@ -1989,6 +1989,10 @@ TabWidget::activeIndex() const
 void
 TabWidget::setObjectName_mt_safe(const QString & str)
 {
+    std::string strs = str.toStdString();
+    if ( NATRON_PYTHON_NAMESPACE::isKeyword(strs) ) {
+        throw std::runtime_error(strs + " is a Python keyword");
+    }
     std::string oldName = objectName_mt_safe().toStdString();
     {
         QMutexLocker l(&_imp->tabWidgetStateMutex);
@@ -2007,7 +2011,7 @@ TabWidget::setObjectName_mt_safe(const QString & str)
         ss << "if hasattr(" << appID << ", '"  << oldName << "'):\n";
         ss << "    del " << appID << "." << oldName << "\n";
     }
-    ss << appID << "." << str.toStdString() << " = " << appID << ".getTabWidget('" << str.toStdString() << "')\n";
+    ss << appID << "." << strs << " = " << appID << ".getTabWidget('" << strs << "')\n";
 
     std::string script = ss.str();
     std::string err;
@@ -2106,6 +2110,11 @@ TabWidget::onTabScriptNameChanged(PanelWidget* tab,
     }
 
     std::string paneName = objectName_mt_safe().toStdString();
+    if ( NATRON_PYTHON_NAMESPACE::isKeyword(newName) ) {
+        Dialogs::errorDialog(paneName, newName + " is a Python keyword");
+
+        return;
+    }
     std::string appID = _imp->gui->getApp()->getAppIDString();
     std::stringstream ss;
     ss << "if hasattr(" << appID << "." << paneName << ",\"" << oldName << "\"):\n";
@@ -2131,6 +2140,9 @@ TabWidgetPrivate::declareTabToPython(PanelWidget* widget,
 
     if (!isViewer && !isPanel) {
         return;
+    }
+    if ( NATRON_PYTHON_NAMESPACE::isKeyword(tabName) ) {
+        throw std::runtime_error(tabName + " is a Python keyword");
     }
 
     std::string paneName = _publicInterface->objectName_mt_safe().toStdString();

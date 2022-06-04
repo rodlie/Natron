@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -1098,7 +1098,12 @@ AppManager::loadInternalAfterInitGui(const CLArgs& cl)
         _imp->restoreCaches();
     }
 
-    setLoadingStatus( tr("Loading plugin cache...") );
+    if (cl.isOpenFXCacheClearRequestedOnLaunch()) {
+        setLoadingStatus( tr("Clearing the OpenFX Plugins cache...") );
+        clearPluginsLoadedCache();
+    } else {
+        setLoadingStatus( tr("Loading plugin cache...") );
+    }
 
 
     ///Set host properties after restoring settings since it depends on the host name.
@@ -2119,7 +2124,7 @@ AppManager::loadPythonGroups()
 
 
         if (gotInfos) {
-            qDebug() << "Loading " << moduleName;
+            qDebug() << "Loading" << moduleName;
             QStringList grouping = QString::fromUtf8( pluginGrouping.c_str() ).split( QChar::fromLatin1('/') );
             Plugin* p = registerPlugin(modulePath, grouping, QString::fromUtf8( pluginID.c_str() ), QString::fromUtf8( pluginLabel.c_str() ), QString::fromUtf8( iconFilePath.c_str() ), QStringList(), false, false, 0, false, version, 0, false);
 
@@ -3411,6 +3416,10 @@ AppManager::tearDownPython()
 
     return;
 #endif
+    if ( !Py_IsInitialized() ) {
+        return;
+    }
+
     ///See https://web.archive.org/web/20150918224620/http://wiki.blender.org/index.php/Dev:2.4/Source/Python/API/Threads
 #if !defined(NDEBUG)
     QThread* curThread = QThread::currentThread();
@@ -3499,14 +3508,19 @@ AppManager::launchPythonInterpreter()
         throw std::runtime_error("AppInstance::launchPythonInterpreter(): interpretPythonScript(" + s + " failed!");
     }
 
-    // PythonGILLocker pgl;
+    PyGILState_Ensure(); // Py_Main does PyGILState_Release() for us.
+
+    assert(PyThreadState_Get());
+#if PY_VERSION_HEX >= 0x030400F0
+    assert(PyGILState_Check()); // Not available prior to Python 3.4
+#endif
+
 #if PY_MAJOR_VERSION >= 3
     // Python 3
     Py_Main(1, &_imp->commandLineArgsWide[0]);
 #else
     Py_Main(1, &_imp->commandLineArgsUtf8[0]);
 #endif
-
 }
 
 int
@@ -4172,6 +4186,22 @@ NATRON_PYTHON_NAMESPACE::makeNameScriptFriendly(const std::string& str)
     return makeNameScriptFriendlyInternal(str, false);
 }
 
+bool
+NATRON_PYTHON_NAMESPACE::isKeyword(const std::string& str)
+{
+    const char* const kw[] = { "False", "None", "True", "and", "as", "assert",
+        "async", "await", "break", "class", "continue", "def", "del", "elif",
+        "else", "except", "finally", "for", "from", "global", "if", "import",
+        "in", "is", "lambda", "nonlocal", "not", "or", "pass", "raise", "return",
+        "try", "while", "with", "yield", NULL };
+    for (const char* const *k = kw; *k != NULL; ++k) {
+        if (str == *k) {
+            return true;
+        }
+    }
+    return false;
+}
+
 #if !defined(NDEBUG) && !defined(DEBUG_PYTHON_GIL)
 #pragma message WARN("define DEBUG_PYTHON_GIL in AppManager.h to debug Python GIL issues")
 #endif
@@ -4259,6 +4289,86 @@ PythonGILLocker::~PythonGILLocker()
     --pythonCount[threadname];
 #endif
     PyGILState_Release(state);
+}
+
+PythonGILUnlocker::PythonGILUnlocker()
+{
+#ifdef DEBUG_PYTHON_GIL
+    if (!Py_IsInitialized()) {
+        throw std::runtime_error("Trying to execute python code, but Py_IsInitialized() returns false");
+    }
+#endif
+    assert(Py_IsInitialized());
+
+    // Also take the Python GIL, since not doing so seems to crash Natron during recursive Natron->Python->Natron->Python calls, see https://github.com/NatronGitHub/Natron/issues/379
+    // Follow https://web.archive.org/web/20150918224620/http://wiki.blender.org/index.php/Dev:2.4/Source/Python/API/Threads
+    // Take the GIL for this thread
+#ifdef DEBUG_PYTHON_GIL
+    QThread* curThread = QThread::currentThread();
+    QString threadname = (qApp && qApp->thread() == curThread) ? QString::fromUtf8("Main") : curThread->objectName();
+    qDebug() << QString::fromUtf8("Thread '%1' is releasing the Python GIL").arg(threadname);
+#endif
+    assert(PyThreadState_Get());
+#if PY_VERSION_HEX >= 0x030400F0
+    assert(PyGILState_Check()); // Not available prior to Python 3.4
+#endif
+    PyGILState_Release(PyGILState_UNLOCKED);
+#ifdef DEBUG_PYTHON_GIL
+    qDebug() << QString::fromUtf8("Thread '%1' released the Python GIL").arg(threadname);
+#endif
+
+#ifdef USE_NATRON_GIL
+    // Take the Natron GIL https://github.com/NatronGitHub/Natron/commit/46d9d616dfebfbb931a79776734e2fa17202f7cb
+    // We do this after we got the Python GIL, to avoid deadlocks:
+    // If we do it the other way, this thread may be waiting for the Python GIL while keeping the Natron GIL
+    // locked, thus preventing other threads from getting the Python GIL.
+    if (appPTR) {
+#ifdef DEBUG_PYTHON_GIL
+        qDebug() << QString::fromUtf8("Thread '%1' is releasing the Natron GIL").arg(threadname);
+#endif
+        appPTR->releaseNatronGIL();
+#ifdef DEBUG_PYTHON_GIL
+        qDebug() << QString::fromUtf8("Thread '%1' released the Natron GIL").arg(threadname);
+#endif
+    }
+#endif
+}
+
+PythonGILUnlocker::~PythonGILUnlocker()
+{
+    // Take the Natron GIL https://github.com/NatronGitHub/Natron/commit/46d9d616dfebfbb931a79776734e2fa17202f7cb
+#ifdef DEBUG_PYTHON_GIL
+    QThread* curThread = QThread::currentThread();
+    QString threadname = (qApp && qApp->thread() == curThread) ? QString::fromUtf8("Main") : curThread->objectName();
+#endif
+#ifdef USE_NATRON_GIL
+    if (appPTR) {
+#ifdef DEBUG_PYTHON_GIL
+        qDebug() << QString::fromUtf8("Thread '%1' is asking the Natron GIL").arg(threadname);
+#endif
+        appPTR->takeNatronGIL();
+    }
+#endif
+
+    // We released the Python GIL too, so take it here.
+    // Follow https://web.archive.org/web/20150918224620/http://wiki.blender.org/index.php/Dev:2.4/Source/Python/API/Threads
+#if PY_VERSION_HEX >= 0x030400F0
+    assert(!PyGILState_Check());  // Not available prior to Python 3.4
+#endif
+    // Release the GIL, no thread will own it afterwards.
+#ifdef DEBUG_PYTHON_GIL
+    qDebug() << QString::fromUtf8("Thread '%1' is asking the Python GIL").arg(threadname);
+#endif
+    /* PyGILState_STATE state = */
+    PyGILState_Ensure();
+#ifdef DEBUG_PYTHON_GIL
+    qDebug() << QString::fromUtf8("Thread '%1' got the Python GIL").arg(threadname);
+#endif
+
+    assert(PyThreadState_Get());
+#if PY_VERSION_HEX >= 0x030400F0
+    assert(PyGILState_Check()); // Not available prior to Python 3.4
+#endif
 }
 
 static bool

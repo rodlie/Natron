@@ -1,12 +1,13 @@
 pkgname=natron-sdk
-pkgver=2020
-pkgrel=3
+pkgver=2021
+pkgrel=4
 pkgdesc='Meta package for the Natron Windows SDK'
 url='https://github.com/NatronGitHub'
 arch=('any')
 license=('GPL')
 depends=(
 automake-wrapper
+autoconf-archive
 wget
 tar
 dos2unix
@@ -104,7 +105,6 @@ ${MINGW_PACKAGE_PREFIX}-libcdr
 ${MINGW_PACKAGE_PREFIX}-lame
 ${MINGW_PACKAGE_PREFIX}-speex
 ${MINGW_PACKAGE_PREFIX}-libtheora
-${MINGW_PACKAGE_PREFIX}-wavpack
 ${MINGW_PACKAGE_PREFIX}-xvidcore
 ${MINGW_PACKAGE_PREFIX}-tinyxml
 ${MINGW_PACKAGE_PREFIX}-yaml-cpp
@@ -222,8 +222,8 @@ ${MINGW_PACKAGE_PREFIX}-osmesa
 ${MINGW_PACKAGE_PREFIX}-pango
 ${MINGW_PACKAGE_PREFIX}-pixman
 ${MINGW_PACKAGE_PREFIX}-poppler
-${MINGW_PACKAGE_PREFIX}-python2-pyside-qt4
-${MINGW_PACKAGE_PREFIX}-python2-shiboken-qt4
+${MINGW_PACKAGE_PREFIX}-pyside
+${MINGW_PACKAGE_PREFIX}-shiboken
 ${MINGW_PACKAGE_PREFIX}-python2-sphinx_rtd_theme
 ${MINGW_PACKAGE_PREFIX}-python2-sphinx
 ${MINGW_PACKAGE_PREFIX}-python2-sphinx-alabaster-theme
@@ -242,6 +242,7 @@ ${MINGW_PACKAGE_PREFIX}-zlib
 ${MINGW_PACKAGE_PREFIX}-snappy
 ${MINGW_PACKAGE_PREFIX}-libmad
 ${MINGW_PACKAGE_PREFIX}-breakdown
+${MINGW_PACKAGE_PREFIX}-natron-setup
 )
 
 

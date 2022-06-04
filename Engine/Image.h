@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -879,7 +879,7 @@ public:
      * @brief Eeturns true if image contains NaNs or infinite values, and fix them.
      * Currently, no OpenGL implementation is provided.
      */
-    bool checkForNaNs(const RectI& roi) WARN_UNUSED_RETURN;
+    bool checkForNaNsAndFix(const RectI& roi) WARN_UNUSED_RETURN;
 
     void copyBitmapRowPortion(int x1, int x2, int y, const Image& other);
 
@@ -1025,6 +1025,8 @@ private:
 
     template<typename PIX>
     void scaleBoxForDepth(const RectI & roi, Image* output) const;
+
+    bool checkForNaNsNoLock(const RectI& roi) const WARN_UNUSED_RETURN;
 
 private:
     ImageBitDepthEnum _bitDepth;

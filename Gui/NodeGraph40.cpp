@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -189,7 +189,7 @@ NodeGraph::pasteNodeClipBoards(const QPointF& pos)
         return false;
     }
 
-    _imp->pasteNodesInternal(cb, pos, true, &newNodes);
+    _imp->pasteNodesInternal(cb, _imp->_root->mapFromScene(pos), true, &newNodes);
 
     return true;
 }
@@ -197,7 +197,7 @@ NodeGraph::pasteNodeClipBoards(const QPointF& pos)
 bool
 NodeGraph::pasteNodeClipBoards()
 {
-    QPointF position = _imp->_root->mapFromScene( mapToScene( mapFromGlobal( QCursor::pos() ) ) );
+    QPointF position = mapToScene( mapFromGlobal( QCursor::pos() ) );
 
     return pasteNodeClipBoards(position);
 }
@@ -215,13 +215,13 @@ NodeGraph::duplicateSelectedNodes(const QPointF& pos)
     NodeClipBoard tmpClipboard;
     _imp->copyNodesInternal(_imp->_selection, tmpClipboard);
     std::list<std::pair<std::string, NodeGuiPtr> > newNodes;
-    _imp->pasteNodesInternal(tmpClipboard, pos, true, &newNodes);
+    _imp->pasteNodesInternal(tmpClipboard, _imp->_root->mapFromScene(pos), true, &newNodes);
 }
 
 void
 NodeGraph::duplicateSelectedNodes()
 {
-    QPointF scenePos = _imp->_root->mapFromScene( mapToScene( mapFromGlobal( QCursor::pos() ) ) );
+    QPointF scenePos = mapToScene( mapFromGlobal( QCursor::pos() ) );
 
     duplicateSelectedNodes(scenePos);
 }
@@ -299,35 +299,35 @@ NodeGraph::cloneSelectedNodes(const QPointF& scenePos)
     std::list<std::pair<std::string, NodeGuiPtr> > newNodes;
     std::list<NodeSerializationPtr> serializations;
     std::list<NodeGuiPtr> newNodesList;
-    std::map<std::string, std::string> oldNewScriptNameMapping;
+    std::map<std::string, std::string> oldNewScriptNamesMapping;
     for (NodesGuiList::iterator it = nodesToCopy.begin(); it != nodesToCopy.end(); ++it) {
         NodeSerializationPtr  internalSerialization( new NodeSerialization( (*it)->getNode() ) );
         NodeGuiSerializationPtr guiSerialization = boost::make_shared<NodeGuiSerialization>();
         (*it)->serialize( guiSerialization.get() );
         NodeGuiPtr clone = _imp->pasteNode(internalSerialization, guiSerialization, offset,
-                                           _imp->group.lock(), std::string(), true, &oldNewScriptNameMapping );
+                                           _imp->group.lock(), std::string(), true, &oldNewScriptNamesMapping);
 
         newNodes.push_back( std::make_pair(internalSerialization->getNodeScriptName(), clone) );
         newNodesList.push_back(clone);
         serializations.push_back(internalSerialization);
 
-        oldNewScriptNameMapping[internalSerialization->getNodeScriptName()] = clone->getNode()->getScriptName();
+        oldNewScriptNamesMapping[internalSerialization->getNodeScriptName()] = clone->getNode()->getScriptName();
     }
 
 
     assert( serializations.size() == newNodes.size() );
     ///restore connections
-    _imp->restoreConnections(serializations, newNodes, oldNewScriptNameMapping);
+    _imp->restoreConnections(serializations, newNodes, oldNewScriptNamesMapping);
 
 
     NodesList allNodes;
-    getGui()->getApp()->getProject()->getActiveNodes(&allNodes);
-
+    getGui()->getApp()->getProject()->getActiveNodesExpandGroups(&allNodes);
 
     //Restore links once all children are created for alias knobs/expressions
     std::list<NodeSerializationPtr>::iterator itS = serializations.begin();
     for (std::list<NodeGuiPtr> ::iterator it = newNodesList.begin(); it != newNodesList.end(); ++it, ++itS) {
-        (*it)->getNode()->restoreKnobsLinks(**itS, allNodes, oldNewScriptNameMapping);
+        (*it)->getNode()->storeKnobsLinks(**itS, oldNewScriptNamesMapping);
+        (*it)->getNode()->restoreKnobsLinks(allNodes, oldNewScriptNamesMapping, true); // clone should never fail
     }
 
 
@@ -337,7 +337,7 @@ NodeGraph::cloneSelectedNodes(const QPointF& scenePos)
 void
 NodeGraph::cloneSelectedNodes()
 {
-    QPointF scenePos = _imp->_root->mapFromScene( mapToScene( mapFromGlobal( QCursor::pos() ) ) );
+    QPointF scenePos = mapToScene( mapFromGlobal( QCursor::pos() ) );
 
     cloneSelectedNodes(scenePos);
 } // cloneSelectedNodes
@@ -457,7 +457,11 @@ NodeGraph::centerOnAllNodes()
             }
         }
     }
-    QRectF bbox( xmin, ymin, (xmax - xmin), (ymax - ymin) );
+    // Move the scene so that topleft of the viewing area is at 0,0, and avoid issues
+    // when topleft has negative coords.
+    moveRootInternal(-xmin, -ymin);
+    QRectF bbox( 0, 0, (xmax - xmin), (ymax - ymin) );
+    setAlignment(Qt::AlignRight|Qt::AlignVCenter);
     fitInView(bbox, Qt::KeepAspectRatio);
 
     double currentZoomFactor = transform().mapRect( QRectF(0, 0, 1, 1) ).width();

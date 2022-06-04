@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -484,14 +484,17 @@ NodeGraph::showMenu(const QPoint & pos)
     if (ret == findAction) {
         popFindDialog();
     } else if (ret == duplicateAction) {
-        QRectF rect = visibleSceneRect();
-        duplicateSelectedNodes( rect.center() );
+        // Duplicate at mouse click position:
+        QPointF scenePos = mapToScene( mapFromGlobal(pos) );
+        cloneSelectedNodes(scenePos);
     } else if (ret == cloneAction) {
-        QRectF rect = visibleSceneRect();
-        cloneSelectedNodes( rect.center() );
+        // Clone at mouse click position:
+        QPointF scenePos = mapToScene( mapFromGlobal(pos) );
+        cloneSelectedNodes(scenePos);
     } else if (ret == pasteAction) {
-        QRectF rect = visibleSceneRect();
-        pasteNodeClipBoards( rect.center() );
+        // Paste at mouse click position:
+        QPointF scenePos = mapToScene( mapFromGlobal(pos) );
+        cloneSelectedNodes(scenePos);
     }
 } // NodeGraph::showMenu
 

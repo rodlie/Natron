@@ -1,12 +1,12 @@
 # Natron Windows SDK
 
-The following are instructions for installing the Natron SDK on Windows.
+The following are instructions for installing and using the Natron SDK on Windows.
 
-## Install MSYS2
+# Setup MSYS2
 
-First you need to download a MSYS2 snapshot, only ``20180531`` is supported.
+First you need to download a MSYS2 snapshot, only **``20180531``** is supported.
 
-* Download and extract [msys2-base-x86_64-20180531.tar.xz](http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20180531.tar.xz)
+* Download and extract [msys2-base-x86_64-20180531.tar.xz](http://repo.msys2.org/distrib/x86_64/msys2-base-x86_64-20180531.tar.xz) [[Mirror](https://sourceforge.net/projects/natron/files/MINGW-packages/msys2-base-x86_64-20180531.tar.xz/download)]
 * Move the ``msys64`` folder to ``C:\msys64-20180531``
 * Run ``C:\msys64-20180531\mingw64.exe`` (this will trigger a setup script, wait until done)
 * When prompted close the terminal window
@@ -14,22 +14,146 @@ First you need to download a MSYS2 snapshot, only ``20180531`` is supported.
 Start ``C:\msys64-20180531\mingw64.exe``, then run the following commands:
 
 	$ sed -i 's/SigLevel    = Required DatabaseOptional/SigLevel = Never/' /etc/pacman.conf
-
-	$ echo "Server = https://downloads.sourceforge.net/project/openfx-arena/MINGW-packages/mingw64" > /etc/pacman.d/mirrorlist.mingw64
-
-	$ echo "Server = https://downloads.sourceforge.net/project/openfx-arena/MINGW-packages/msys" > /etc/pacman.d/mirrorlist.msys
-
+	$ sed -i 's|#XferCommand = /usr/bin/wget --passive-ftp -c -O %o %u|XferCommand = /usr/bin/wget --no-check-certificate --passive-ftp -c -O %o %u|' /etc/pacman.conf
+	$ echo "Server = https://downloads.sourceforge.net/project/natron/MINGW-packages/mingw64" > /etc/pacman.d/mirrorlist.mingw64
+	$ echo "Server = https://downloads.sourceforge.net/project/natron/MINGW-packages/msys" > /etc/pacman.d/mirrorlist.msys
 	$ pacman -Syu natron-sdk
 
-This will install everything required to build Natron and the plug-ins.
+This will install everything required to build/package Natron, plug-ins and dependencies. If some packages fail to download re-run the last command.
 
-## Maintain (DRAFT)
+The SDK can be updated with the following command:
 
-Information for current and future maintainers.
+```
+pacman -Syu
+```
 
-### Setup from scratch
+# Setup a development environment (Qt Creator)
 
-Install MSYS2 snapshot and the following packages:
+Start Qt Creator and go to ``Tools`` => ``Options``.
+
+## Debuggers
+
+Go to the ``Kits`` menu and select ``Debuggers``, then add a new.
+
+* ``Name`` : ``Natron GDB``
+* ``Path`` : ``C:\msys64-20180531\mingw64\bin\gdb.exe``
+
+*It's recommended to click ``Apply`` after adding something to the Kit.*
+
+## Compilers
+
+Go to the ``Kits`` menu and select ``Compilers``, then add a new (``MINGW => C``).
+
+* ``Name`` : ``Natron MinGW C``
+* ``Path`` : ``C:\msys64-20180531\mingw64\bin\gcc.exe``
+
+Go to the ``Kits`` menu and select ``Compilers``, then add a new (``MINGW => C++``).
+
+* ``Name`` : ``Natron MinGW C++``
+* ``Path`` : ``C:\msys64-20180531\mingw64\bin\g++.exe``
+
+*It's recommended to click ``Apply`` after adding something to the Kit.*
+
+## Qt
+
+Go to the ``Kits`` menu and select ``Qt Versions``, then add a new.
+
+* ``Name`` : ``Natron Qt 4.8.7``
+* ``Path`` : ``C:\msys64-20180531\mingw64\bin\qmake.exe``
+
+*It's recommended to click ``Apply`` after adding something to the Kit.*
+
+## Kit
+
+Go to the ``Kits`` menu and select ``Kits``, then add a new.
+
+* ``Name`` : ``Natron MSYS2``
+* ``Compiler`` => ``C`` : ``Natron MinGW C``
+* ``Compiler`` => ``C++`` : ``Natron MinGW C++``
+* ``Debugger`` : ``Natron GDB``
+* ``Qt version`` : ``Natron Qt 4.8.7``
+
+## Project
+
+Clone the Natron source (using Git Bash or MSYS2):
+
+```
+git clone https://github.com/NatronGitHub/Natron
+cd Natron
+git submodule update -i --recursive
+wget https://github.com/NatronGitHub/OpenColorIO-Configs/archive/Natron-v2.4.tar.gz
+tar xvf Natron-v2.4.tar.gz
+mv OpenColorIO-Configs-Natron-v2.4 OpenColorIO-Configs
+touch config.pri
+```
+
+Then start Qt Creator and open ``Project.pro`` from the Natron source folder and select the custom kit (``Natron MSYS2``) added previous. When Qt Creator is finished loading the project go to the ``Projects`` tab => ``Natron MSYS2`` => ``Build`` => ``Build Environment`` and add a new environment variable ``PYTHONHOME`` with the value ``C:\msys64-20180531\mingw64``.
+
+You should now be able to build and run release and debug versions of Natron directly from Qt Creator.
+
+# Setup a CI environment
+
+With a working MSYS2 installation launch ``C:\msys64-20180531\mingw64.exe`` and clone the build tools:
+
+```
+git clone https://github.com/NatronGitHub/Natron NatronCI
+```
+
+Now create a build script:
+
+```
+#!/bin/bash
+# Build Natron Windows Snapshot
+#
+
+export WORKSPACE=$HOME/NatronCI-workspace
+export UNIT_TESTS=true
+export BUILD_NAME=snapshots
+export BUILD_NUMBER=RB-2.4
+export GIT_URL=https://github.com/NatronGitHub/Natron.git
+export SNAPSHOT_BRANCH=RB-2.4
+export GIT_BRANCH=RB-2.4
+export NATRON_LICENSE=GPL
+export NATRON_DEV_STATUS=SNAPSHOT
+export NATRON_BUILD_NUMBER=1
+export COMPILE_TYPE=relwithdebinfo
+export BITS=64
+export DISABLE_BREAKPAD=1
+export DISABLE_PORTABLE_ARCHIVE=0
+export REMOTE_URL=NO_URL
+export REMOTE_USER=NO_USER
+export REMOTE_PREFIX=NO_PREFIX
+export MKJOBS=4
+export LOCALAPPDATA="/c/Users/USERNAME/AppData/Local"
+export MSYSTEM=MINGW64
+export NOUPDATE=1
+export GIT_URL_IS_NATRON=1
+
+if [ ! -d "$WORKSPACE" ]; then
+    mkdir -p "$WORKSPACE"
+fi
+
+./launchBuildMain.sh
+```
+
+and save to ``$HOME/NatronCI/tools/jenkins/build-snapshot.sh``. Remember to change ``LOCALAPPDATA`` to match your username, and ``MKJOBS`` to match your CPU. You can disable unit tests with ``UNIT_TESTS=false``.
+
+Now run the script *(working internet connection needed)*:
+
+```
+cd $HOME/NatronCI/tools/jenkins
+bash build-snapshot.sh
+```
+
+The result will be in ``$HOME/NatronCI-workspace``.
+
+This was just an example, see ``launchBuildMain.sh`` for more information/options.
+
+# Setup MSYS2 from scratch
+
+*This information is for maintainers and is outdated. Test with the latest MSYS2 snapshot and update the list.*
+
+Install a MSYS2 snapshot and the following packages:
 
 ```
 pacman -S \
@@ -205,11 +329,9 @@ mingw-w64-x86_64-python3-pytest \
 mingw-w64-x86_64-jemalloc
 ```
 
-Now build all the packages in this directory (tools/MINGW-packages) in the following order:
+Now build and install all the packages in this directory (tools/MINGW-packages) in the following order:
 
 ```
-CWD=`pwd`
-PKGS="
 mingw-w64-zlib
 mingw-w64-bzip2
 mingw-w64-xz
@@ -253,6 +375,7 @@ mingw-w64-nghttp2
 mingw-w64-curl
 mingw-w64-snappy
 mingw-w64-xvidcore
+mingw-w64-dav1d
 mingw-w64-rtmpdump-git
 mingw-w64-libraw-gpl2
 mingw-w64-ffmpeg-gpl2
@@ -273,13 +396,13 @@ mingw-w64-osmesa
 mingw-w64-libde265
 mingw-w64-libheif
 mingw-w64-imagemagick
-mingw-w64-openimageio21
+mingw-w64-openimageio
 mingw-w64-breakdown
+mingw-w64-natron-setup
 mingw-w64-natron-sdk
-"
-for pkg in $PKGS; do
-cd $CWD/$pkg
-sh $CWD/makepkg.sh
-pacman -U mingw-w64-*pkg.tar.xz
-done
+```
+```
+cd <package_name>
+../makepkg.sh
+pacman -U <package(s)>
 ```

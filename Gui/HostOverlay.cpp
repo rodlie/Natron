@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -52,6 +52,7 @@
 CLANG_DIAG_OFF(deprecated)
 #include <QtOpenGL/QGLWidget>
 CLANG_DIAG_ON(deprecated)
+#include <QtCore/QDebug>
 #include <QtCore/QPointF>
 #include <QtCore/QThread>
 #include <QFont>
@@ -64,6 +65,23 @@ CLANG_DIAG_ON(deprecated)
 #endif
 
 NATRON_NAMESPACE_ENTER
+
+// IMPORTANT NOTE:
+//
+// Do not use setValues(x,y) in the internal interact code, because it blocks the instanceChanged call
+// for the first dimension, which is then reset when the interact is closed (eg shape deselected in Roto).
+// The reason seems to be that value changes are blocked when setting the first dimension in setValues(),
+// but some of the blocked actions depend on the dimension.
+//
+// see:
+// - call to it->knob->refreshListenersAfterValueChange() in KnobHolder::endChanges()
+// - calls to dimensionChanged.insert() in Knob<T>::dequeueValuesSet()
+// Functions and variables related to blocking value changes have various names in the code:
+// - blockValueChanges valueChangeBlocked valueChangesBlocked valueChangedBlocked isValueChangedBlocked
+//
+// TODO: This is a bug, there is no reason to not use setValues().
+// OpenFX plugins are not affected, because instanceChanged does not pass the dimension information.
+
 
 DefaultInteractI::DefaultInteractI(HostOverlay* overlay)
     : _overlay(overlay)
@@ -952,6 +970,7 @@ PositionInteract::draw(double time,
     case ePositionInteractStatePicked:
         pR = 0.f; pG = 1.0f; pB = 0.0f; break;
     }
+    double screenPixelRatio = getScreenPixelRatio();
 
     QPointF pos;
     if (_state == ePositionInteractStatePicked) {
@@ -968,7 +987,6 @@ PositionInteract::draw(double time,
         pos.setY(p[1]);
     }
     //glPushAttrib(GL_ALL_ATTRIB_BITS); // caller is responsible for protecting attribs
-    glPointSize( (GLfloat)pointSize() );
     // Draw everything twice
     // l = 0: shadow
     // l = 1: drawing
@@ -980,7 +998,43 @@ PositionInteract::draw(double time,
         glTranslated(direction * shadow.x, -direction * shadow.y, 0);
         glMatrixMode(GL_MODELVIEW); // Modelview should be used on Nuke
 
+#warning TODO
+#if 0
+        int numKeys = knob->get;
+
+        if (numKeys > 0) {
+            const double darken = 0.5;
+            glColor3f(pR * l * darken, pG * l * darken, pB * l * darken);
+
+            glPointSize(pointSize() * screenPixelRatio);
+            glBegin(GL_POINTS);
+            for (int i=0; i < numKeys; ++i) {
+                double time = p->getKeyTime(i);
+                OfxPointD pt;
+                p->getValueAtTime(time, pt.x, pt.y);
+                glVertex2d(pt.x, pt.y);
+
+            }
+            glEnd();
+            glLineWidth(1.5 * screenPixelRatio);
+            glBegin(GL_LINE_STRIP);
+            double time = p->getKeyTime(0);
+            for (int i = 1; i < numKeys; ++i) {
+                double timeNext = p->getKeyTime(i);
+                for (int j = (i == 1 ? 0 : 1); j <= steps; ++j) {
+                    double timeStep = time + j * (timeNext - time) / steps;
+                    OfxPointD pt;
+                    p->getValueAtTime(timeStep, pt.x, pt.y);
+                    glVertex2d(pt.x, pt.y);
+                }
+                time = timeNext;
+            }
+            glEnd();
+        }
+#endif
+
         glColor3f(pR * l, pG * l, pB * l);
+        glPointSize(pointSize() * screenPixelRatio);
         glBegin(GL_POINTS);
         glVertex2d( pos.x(), pos.y() );
         glEnd();
@@ -1346,6 +1400,7 @@ TransformInteract::draw(double time,
     double skewX, skewY;
     int skewOrder;
     bool inverted = false;
+    double screenPixelRatio = getScreenPixelRatio();
 
     if (_mouseState == TransformInteract::eReleased) {
         getCenter(time, &center.x, &center.y);
@@ -1395,7 +1450,7 @@ TransformInteract::draw(double time,
     glDisable(GL_POINT_SMOOTH);
     glEnable(GL_BLEND);
     glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-    glLineWidth(1.5f);
+    glLineWidth(1.5f * screenPixelRatio);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Draw everything twice
@@ -1487,6 +1542,7 @@ CornerPinInteract::draw(double time,
     OfxPointD from[4];
     bool enable[4];
     bool useFrom;
+    double screenPixelRatio = getScreenPixelRatio();
 
     if (_dragging == -1) {
         for (int i = 0; i < 4; ++i) {
@@ -1533,10 +1589,8 @@ CornerPinInteract::draw(double time,
     //glEnable(GL_POINT_SMOOTH);
     glEnable(GL_BLEND);
     glHint(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
-    glLineWidth(1.5f);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glPointSize( CornerPinInteract::pointSize() );
     // Draw everything twice
     // l = 0: shadow
     // l = 1: drawing
@@ -1549,6 +1603,7 @@ CornerPinInteract::draw(double time,
         glMatrixMode(GL_MODELVIEW); // Modelview should be used on Nuke
 
         glColor3f( (float)(color.r / 2) * l, (float)(color.g / 2) * l, (float)(color.b / 2) * l );
+        glLineWidth(1.5f * screenPixelRatio);
         glBegin(GL_LINES);
         for (int i = enableBegin; i < enableEnd; ++i) {
             if (enable[i]) {
@@ -1558,6 +1613,7 @@ CornerPinInteract::draw(double time,
         }
         glEnd();
         glColor3f( (float)color.r * l, (float)color.g * l, (float)color.b * l );
+        glLineWidth(1.5f * screenPixelRatio);
         glBegin(GL_LINE_LOOP);
         for (int i = enableBegin; i < enableEnd; ++i) {
             if (enable[i]) {
@@ -1565,6 +1621,8 @@ CornerPinInteract::draw(double time,
             }
         }
         glEnd();
+
+        glPointSize(CornerPinInteract::pointSize() * screenPixelRatio);
         glBegin(GL_POINTS);
         for (int i = enableBegin; i < enableEnd; ++i) {
             if (enable[i]) {
@@ -1693,7 +1751,12 @@ PositionInteract::penMotion(double time,
             }
         }
 
-        knob->setValues(p[0], p[1], ViewSpec::all(), eValueChangedReasonNatronGuiEdited);
+        EffectInstancePtr holder = _overlay->getNode()->getNode()->getEffectInstance();
+        holder->setMultipleParamsEditLevel(KnobHolder::eMultipleParamsEditOnCreateNewCommand);
+        // Do not use setValues(x,y) (see note at the top of this file).
+        knob->setValue(p[0], ViewSpec::all(), 0, eValueChangedReasonNatronGuiEdited);
+        knob->setValue(p[1], ViewSpec::all(), 1, eValueChangedReasonNatronGuiEdited);
+        holder->setMultipleParamsEditLevel(KnobHolder::eMultipleParamsEditOff);
     }
 
     return (didSomething || valuesChanged);
@@ -2136,15 +2199,21 @@ TransformInteract::penMotion(double time,
         KeyFrame k;
         if (centerChanged) {
             KnobDoublePtr knob = _center.lock();
-            knob->setValues(center.x, center.y, ViewSpec::all(), eValueChangedReasonNatronGuiEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(center.x, ViewSpec::all(), 0, eValueChangedReasonNatronGuiEdited);
+            knob->setValue(center.y, ViewSpec::all(), 1, eValueChangedReasonNatronGuiEdited);
         }
         if (translateChanged) {
             KnobDoublePtr knob = _translate.lock();
-            knob->setValues(translate.x, translate.y, ViewSpec::all(), eValueChangedReasonNatronGuiEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(translate.x, ViewSpec::all(), 0, eValueChangedReasonNatronGuiEdited);
+            knob->setValue(translate.y, ViewSpec::all(), 1, eValueChangedReasonNatronGuiEdited);
         }
         if (scaleChanged) {
             KnobDoublePtr knob = _scale.lock();
-            knob->setValues(scale.x, scale.y, ViewSpec::all(), eValueChangedReasonNatronGuiEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(scale.x, ViewSpec::all(), 0, eValueChangedReasonNatronGuiEdited);
+            knob->setValue(scale.y, ViewSpec::all(), 1, eValueChangedReasonNatronGuiEdited);
         }
         if (rotateChanged) {
             KnobDoublePtr knob = _rotate.lock();
@@ -2259,15 +2328,22 @@ CornerPinInteract::penMotion(double time,
     if ( (_dragging != -1) && _interactiveDrag && valuesChanged ) {
         // no need to redraw overlay since it is slave to the parameters
 
+        EffectInstancePtr holder = _overlay->getNode()->getNode()->getEffectInstance();
+        holder->setMultipleParamsEditLevel(KnobHolder::eMultipleParamsEditOnCreateNewCommand);
         if (_useFromDrag) {
             KnobDoublePtr knob = _from[_dragging].lock();
             assert(knob);
-            knob->setValues(from[_dragging].x, from[_dragging].y, ViewSpec::all(), eValueChangedReasonPluginEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(from[_dragging].x, ViewSpec::all(), 0, eValueChangedReasonPluginEdited);
+            knob->setValue(from[_dragging].y, ViewSpec::all(), 1, eValueChangedReasonPluginEdited);
         } else {
             KnobDoublePtr knob = _to[_dragging].lock();
             assert(knob);
-            knob->setValues(to[_dragging].x, to[_dragging].y, ViewSpec::all(), eValueChangedReasonPluginEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(to[_dragging].x, ViewSpec::all(), 0, eValueChangedReasonPluginEdited);
+            knob->setValue(to[_dragging].y, ViewSpec::all(), 1, eValueChangedReasonPluginEdited);
         }
+        holder->setMultipleParamsEditLevel(KnobHolder::eMultipleParamsEditOff);
     }
 
     return didSomething || valuesChanged;
@@ -2328,7 +2404,12 @@ PositionInteract::penUp(double time,
                 }
             }
 
-            knob->setValues(p[0], p[1], ViewSpec::all(), eValueChangedReasonNatronGuiEdited);
+            EffectInstancePtr holder = _overlay->getNode()->getNode()->getEffectInstance();
+            holder->setMultipleParamsEditLevel(KnobHolder::eMultipleParamsEditOnCreateNewCommand);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(p[0], ViewSpec::all(), 0, eValueChangedReasonNatronGuiEdited);
+            knob->setValue(p[1], ViewSpec::all(), 1, eValueChangedReasonNatronGuiEdited);
+            holder->setMultipleParamsEditLevel(KnobHolder::eMultipleParamsEditOff);
         }
 
         _state = ePositionInteractStateInactive;
@@ -2363,15 +2444,21 @@ TransformInteract::penUp(double /*time*/,
         holder->setMultipleParamsEditLevel(KnobHolder::eMultipleParamsEditOnCreateNewCommand);
         {
             KnobDoublePtr knob = _center.lock();
-            knob->setValues(_centerDrag.x, _centerDrag.y, ViewSpec::all(),  eValueChangedReasonPluginEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(_centerDrag.x, ViewSpec::all(), 0, eValueChangedReasonPluginEdited);
+            knob->setValue(_centerDrag.y, ViewSpec::all(), 1, eValueChangedReasonPluginEdited);
         }
         {
             KnobDoublePtr knob = _translate.lock();
-            knob->setValues(_translateDrag.x, _translateDrag.y, ViewSpec::all(), eValueChangedReasonPluginEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(_translateDrag.x, ViewSpec::all(), 0, eValueChangedReasonPluginEdited);
+            knob->setValue(_translateDrag.y, ViewSpec::all(), 1, eValueChangedReasonPluginEdited);
         }
         {
             KnobDoublePtr knob = _scale.lock();
-            knob->setValues(_scaleParamDrag.x, _scaleParamDrag.y, ViewSpec::all(), eValueChangedReasonPluginEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(_scaleParamDrag.x, ViewSpec::all(), 0, eValueChangedReasonPluginEdited);
+            knob->setValue(_scaleParamDrag.y, ViewSpec::all(), 1, eValueChangedReasonPluginEdited);
         }
         {
             KnobDoublePtr knob = _rotate.lock();
@@ -2420,15 +2507,22 @@ CornerPinInteract::penUp(double /*time*/,
 
     if ( !_interactiveDrag && (_dragging != -1) ) {
         // no need to redraw overlay since it is slave to the parameters
+        EffectInstancePtr holder = _overlay->getNode()->getNode()->getEffectInstance();
+        holder->setMultipleParamsEditLevel(KnobHolder::eMultipleParamsEditOnCreateNewCommand);
         if (_useFromDrag) {
             KnobDoublePtr knob = _from[_dragging].lock();
             assert(knob);
-            knob->setValues(_fromDrag[_dragging].x, _fromDrag[_dragging].y, ViewSpec::all(), eValueChangedReasonPluginEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(_fromDrag[_dragging].x, ViewSpec::all(), 0, eValueChangedReasonPluginEdited);
+            knob->setValue(_fromDrag[_dragging].y, ViewSpec::all(), 1, eValueChangedReasonPluginEdited);
         } else {
             KnobDoublePtr knob = _to[_dragging].lock();
             assert(knob);
-            knob->setValues(_toDrag[_dragging].x, _toDrag[_dragging].y, ViewSpec::all(), eValueChangedReasonPluginEdited);
+            // Do not use setValues(x,y) (see note at the top of this file).
+            knob->setValue(_toDrag[_dragging].x, ViewSpec::all(), 0, eValueChangedReasonPluginEdited);
+            knob->setValue(_toDrag[_dragging].y, ViewSpec::all(), 1, eValueChangedReasonPluginEdited);
         }
+        holder->setMultipleParamsEditLevel(KnobHolder::eMultipleParamsEditOff);
     }
     _dragging = -1;
 

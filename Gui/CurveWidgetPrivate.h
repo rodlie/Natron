@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2020 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -85,16 +85,16 @@ public:
 
     ~CurveWidgetPrivate();
 
-    void drawSelectionRectangle();
+    void drawSelectionRectangle(double screenPixelRatio);
 
     void refreshTimelinePositions();
 
-    void drawTimelineMarkers();
+    void drawTimelineMarkers(double screenPixelRatio);
 
-    void drawCurves();
+    void drawCurves(double screenPixelRatio);
 
-    void drawScale();
-    void drawSelectedKeyFramesBbox();
+    void drawScale(double screenPixelRatio);
+    void drawSelectedKeyFramesBbox(double screenPixelRatio);
 
     /**
      * @brief Returns whether the click at position pt is nearby the curve.
@@ -161,7 +161,8 @@ public:
     QColor _selectedCurveColor;
     QColor _nextCurveAddedColor;
     TextRenderer textRenderer;
-    QFont* _font;
+    double _screenPixelRatio;
+    boost::scoped_ptr<QFont> _textFont;
     Curves _curves;
     SelectedKeys _selectedKeyFrames;
     bool _mustSetDragOrientation;

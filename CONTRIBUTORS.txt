@@ -1,14 +1,15 @@
-Version 2.0:
+Version 2.x:
 -----------
 
 #Developers:
 
 Frédéric Devernay <devernay@github>
 Alexandre Gauthier-Foichat <MrKepzie@github>
-Ole-André Rodlie <rodlie@github> (Openfx-Arena Plug-Ins)
+Ole-André Rodlie <rodlie@github>
 Axel Airo-Farulla  <Eaknyt@github>
 Yves Lefebvre <Ivanohe73@github>
 Jonathan Hearn <splidje@github>
+Martin Reboredo <YakoYakoYokuYoku@github>
 
 #Artists:
 
@@ -28,6 +29,13 @@ François "CoyHot" Grassard <Francois-Grassard@github>
 Francesco Paglia <fPaglia@github>
 rcspam <rcspam@github>
 Jean-Christophe Levet
+
+#Documentation (not everyone listed):
+
+Marc-André Gasser <magdesign@github>
+Martin Constable
+Alexandre Bon <bonalex01dev@github>
+Omar Brown <blackearth2014@github>
 
 
 Version 1.0:
