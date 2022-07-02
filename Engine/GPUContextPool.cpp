@@ -116,7 +116,7 @@ GPUContextPool::attachGLContextToRender(bool checkIfGLLoaded)
         rendererID = settings->getActiveOpenGLRendererID();
     }
 
-    int maxContexts = settings ? std::max(settings->getMaxOpenGLContexts(), 1) : 1;
+    int maxContexts = 99; //settings ? std::max(settings->getMaxOpenGLContexts(), 1) : 1;
 
 #ifndef NATRON_RENDER_SHARED_CONTEXT
     while (_imp->glContextPool.empty() && (int)_imp->attachedGLContexts.size() >= maxContexts) {
