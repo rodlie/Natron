@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -177,7 +177,7 @@ HistogramCPU::quitAnyComputation()
         computeHistogram(0, ImagePtr(), RectI(), 0, 0, 0, 0);
         l.relock();
         while (_imp->mustQuit) {
-            _imp->mustQuitCond.wait(&_imp->mustQuitMutex);
+            _imp->mustQuitCond.wait(l.mutex());
         }
     }
 }
@@ -392,7 +392,7 @@ HistogramCPU::run()
         {
             QMutexLocker l(&_imp->requestMutex);
             while ( _imp->requests.empty() ) {
-                _imp->requestCond.wait(&_imp->requestMutex);
+                _imp->requestCond.wait(l.mutex());
             }
 
             ///get the last request

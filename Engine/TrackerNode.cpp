@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -131,8 +131,8 @@ TrackerNode::initializeKnobs()
 {
     TrackerContextPtr context = getNode()->getTrackerContext();
     KnobPagePtr trackingPage = context->getTrackingPageKnob();
-    KnobButtonPtr addMarker = AppManager::createKnob<KnobButton>( this, tr(kTrackerUIParamAddTrackLabel) );
 
+    KnobButtonPtr addMarker = AppManager::createKnob<KnobButton>( this, tr(kTrackerUIParamAddTrackLabel) );
     addMarker->setName(kTrackerUIParamAddTrack);
     addMarker->setHintToolTip( tr(kTrackerUIParamAddTrackHint) );
     addMarker->setEvaluateOnChange(false);
@@ -1550,7 +1550,8 @@ TrackerNode::onOverlayPenMotion(double time,
 
     assert(overlay);
     overlay->getPixelScale(pixelScale.first, pixelScale.second);
-    bool didSomething = false;
+    bool didSomething = false; // Set if an actual action was performed based on mouse motion.
+    bool redraw = false; // Set if we just need a redraw (e.g., hover state changed).
     TrackerContextPtr context = getNode()->getTrackerContext();
     Point delta;
     delta.x = pos.x() - _imp->ui->lastMousePos.x();
@@ -1560,7 +1561,7 @@ TrackerNode::onOverlayPenMotion(double time,
     if (_imp->ui->hoverState != eDrawStateInactive) {
         _imp->ui->hoverState = eDrawStateInactive;
         _imp->ui->hoverMarker.reset();
-        didSomething = true;
+        redraw = true;
     }
 
     std::vector<TrackMarkerPtr> allMarkers;
@@ -1593,9 +1594,9 @@ TrackerNode::onOverlayPenMotion(double time,
             _imp->ui->hoverMarker = *it;
             hoverProcess = true;
         } else if ( ( (offset.x() != 0) || (offset.y() != 0) ) && _imp->ui->isNearbyPoint(QPointF( center.x() + offset.x(), center.y() + offset.y() ), viewportPos.x(), viewportPos.y(), POINT_TOLERANCE) ) {
+            redraw = _imp->ui->hoverState != eDrawStateHoveringCenter;
             _imp->ui->hoverState = eDrawStateHoveringCenter;
             _imp->ui->hoverMarker = *it;
-            didSomething = true;
         }
 
 
@@ -1738,7 +1739,7 @@ TrackerNode::onOverlayPenMotion(double time,
     }
 
     if (hoverProcess) {
-        didSomething = true;
+        redraw = true;
     }
 
     KnobDoublePtr centerKnob, offsetKnob, searchWndTopRight, searchWndBtmLeft;
@@ -2256,6 +2257,10 @@ TrackerNode::onOverlayPenMotion(double time,
         didSomething = true;
     }
     _imp->ui->lastMousePos = pos;
+
+    if (redraw) {
+        redrawOverlayInteract();
+    }
 
     return didSomething;
 } //penMotion

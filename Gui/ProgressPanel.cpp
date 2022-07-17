@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -147,7 +147,10 @@ ProgressPanel::ProgressPanel(Gui* gui)
     : QWidget(gui)
     , PanelWidget(this, gui)
     , _imp( new ProgressPanelPrivate() )
+    , _taskbar(0)
 {
+    _taskbar = new TaskBar(this);
+
     _imp->mainLayout = new QVBoxLayout(this);
     _imp->mainLayout->setContentsMargins(0, 0, 0, 0);
     _imp->mainLayout->setSpacing(0);
@@ -466,6 +469,7 @@ ProgressPanel::startTask(const NodePtr& node,
                                      canCancel,
                                      message, process) );
 
+    task->setTaskBar(_taskbar);
 
     if ( canPause || node->getEffectInstance()->isOutput() ) {
         task->createItems();

@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -312,6 +312,7 @@ GCC_DIAG_SUGGEST_OVERRIDE_ON
 public:
 
     TrackerNodePrivate* _p;
+
     KnobButtonWPtr addTrackButton;
     KnobButtonWPtr trackRangeButton;
     KnobButtonWPtr trackBwButton;

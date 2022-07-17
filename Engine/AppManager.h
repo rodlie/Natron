@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -823,6 +823,17 @@ public:
     PythonGILLocker();
 
     ~PythonGILLocker();
+};
+
+/**
+ * @brief Small helper class to use as RAII to temporarily release the GIL (Global Interpreter Lock)
+ **/
+class PythonGILUnlocker
+{
+public:
+    PythonGILUnlocker();
+
+    ~PythonGILUnlocker();
 };
 
 NATRON_NAMESPACE_EXIT

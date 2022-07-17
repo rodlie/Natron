@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -273,7 +273,7 @@ NodeGraph::mousePressEvent(QMouseEvent* e)
 
     if ( ( (nearbyItemCode == eNearbyItemNode) || (nearbyItemCode == eNearbyItemBackdropFrame) ) && groupEdited ) {
         assert(nearbyNode);
-#pragma message WARN("TODO: if control is held, select all the nodes above, see https://github.com/MrKepzie/Natron/issues/497")
+#pragma message WARN("TODO: if control is held, select all the nodes above, see https://github.com/NatronGitHub/Natron/issues/97")
         NodeGuiPtr selectedNode = nearbyNode->shared_from_this();
 
         didSomething = true;

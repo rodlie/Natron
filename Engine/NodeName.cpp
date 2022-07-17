@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -36,6 +36,19 @@
 
 NATRON_NAMESPACE_ENTER
 
+// Trim underscore followed by digits at the end of baseName (see #732).
+static
+void trimNumber(std::string &baseName)
+{
+    std::size_t found_underscore = baseName.rfind('_');
+    if (found_underscore != std::string::npos && found_underscore != (baseName.size() - 1)) {
+        std::size_t found_nondigit = baseName.find_last_not_of("0123456789");
+        if (found_nondigit == found_underscore) {
+            baseName.erase(found_underscore);
+        }
+    }
+}
+
 void
 Node::initNodeScriptName(const NodeSerialization* serialization, const QString& fixedName)
 {
@@ -50,20 +63,24 @@ Node::initNodeScriptName(const NodeSerialization* serialization, const QString& 
 
     if (!fixedName.isEmpty()) {
 
-        std::string baseName = fixedName.toStdString();
-        std::string name = baseName;
-        int no = 1;
-        do {
-            if (no > 1) {
-                std::stringstream ss;
-                ss << baseName;
-                ss << '_';
-                ss << no;
-                name = ss.str();
-            }
-            ++no;
-        } while ( group && group->checkIfNodeNameExists(name, this) );
-
+        std::string name = fixedName.toStdString();
+        // If the script name is available, use it as is (else we get issue #755).
+        // Else look for a similar name by adding a (different) number suffix.
+        if ( group && group->checkIfNodeNameExists(name, this) ) {
+            std::string baseName = name;
+            trimNumber(baseName);
+            int no = 1;
+            do {
+                name = baseName;
+                if (no > 1) {
+                    name += '_';
+                    std::stringstream ss;
+                    ss << no;
+                    name += ss.str();
+                }
+                ++no;
+            } while ( group && group->checkIfNodeNameExists(name, this) );
+        }
         //This version of setScriptName will not error if the name is invalid or already taken
         setScriptName_no_error_check(name);
 
@@ -72,19 +89,24 @@ Node::initNodeScriptName(const NodeSerialization* serialization, const QString& 
             QMutexLocker k(&_imp->nameMutex);
             _imp->cacheID = serialization->getCacheID();
         }
-        const std::string& baseName = serialization->getNodeScriptName();
-        std::string name = baseName;
-        int no = 1;
-        do {
-            if (no > 1) {
-                std::stringstream ss;
-                ss << baseName;
-                ss << '_';
-                ss << no;
-                name = ss.str();
-            }
-            ++no;
-        } while ( group && group->checkIfNodeNameExists(name, this) );
+        std::string name = serialization->getNodeScriptName();
+        // If the serialized script name is available, use it as is (else we get issue #755).
+        // Else look for a similar name by adding a (different) number suffix.
+        if ( group && group->checkIfNodeNameExists(name, this) ) {
+            std::string baseName = name;
+            trimNumber(baseName);
+            int no = 1;
+            do {
+                name = baseName;
+                if (no > 1) {
+                    name += '_';
+                    std::stringstream ss;
+                    ss << no;
+                    name += ss.str();
+                }
+                ++no;
+            } while ( group->checkIfNodeNameExists(name, this) );
+        }
 
         //This version of setScriptName will not error if the name is invalid or already taken
         setScriptName_no_error_check(name);

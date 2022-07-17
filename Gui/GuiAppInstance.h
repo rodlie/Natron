@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -182,7 +182,7 @@ public:
     virtual void declareCurrentAppVariable_Python() OVERRIDE;
     virtual void createLoadProjectSplashScreen(const QString& projectFile) OVERRIDE FINAL;
     virtual void updateProjectLoadStatus(const QString& str) OVERRIDE FINAL;
-    virtual void closeLoadPRojectSplashScreen() OVERRIDE FINAL;
+    virtual void closeLoadProjectSplashScreen() OVERRIDE FINAL;
     virtual void renderAllViewers(bool canAbort) OVERRIDE FINAL;
     virtual void refreshAllPreviews() OVERRIDE FINAL;
     virtual void abortAllViewers() OVERRIDE FINAL;

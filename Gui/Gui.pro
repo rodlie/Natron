@@ -1,6 +1,6 @@
 # ***** BEGIN LICENSE BLOCK *****
 # This file is part of Natron <https://natrongithub.github.io/>,
-# (C) 2018-2021 The Natron developers
+# (C) 2018-2022 The Natron developers
 # (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
 #
 # Natron is free software: you can redistribute it and/or modify
@@ -204,6 +204,7 @@ SOURCES += \
     TabGroup.cpp \
     TabWidget.cpp \
     TableModelView.cpp \
+    TaskBar.cpp \
     TextRenderer.cpp \
     TimeLineGui.cpp \
     ToolButton.cpp \
@@ -349,6 +350,7 @@ HEADERS += \
     TabGroup.h \
     TabWidget.h \
     TableModelView.h \
+    TaskBar.h \
     TextRenderer.h \
     TimeLineGui.h \
     ToolButton.h \
@@ -413,6 +415,8 @@ OTHER_FILES += \
     Resources/Images/splashscreen.svg
 
 macx {
+HEADERS += TaskBarMac.h
 OBJECTIVE_SOURCES += \
-    $$PWD/../Gui/QtMac.mm
+    $$PWD/../Gui/QtMac.mm \
+    $$PWD/../Gui/TaskBarMac.mm
 }

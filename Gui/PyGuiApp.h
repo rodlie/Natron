@@ -1,6 +1,6 @@
 /* ***** BEGIN LICENSE BLOCK *****
  * This file is part of Natron <https://natrongithub.github.io/>,
- * (C) 2018-2021 The Natron developers
+ * (C) 2018-2022 The Natron developers
  * (C) 2013-2018 INRIA and Alexandre Gauthier-Foichat
  *
  * Natron is free software: you can redistribute it and/or modify
@@ -155,6 +155,8 @@ public:
     void selectNode(Effect* effect, bool clearPreviousSelection);
     void setSelection(const std::list<Effect*>& nodes);
     void selectAllNodes(Group* group = 0);
+    void copySelectedNodes(Group* group = 0);
+    void pasteNodes(Group* group = 0);
     void deselectNode(Effect* effect);
     void clearSelection(Group* group = 0);
 
