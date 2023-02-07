@@ -475,8 +475,8 @@ Settings::initializeKnobsGPU()
     _nOpenGLContexts->setName("maxOpenGLContexts");
     _nOpenGLContexts->setMinimum(1);
     _nOpenGLContexts->setDisplayMinimum(1);
-    _nOpenGLContexts->setDisplayMaximum(8);
-    _nOpenGLContexts->setMaximum(8);
+    _nOpenGLContexts->setDisplayMaximum(99);
+    _nOpenGLContexts->setMaximum(9999);
     _nOpenGLContexts->setHintToolTip( tr("The number of OpenGL contexts created to perform OpenGL rendering. Each OpenGL context can be attached to a CPU thread, allowing for more frames to be rendered simultaneously. Increasing this value may increase performances for graphs with mixed CPU/GPU nodes but can drastically reduce performances if too many OpenGL contexts are active at once.") );
     _gpuPage->addKnob(_nOpenGLContexts);
 
