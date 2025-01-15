@@ -430,6 +430,7 @@ PyPanel::PyPanel(const QString& scriptName,
 
 PyPanel::~PyPanel()
 {
+    getGui()->unregisterTab(this);
     getGui()->unregisterPyPanel(this);
 }
 
